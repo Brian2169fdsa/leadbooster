@@ -319,6 +319,106 @@
     /* Mode content */
     .mode-content { animation: fadeIn 0.25s ease; }
     .mode-content.hidden { display: none; }
+
+    /* ===== DASHBOARD ===== */
+    .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .dash-grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .dash-kpi {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px 22px; position: relative; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .dash-kpi:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); transform: translateY(-1px); }
+    .dash-kpi-accent { border-left: 3px solid var(--accent); }
+    .dash-kpi-green { border-left: 3px solid var(--green); }
+    .dash-kpi-amber { border-left: 3px solid var(--amber); }
+    .dash-kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 8px; }
+    .dash-kpi-value { font-size: 32px; font-weight: 800; font-family: var(--mono); color: var(--text); line-height: 1; margin-bottom: 4px; }
+    .dash-kpi-sub { font-size: 11px; font-weight: 500; color: var(--text-dim); }
+    .dash-kpi-trend { position: absolute; top: 18px; right: 18px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .dash-kpi-trend.up { background: var(--green-light); color: var(--green); }
+    .dash-kpi-trend.down { background: var(--red-light); color: var(--red); }
+    .dash-kpi-trend.neutral { background: var(--surface); color: var(--text-dim); }
+    .dash-section-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .dash-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Hit rate bars */
+    .hit-rate-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .hit-rate-label { font-size: 11px; font-weight: 700; color: var(--text-mid); width: 72px; flex-shrink: 0; }
+    .hit-rate-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+    .hit-rate-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .hit-rate-fill.email { background: var(--accent); }
+    .hit-rate-fill.phone { background: var(--amber); }
+    .hit-rate-fill.linkedin { background: #0A66C2; }
+    .hit-rate-pct { font-size: 12px; font-weight: 700; font-family: var(--mono); color: var(--text); width: 38px; text-align: right; flex-shrink: 0; }
+
+    /* ICP score distribution */
+    .score-dist { display: flex; align-items: flex-end; gap: 4px; height: 64px; margin-bottom: 8px; }
+    .score-dist-bar { flex: 1; border-radius: 3px 3px 0 0; background: var(--accent-light); transition: height 0.6s cubic-bezier(0.16,1,0.3,1); min-height: 3px; position: relative; }
+    .score-dist-bar:hover { background: var(--accent); }
+    .score-dist-bar:hover .score-dist-tooltip { display: block; }
+    .score-dist-tooltip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--nav); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 5px; white-space: nowrap; z-index: 10; }
+    .score-dist-labels { display: flex; justify-content: space-between; font-size: 9px; font-weight: 600; color: var(--text-dim); font-family: var(--mono); }
+
+    /* Source wins */
+    .source-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .source-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; width: 70px; text-align: center; flex-shrink: 0; }
+    .source-pill.hunter { background: #FEF3C7; color: #92400E; }
+    .source-pill.apollo { background: #EDE9FE; color: #5B21B6; }
+    .source-pill.pdl { background: #D1FAE5; color: #065F46; }
+    .source-pill.snovio { background: #FEE2E2; color: #991B1B; }
+    .source-pill.website { background: var(--accent-light); color: var(--accent); }
+    .source-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .source-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .source-num { font-size: 11px; font-weight: 700; font-family: var(--mono); color: var(--text); width: 28px; text-align: right; flex-shrink: 0; }
+
+    /* Top contacts leaderboard */
+    .lead-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+    .lead-row:last-child { border-bottom: none; }
+    .lead-rank { font-size: 11px; font-weight: 800; font-family: var(--mono); color: var(--text-dim); width: 20px; flex-shrink: 0; }
+    .lead-name { font-size: 12px; font-weight: 700; color: var(--text); }
+    .lead-co { font-size: 10px; font-weight: 500; color: var(--text-dim); margin-top: 1px; }
+    .lead-score { margin-left: auto; font-size: 13px; font-weight: 800; font-family: var(--mono); flex-shrink: 0; }
+    .lead-score.high { color: var(--green); }
+    .lead-score.mid { color: var(--amber); }
+    .lead-score.low { color: var(--text-dim); }
+    .lead-vertical { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--surface); color: var(--text-dim); flex-shrink: 0; }
+
+    /* Vertical bars */
+    .vert-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .vert-label { font-size: 10px; font-weight: 700; color: var(--text-mid); width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vert-track { flex: 1; height: 10px; background: var(--surface2); border-radius: 5px; overflow: hidden; }
+    .vert-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--accent), var(--accent-mid)); transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .vert-num { font-size: 11px; font-weight: 700; font-family: var(--mono); color: var(--text); width: 28px; text-align: right; flex-shrink: 0; }
+
+    /* Queue table */
+    .q-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .q-table th { text-align: left; padding: 6px 10px; font-size: 9px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .q-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); font-weight: 500; color: var(--text); }
+    .q-table tr:last-child td { border-bottom: none; }
+    .q-table tr:hover td { background: var(--surface); }
+    .status-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .status-chip.running { background: var(--accent-light); color: var(--accent); }
+    .status-chip.completed { background: var(--green-light); color: var(--green); }
+    .status-chip.queued { background: var(--amber-light); color: var(--amber); }
+    .status-chip.failed { background: var(--red-light); color: var(--red); }
+    .status-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .status-chip.running .status-chip-dot { animation: pulseDot 1.2s infinite; }
+    .dash-empty { padding: 20px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+    .dash-refresh { font-size: 10px; font-weight: 700; color: var(--accent); cursor: pointer; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--accent-light); background: var(--accent-light); transition: all 0.15s; }
+    .dash-refresh:hover { background: var(--accent); color: #fff; }
+    .dash-loading { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); font-weight: 600; padding: 16px 0; }
+    .dash-loading-ring { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+
+    @media (max-width: 900px) {
+      .dash-grid { grid-template-columns: repeat(2, 1fr); }
+      .dash-grid-2, .dash-grid-3 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .dash-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -348,10 +448,10 @@
 <!-- Login handler in isolated script block (immune to Cloudflare email-decode breakage) -->
 <script>
   window._login = async function() {
-    var SB_URL = "https://palcqjfgygpidzwjzikn.supabase.co";
-    var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODE1MzcsImV4cCI6MjA4ODM1NzUzN30.-8yi1QepliAdMhgARQhId93Ny-M0skqaDHgOevM3Zro";
-    var email = document.getElementById('login-email').value.trim();
-    var password = document.getElementById('login-password').value;
+    var SB = "https://palcqjfgygpidzwjzikn.supabase.co";
+    var KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODE1MzcsImV4cCI6MjA4ODM1NzUzN30.-8yi1QepliAdMhgARQhId93Ny-M0skqaDHgOevM3Zro";
+    var em = document.getElementById('login-email').value.trim();
+    var pw = document.getElementById('login-password').value;
     var errEl = document.getElementById('login-error');
     var btn = document.getElementById('btn-login');
     errEl.textContent = '';
@@ -359,18 +459,18 @@
     btn.disabled = true;
     btn.textContent = 'Signing in\u2026';
     try {
-      var resp = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
+      var resp = await fetch(SB + '/auth/v1/token?grant_type=password', {
         method: 'POST',
-        headers: {'Content-Type':'application/json','apikey':SB_KEY},
-        body: JSON.stringify({email: email, password: password})
+        headers: {'Content-Type':'application/json','apikey':KEY},
+        body: JSON.stringify({email: em, password: pw})
       });
       var data = await resp.json();
       if (!resp.ok) throw new Error(data.error_description || data.msg || 'Invalid credentials');
       window._authToken = data.access_token;
       window._currentUser = {email: data.user.email, name: data.user.email.split('@')[0]};
       try {
-        var u = await fetch(SB_URL+'/rest/v1/lb_users?email=eq.'+encodeURIComponent(email)+'&select=name,role', {
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+window._authToken}
+        var u = await fetch(SB+'/rest/v1/lb_users?email=eq.'+encodeURIComponent(em)+'&select=name,role', {
+          headers:{'apikey':KEY,'Authorization':'Bearer '+window._authToken}
         });
         var ud = await u.json();
         if (ud[0] && ud[0].name) window._currentUser.name = ud[0].name;
@@ -381,6 +481,7 @@
       var badge = document.getElementById('user-badge');
       if (badge) badge.textContent = window._currentUser.name;
       if (typeof loadStats === 'function') loadStats();
+      if (typeof loadDashboard === 'function') loadDashboard();
     } catch(err) {
       errEl.textContent = err.message;
       errEl.style.display = 'block';
@@ -455,52 +556,28 @@
   <div class="page-title">Request Leads</div>
   <p class="page-sub">Submit companies for enrichment or search by territory and vertical. Lead Booster scrapes, enriches, and ICP-scores every contact — results appear in your Google Sheet within 3–5 minutes. Maximum 50 companies per run.</p>
 
-  <!-- KPI Dashboard -->
-  <div class="stats-row" style="grid-template-columns: repeat(6, 1fr);">
+  <!-- Stats row -->
+  <div class="stats-row">
     <div class="stat-card">
-      <div class="stat-num" id="kpi-total">—</div>
-      <div class="stat-label">Total Contacts</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="kpi-today">—</div>
-      <div class="stat-label">Added Today</div>
+      <div class="stat-num" id="stat-today">—</div>
+      <div class="stat-label">Submitted Today</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" id="kpi-icp">—</div>
-      <div class="stat-label">Avg ICP Score</div>
+      <div class="stat-num" id="stat-total">—</div>
+      <div class="stat-label">Total Requests</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" id="kpi-completeness">—</div>
-      <div class="stat-label">Avg Completeness</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="kpi-email">—</div>
-      <div class="stat-label">Email %</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="kpi-linkedin">—</div>
-      <div class="stat-label">LinkedIn %</div>
-    </div>
-  </div>
-
-  <!-- Email Delivery Widget -->
-  <div class="card" style="margin-bottom:28px;padding:18px 24px;display:flex;align-items:center;gap:16px;">
-    <div style="width:36px;height:36px;border-radius:8px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-    </div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;">Last Email Delivery</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="email-subject">Loading…</div>
-    </div>
-    <div style="text-align:right;flex-shrink:0;">
-      <div style="font-size:11px;font-weight:600;color:var(--text-dim);" id="email-time">—</div>
-      <div id="email-status" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:var(--surface);color:var(--text-dim);">—</div>
+      <div class="stat-num">3–5m</div>
+      <div class="stat-label">Avg. Run Time</div>
     </div>
   </div>
 
   <!-- Mode Tabs -->
   <div class="mode-tabs">
-    <button class="mode-tab active" onclick="setMode('single')" id="tab-single">
+    <button class="mode-tab active" onclick="setMode('dashboard')" id="tab-dashboard">
+      📊 Dashboard
+    </button>
+    <button class="mode-tab" onclick="setMode('single')" id="tab-single">
       Single Company
     </button>
     <button class="mode-tab" onclick="setMode('bulk')" id="tab-bulk">
@@ -517,8 +594,154 @@
     </button>
   </div>
 
+  <!-- ==================== DASHBOARD MODE ==================== -->
+  <div id="mode-dashboard" class="mode-content">
+
+    <!-- Row 1: KPI Cards -->
+    <div class="dash-grid" id="dash-kpi-row">
+      <div class="dash-kpi dash-kpi-accent">
+        <div class="dash-kpi-label">Total Contacts</div>
+        <div class="dash-kpi-value" id="d-total-contacts">—</div>
+        <div class="dash-kpi-sub">All time in Supabase</div>
+      </div>
+      <div class="dash-kpi dash-kpi-green">
+        <div class="dash-kpi-label">Added Today</div>
+        <div class="dash-kpi-value" id="d-today-contacts">—</div>
+        <div class="dash-kpi-sub">Since midnight UTC</div>
+      </div>
+      <div class="dash-kpi dash-kpi-accent">
+        <div class="dash-kpi-label">Avg ICP Score</div>
+        <div class="dash-kpi-value" id="d-avg-icp">—</div>
+        <div class="dash-kpi-sub">Across all scored contacts</div>
+      </div>
+      <div class="dash-kpi dash-kpi-amber">
+        <div class="dash-kpi-label">Avg Completeness</div>
+        <div class="dash-kpi-value" id="d-avg-complete">—</div>
+        <div class="dash-kpi-sub">Data quality score</div>
+      </div>
+      <div class="dash-kpi dash-kpi-green">
+        <div class="dash-kpi-label">Emails Found</div>
+        <div class="dash-kpi-value" id="d-email-pct">—</div>
+        <div class="dash-kpi-sub">Contacts with email</div>
+      </div>
+      <div class="dash-kpi dash-kpi-accent">
+        <div class="dash-kpi-label">LinkedIn Found</div>
+        <div class="dash-kpi-value" id="d-linkedin-pct">—</div>
+        <div class="dash-kpi-sub">Verified + constructed</div>
+      </div>
+    </div>
+
+    <!-- Row 2: Hit Rates + ICP Distribution -->
+    <div class="dash-grid-2">
+      <div class="card" style="margin-bottom:0;padding:22px;">
+        <div class="dash-section-title">Data Hit Rates</div>
+        <div class="hit-rate-row">
+          <div class="hit-rate-label">Email</div>
+          <div class="hit-rate-track"><div class="hit-rate-fill email" id="d-email-bar" style="width:0%"></div></div>
+          <div class="hit-rate-pct" id="d-email-pct2">—</div>
+        </div>
+        <div class="hit-rate-row">
+          <div class="hit-rate-label">Phone</div>
+          <div class="hit-rate-track"><div class="hit-rate-fill phone" id="d-phone-bar" style="width:0%"></div></div>
+          <div class="hit-rate-pct" id="d-phone-pct">—</div>
+        </div>
+        <div class="hit-rate-row">
+          <div class="hit-rate-label">LinkedIn</div>
+          <div class="hit-rate-track"><div class="hit-rate-fill linkedin" id="d-linkedin-bar" style="width:0%"></div></div>
+          <div class="hit-rate-pct" id="d-linkedin-pct2">—</div>
+        </div>
+        <div style="margin-top:18px;">
+          <div class="dash-section-title">Source Win Rates</div>
+          <div class="source-row">
+            <div class="source-pill hunter">Hunter</div>
+            <div class="source-track"><div class="source-fill" id="d-hunter-bar" style="width:0%;background:#F59E0B;"></div></div>
+            <div class="source-num" id="d-hunter-num">—</div>
+          </div>
+          <div class="source-row">
+            <div class="source-pill apollo">Apollo</div>
+            <div class="source-track"><div class="source-fill" id="d-apollo-bar" style="width:0%;background:#7C3AED;"></div></div>
+            <div class="source-num" id="d-apollo-num">—</div>
+          </div>
+          <div class="source-row">
+            <div class="source-pill pdl">PDL</div>
+            <div class="source-track"><div class="source-fill" id="d-pdl-bar" style="width:0%;background:#059669;"></div></div>
+            <div class="source-num" id="d-pdl-num">—</div>
+          </div>
+          <div class="source-row">
+            <div class="source-pill website">Website</div>
+            <div class="source-track"><div class="source-fill" id="d-website-bar" style="width:0%;"></div></div>
+            <div class="source-num" id="d-website-num">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:0;padding:22px;">
+        <div class="dash-section-title">ICP Score Distribution</div>
+        <div class="score-dist" id="d-score-dist">
+          <div class="score-dist-bar" style="height:10%"><div class="score-dist-tooltip">Loading…</div></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+          <div class="score-dist-bar" style="height:10%"></div>
+        </div>
+        <div class="score-dist-labels">
+          <span>0–9</span><span>10–19</span><span>20–29</span><span>30–39</span><span>40–49</span>
+          <span>50–59</span><span>60–69</span><span>70–79</span><span>80–89</span><span>90+</span>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="dash-section-title">Contacts by Vertical</div>
+          <div id="d-verticals">
+            <div class="dash-loading"><div class="dash-loading-ring"></div> Loading verticals…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Top Contacts + Pipeline Queue -->
+    <div class="dash-grid-3">
+      <div class="card" style="margin-bottom:0;padding:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="dash-section-title" style="margin-bottom:0;">Top Contacts by ICP Score</div>
+          <button class="dash-refresh" onclick="loadDashboard()">↻ Refresh</button>
+        </div>
+        <div id="d-top-contacts">
+          <div class="dash-loading"><div class="dash-loading-ring"></div> Loading contacts…</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card" style="margin-bottom:0;padding:22px;">
+          <div class="dash-section-title">Pipeline Queue</div>
+          <div id="d-queue">
+            <div class="dash-loading"><div class="dash-loading-ring"></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0;padding:22px;">
+          <div class="dash-section-title">Email Delivery</div>
+          <div id="d-email-delivery">
+            <div class="dash-loading"><div class="dash-loading-ring"></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0;padding:22px;">
+          <div class="dash-section-title">Recent Territory Runs</div>
+          <div id="d-territory-runs">
+            <div class="dash-loading"><div class="dash-loading-ring"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+
   <!-- ==================== SINGLE MODE ==================== -->
-  <div id="mode-single" class="mode-content">
+  <div id="mode-single" class="mode-content hidden">
     <div class="card">
       <div class="card-title">Single Company Lookup</div>
       <div class="card-sub">Enter one company to run through the full Lead Booster pipeline — scrape, enrich contacts, ICP score, and export to Google Sheets.</div>
@@ -837,15 +1060,18 @@
   const SB_TABLE = "lb_requests";
 
   // ==================== MODE SWITCHING ====================
-  let currentMode = 'single';
+  let currentMode = 'dashboard';
 
   function setMode(mode) {
     currentMode = mode;
-    ['single','bulk','territory','history','feedback'].forEach(m => {
-      document.getElementById('mode-' + m).classList.toggle('hidden', m !== mode);
-      document.getElementById('tab-' + m).classList.toggle('active', m === mode);
+    ['dashboard','single','bulk','territory','history','feedback'].forEach(m => {
+      const el = document.getElementById('mode-' + m);
+      if (el) el.classList.toggle('hidden', m !== mode);
+      const tab = document.getElementById('tab-' + m);
+      if (tab) tab.classList.toggle('active', m === mode);
     });
     if (mode === 'history') loadHistory();
+    if (mode === 'dashboard') loadDashboard();
   }
 
   // ==================== CHIP SELECT ====================
@@ -1199,64 +1425,70 @@
   }
 
   async function loadStats() {
-    // KPI 1: Total contacts (include enrichment JSONB for linkedin/email fallback)
+    // Query lb_contacts via service_role for reliable KPI data
     const allContacts = await sbAdmin('GET', 'lb_contacts?select=id,icp_score,email,linkedin_url,final_completeness_score,created_at,enrichment');
     if (!allContacts) return;
 
     const total = allContacts.length;
-    document.getElementById('kpi-total').textContent = total;
+    const el = document.getElementById('kpi-total');
+    if (el) el.textContent = total;
 
-    // KPI 2: Added today
     const today = new Date().toISOString().split('T')[0];
     const todayCount = allContacts.filter(c => c.created_at && c.created_at.startsWith(today)).length;
-    document.getElementById('kpi-today').textContent = todayCount;
+    const el2 = document.getElementById('kpi-today');
+    if (el2) el2.textContent = todayCount;
 
-    // KPI 3: Avg ICP score
     const icpScores = allContacts.filter(c => c.icp_score != null && c.icp_score > 0).map(c => c.icp_score);
     const avgIcp = icpScores.length ? Math.round(icpScores.reduce((a, b) => a + b, 0) / icpScores.length) : 0;
-    document.getElementById('kpi-icp').textContent = avgIcp;
+    const el3 = document.getElementById('kpi-icp');
+    if (el3) el3.textContent = avgIcp;
 
-    // KPI 4: Avg completeness
     const compScores = allContacts.filter(c => c.final_completeness_score != null).map(c => c.final_completeness_score);
     const avgComp = compScores.length ? Math.round(compScores.reduce((a, b) => a + b, 0) / compScores.length) : 0;
-    document.getElementById('kpi-completeness').textContent = avgComp > 0 ? avgComp + '%' : 'N/A';
+    const el4 = document.getElementById('kpi-completeness');
+    if (el4) el4.textContent = avgComp > 0 ? avgComp + '%' : 'N/A';
 
-    // KPI 5: Email % (check top-level email OR enrichment.email_source !== 'none')
     const withEmail = allContacts.filter(c => {
       if (c.email && c.email.trim() !== '') return true;
       const e = c.enrichment || {};
       return e.email_source && e.email_source !== 'none';
     }).length;
     const emailPct = total > 0 ? Math.round((withEmail / total) * 100) : 0;
-    document.getElementById('kpi-email').textContent = emailPct + '%';
+    const el5 = document.getElementById('kpi-email');
+    if (el5) el5.textContent = emailPct + '%';
 
-    // KPI 6: LinkedIn % (check top-level linkedin_url OR enrichment.linkedin_url)
     const withLinkedin = allContacts.filter(c => {
       if (c.linkedin_url && c.linkedin_url.trim() !== '') return true;
       const e = c.enrichment || {};
       return e.linkedin_url && e.linkedin_url.trim() !== '';
     }).length;
     const linkedinPct = total > 0 ? Math.round((withLinkedin / total) * 100) : 0;
-    document.getElementById('kpi-linkedin').textContent = linkedinPct + '%';
+    const el6 = document.getElementById('kpi-linkedin');
+    if (el6) el6.textContent = linkedinPct + '%';
 
-    // Email delivery widget
+    // Email delivery widget (top bar)
     const notif = await sbAdmin('GET', 'lb_notifications?select=subject,status,created_at&order=created_at.desc&limit=1');
     if (notif && notif.length > 0) {
       const n = notif[0];
-      document.getElementById('email-subject').textContent = n.subject || 'No subject';
-      document.getElementById('email-time').textContent = n.created_at ? new Date(n.created_at).toLocaleString() : '—';
+      const subEl = document.getElementById('email-subject');
+      if (subEl) subEl.textContent = n.subject || 'No subject';
+      const timeEl = document.getElementById('email-time');
+      if (timeEl) timeEl.textContent = n.created_at ? new Date(n.created_at).toLocaleString() : '—';
       const statusEl = document.getElementById('email-status');
-      const st = (n.status || 'unknown').toLowerCase();
-      statusEl.textContent = st.charAt(0).toUpperCase() + st.slice(1);
-      if (st === 'sent' || st === 'delivered') {
-        statusEl.style.background = 'var(--green-light)';
-        statusEl.style.color = 'var(--green)';
-      } else if (st === 'pending') {
-        statusEl.style.background = 'var(--amber-light)';
-        statusEl.style.color = 'var(--amber)';
+      if (statusEl) {
+        const st = (n.status || 'unknown').toLowerCase();
+        statusEl.textContent = st.charAt(0).toUpperCase() + st.slice(1);
+        if (st === 'sent' || st === 'delivered') {
+          statusEl.style.background = 'var(--green-light)';
+          statusEl.style.color = 'var(--green)';
+        } else if (st === 'pending') {
+          statusEl.style.background = 'var(--amber-light)';
+          statusEl.style.color = 'var(--amber)';
+        }
       }
     } else {
-      document.getElementById('email-subject').textContent = 'No emails sent yet';
+      const subEl = document.getElementById('email-subject');
+      if (subEl) subEl.textContent = 'No emails sent yet';
     }
   }
 
@@ -1290,11 +1522,11 @@
   }
 
   // ==================== AUTH ====================
-  // _login is defined in its own isolated script block above the main script
-  // to protect it from Cloudflare email-decode injection breaking this block.
-  // currentUser and authToken are on window._currentUser / window._authToken.
+  // Login function is in its own isolated script block above (immune to Cloudflare breakage).
+  // Auth state lives on window._currentUser and window._authToken.
   let queueJobId = null;
   let queuePollInterval = null;
+
 
   function logout() {
     window._currentUser = null; window._authToken = null;
@@ -1385,9 +1617,221 @@
     } catch(e){}
   }
 
+  // ==================== DASHBOARD ====================
+  let dashLoaded = false;
+
+  async function loadDashboard() {
+    // Parallel fetch all dashboard data
+    const [contacts, queue, notifications, requests] = await Promise.all([
+      sbAdmin('GET', 'lb_contacts?select=id,first_name,last_name,company_name,title,email,phone,linkedin_url,linkedin_confidence,email_source,vertical,icp_score,final_completeness_score,created_at,enrichment&order=created_at.desc&limit=500'),
+      sbAdmin('GET', 'lb_pipeline_queue?select=id,companies,status,user_name,mode,created_at&order=created_at.desc&limit=20'),
+      sbAdmin('GET', 'lb_notifications?select=*&order=created_at.desc&limit=10'),
+      sbAdmin('GET', 'lb_territory_searches?select=*&order=created_at.desc&limit=5')
+    ]);
+
+    if (contacts) renderDashKPIs(contacts);
+    if (contacts) renderHitRates(contacts);
+    if (contacts) renderSourceWins(contacts);
+    if (contacts) renderScoreDist(contacts);
+    if (contacts) renderVerticals(contacts);
+    if (contacts) renderTopContacts(contacts);
+    renderQueue(queue || []);
+    renderEmailDelivery(notifications || []);
+    renderTerritoryRuns(requests || []);
+    dashLoaded = true;
+  }
+
+  function renderDashKPIs(contacts) {
+    const today = new Date().toISOString().split('T')[0];
+    const todayContacts = contacts.filter(c => c.created_at && c.created_at.startsWith(today));
+    const withIcp = contacts.filter(c => c.icp_score !== null && c.icp_score !== undefined);
+    const withComplete = contacts.filter(c => c.final_completeness_score !== null && c.final_completeness_score !== undefined);
+    const withEmail = contacts.filter(c => {
+      if (c.email && c.email.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.email_source && e.email_source !== 'none';
+    });
+    const withLinkedin = contacts.filter(c => {
+      if (c.linkedin_url && c.linkedin_url.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.linkedin_url && e.linkedin_url.trim() !== '';
+    });
+    const avgIcp = withIcp.length ? Math.round(withIcp.reduce((s,c) => s + (c.icp_score||0), 0) / withIcp.length) : 0;
+    const avgComplete = withComplete.length ? Math.round(withComplete.reduce((s,c) => s + (c.final_completeness_score||0), 0) / withComplete.length) : 0;
+    const emailPct = contacts.length ? Math.round((withEmail.length / contacts.length) * 100) : 0;
+    const linkedinPct = contacts.length ? Math.round((withLinkedin.length / contacts.length) * 100) : 0;
+    safeSet('d-total-contacts', contacts.length.toLocaleString());
+    safeSet('d-today-contacts', todayContacts.length.toLocaleString());
+    safeSet('d-avg-icp', avgIcp || '—');
+    safeSet('d-avg-complete', avgComplete ? avgComplete + '%' : '—');
+    safeSet('d-email-pct', emailPct + '%');
+    safeSet('d-linkedin-pct', linkedinPct + '%');
+  }
+
+  function renderHitRates(contacts) {
+    if (!contacts.length) return;
+    const emailPct = Math.round((contacts.filter(c => {
+      if (c.email && c.email.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.email_source && e.email_source !== 'none';
+    }).length / contacts.length) * 100);
+    const phonePct = Math.round((contacts.filter(c=>c.phone).length / contacts.length) * 100);
+    const linkedinPct = Math.round((contacts.filter(c => {
+      if (c.linkedin_url && c.linkedin_url.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.linkedin_url && e.linkedin_url.trim() !== '';
+    }).length / contacts.length) * 100);
+    setBar('d-email-bar', emailPct); safeSet('d-email-pct2', emailPct + '%');
+    setBar('d-phone-bar', phonePct); safeSet('d-phone-pct', phonePct + '%');
+    setBar('d-linkedin-bar', linkedinPct); safeSet('d-linkedin-pct2', linkedinPct + '%');
+  }
+
+  function renderSourceWins(contacts) {
+    const wins = { hunter: 0, apollo: 0, pdl: 0, website: 0 };
+    contacts.forEach(c => {
+      const src = (c.email_source || '').toLowerCase();
+      if (src.includes('hunter')) wins.hunter++;
+      else if (src.includes('apollo')) wins.apollo++;
+      else if (src.includes('pdl') || src.includes('people')) wins.pdl++;
+      else if (src.includes('web') || src.includes('site')) wins.website++;
+    });
+    const maxWin = Math.max(...Object.values(wins), 1);
+    ['hunter','apollo','pdl','website'].forEach(s => {
+      setBar('d-' + s + '-bar', Math.round((wins[s] / maxWin) * 100));
+      safeSet('d-' + s + '-num', wins[s]);
+    });
+  }
+
+  function renderScoreDist(contacts) {
+    const buckets = Array(10).fill(0);
+    const withIcp = contacts.filter(c => c.icp_score !== null && c.icp_score !== undefined);
+    withIcp.forEach(c => {
+      const bucket = Math.min(Math.floor((c.icp_score || 0) / 10), 9);
+      buckets[bucket]++;
+    });
+    const maxBucket = Math.max(...buckets, 1);
+    const bars = document.querySelectorAll('#d-score-dist .score-dist-bar');
+    const labels = ['0–9','10–19','20–29','30–39','40–49','50–59','60–69','70–79','80–89','90+'];
+    bars.forEach((bar, i) => {
+      const h = Math.max(Math.round((buckets[i] / maxBucket) * 100), 3);
+      bar.style.height = h + '%';
+      bar.style.background = buckets[i] > 0 ? (i >= 7 ? 'var(--green)' : i >= 5 ? 'var(--accent)' : 'var(--accent-light)') : 'var(--surface2)';
+      const tip = bar.querySelector('.score-dist-tooltip') || document.createElement('div');
+      tip.className = 'score-dist-tooltip';
+      tip.textContent = labels[i] + ': ' + buckets[i];
+      if (!bar.querySelector('.score-dist-tooltip')) bar.appendChild(tip);
+    });
+  }
+
+  function renderVerticals(contacts) {
+    const counts = {};
+    contacts.forEach(c => { if (c.vertical) counts[c.vertical] = (counts[c.vertical]||0)+1; });
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const max = sorted[0]?.[1] || 1;
+    const el = document.getElementById('d-verticals');
+    if (!sorted.length) { el.innerHTML = '<div class="dash-empty">No data yet</div>'; return; }
+    el.innerHTML = sorted.map(([v,n]) => `
+      <div class="vert-row">
+        <div class="vert-label">${v.replace(/_/g,' ')}</div>
+        <div class="vert-track"><div class="vert-fill" style="width:${Math.round((n/max)*100)}%"></div></div>
+        <div class="vert-num">${n}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderTopContacts(contacts) {
+    const el = document.getElementById('d-top-contacts');
+    const top = contacts.filter(c=>c.icp_score).sort((a,b)=>(b.icp_score||0)-(a.icp_score||0)).slice(0,10);
+    if (!top.length) { el.innerHTML = '<div class="dash-empty">No scored contacts yet</div>'; return; }
+    el.innerHTML = top.map((c,i) => {
+      const score = c.icp_score || 0;
+      const cls = score >= 75 ? 'high' : score >= 50 ? 'mid' : 'low';
+      const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unknown';
+      return `<div class="lead-row">
+        <div class="lead-rank">${i+1}</div>
+        <div>
+          <div class="lead-name">${name}</div>
+          <div class="lead-co">${c.company_name || '—'} · ${c.title || '—'}</div>
+        </div>
+        <span class="lead-vertical">${(c.vertical||'').replace(/_/g,' ')}</span>
+        <div class="lead-score ${cls}">${score}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderQueue(queue) {
+    const el = document.getElementById('d-queue');
+    if (!queue.length) { el.innerHTML = '<div class="dash-empty">Queue empty</div>'; return; }
+    const recent = queue.slice(0,6);
+    el.innerHTML = `<table class="q-table">
+      <thead><tr><th>User</th><th>Mode</th><th>Count</th><th>Status</th></tr></thead>
+      <tbody>${recent.map(r => {
+        const user = r.user_name || '—';
+        const mode = r.mode || '—';
+        const count = r.companies ? (Array.isArray(r.companies) ? r.companies.length : '—') : '—';
+        const status = r.status || 'unknown';
+        return `<tr>
+        <td style="font-weight:700;">${user}</td>
+        <td>${mode}</td>
+        <td style="font-family:var(--mono);font-weight:700;">${count}</td>
+        <td><span class="status-chip ${status}"><div class="status-chip-dot"></div>${status}</span></td>
+      </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  function renderEmailDelivery(notifications) {
+    const el = document.getElementById('d-email-delivery');
+    if (!notifications.length) { el.innerHTML = '<div class="dash-empty">No emails yet</div>'; return; }
+    const sent = notifications.filter(n => (n.status || '').toLowerCase() === 'sent' || (n.status || '').toLowerCase() === 'delivered').length;
+    const pending = notifications.filter(n => (n.status || '').toLowerCase() === 'pending').length;
+    const total = notifications.length;
+    const pct = total ? Math.round((sent/total)*100) : 0;
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--green);">${sent}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;">Sent</div>
+        </div>
+        <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:var(--green);border-radius:4px;transition:width 0.8s;"></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--text-dim);">${pending}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;">Pending</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);font-weight:600;">${notifications[0]?.subject ? '📧 Last: ' + notifications[0].subject.substring(0,50) : 'No recent emails'}</div>`;
+  }
+
+  function renderTerritoryRuns(searches) {
+    const el = document.getElementById('d-territory-runs');
+    const runs = (searches || []).slice(0,5);
+    if (!runs.length) {
+      el.innerHTML = '<div class="dash-empty">No territory runs yet</div>';
+      return;
+    }
+    el.innerHTML = runs.map(r => `
+      <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;">
+        <div style="font-weight:700;color:var(--text);">${r.city||'—'}, ${r.state||'—'} · ${(r.vertical||'').replace(/_/g,' ')}</div>
+        <div style="color:var(--text-dim);font-weight:500;">${r.quota_filled||0}/${r.quota_requested||0} companies · ${new Date(r.created_at).toLocaleDateString()}</div>
+      </div>
+    `).join('');
+  }
+
+  function safeSet(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function setBar(id, pct) {
+    const el = document.getElementById(id);
+    if (el) el.style.width = Math.min(pct, 100) + '%';
+  }
+
   // ==================== INIT ====================
   document.addEventListener('DOMContentLoaded', () => {
-    // Don't load stats until logged in
+    // stats load after login
   });
 
   // ==================== FEEDBACK ====================
