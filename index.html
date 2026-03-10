@@ -586,6 +586,9 @@
     <button class="mode-tab" onclick="setMode('territory')" id="tab-territory">
       Territory Search
     </button>
+    <button class="mode-tab" onclick="setMode('current')" id="tab-current">
+      ⚡ Current Run
+    </button>
     <button class="mode-tab" onclick="setMode('history')" id="tab-history">
       History
     </button>
@@ -789,6 +792,7 @@
         Run Lead Booster
       </button>
     </div>
+    <div id="single-tracker-container"></div>
   </div>
 
   <!-- ==================== BULK MODE ==================== -->
@@ -851,6 +855,7 @@
         Run Bulk Lead Booster
       </button>
     </div>
+    <div id="bulk-tracker-container"></div>
   </div>
 
   <!-- ==================== TERRITORY MODE ==================== -->
@@ -941,6 +946,34 @@
         <button class="btn-primary" id="btn-territory-run" style="margin-top:16px;display:none;" onclick="submitTerritory()">
           Run Lead Booster on Selected Companies
         </button>
+      </div>
+    </div>
+    <div id="territory-tracker-container"></div>
+  </div>
+
+  <!-- ==================== CURRENT RUN MODE ==================== -->
+  <div id="mode-current" class="mode-content hidden">
+    <div class="current-run-grid">
+      <div class="card" style="margin-bottom:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="cr-active-dot" style="width:8px;height:8px;border-radius:50%;background:#94A3B8;display:inline-block;"></span>
+            <span style="font-size:14px;font-weight:700;color:#1E293B;">⚡ Active Runs</span>
+          </div>
+          <span style="font-size:11px;color:#94A3B8;" id="cr-active-updated">—</span>
+        </div>
+        <div id="cr-active-runs">
+          <div style="padding:20px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">Loading active runs...</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <span style="font-size:14px;font-weight:700;color:#1E293B;">📡 Live Event Stream</span>
+          <span style="font-size:11px;color:#94A3B8;" id="cr-events-updated">—</span>
+        </div>
+        <div class="event-feed" id="cr-event-feed">
+          <div style="padding:20px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">Loading events...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1064,7 +1097,7 @@
 
   function setMode(mode) {
     currentMode = mode;
-    ['dashboard','single','bulk','territory','history','feedback'].forEach(m => {
+    ['dashboard','single','bulk','territory','current','history','feedback'].forEach(m => {
       const el = document.getElementById('mode-' + m);
       if (el) el.classList.toggle('hidden', m !== mode);
       const tab = document.getElementById('tab-' + m);
@@ -1072,6 +1105,7 @@
     });
     if (mode === 'history') loadHistory();
     if (mode === 'dashboard') loadDashboard();
+    if (mode === 'current') loadCurrentRun();
   }
 
   // ==================== CHIP SELECT ====================
@@ -1233,6 +1267,21 @@
     btn.disabled = false;
     btn.textContent = mode === 'single' ? 'Run Lead Booster' : mode === 'bulk' ? 'Run Bulk Lead Booster' : 'Run Lead Booster on Selected Companies';
     loadStats();
+
+    // Launch post-submit run trackers
+    if (ok > 0) {
+      injectTrackerCSS();
+      if (mode === 'single' && leads.length === 1) {
+        startSingleTracker(leads[0].company, leads[0].domain);
+      } else if (mode === 'bulk') {
+        startBulkTracker(leads);
+      } else if (mode === 'territory') {
+        const city = document.getElementById('t-city') ? document.getElementById('t-city').value.trim() : '';
+        const state = document.getElementById('t-state') ? document.getElementById('t-state').value.trim() : '';
+        const vertical = getActiveChip('t-chips');
+        trackTerritoryRun(city, state, vertical);
+      }
+    }
   }
 
   // ==================== SINGLE SUBMIT ====================
@@ -1841,6 +1890,445 @@
   function setBar(id, pct) {
     const el = document.getElementById(id);
     if (el) el.style.width = Math.min(pct, 100) + '%';
+  }
+
+  // ==================== RUN TRACKER ENGINE ====================
+  function timeAgo(dateStr) {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    if (diff < 60) return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    return Math.floor(diff/86400) + 'd ago';
+  }
+  function statusToStep(status) {
+    const map = { pending: 1, discovery: 1, extracting: 2, enriching: 3, scoring: 4, complete: 5, enriched: 5, failed: 0 };
+    return map[(status||'').toLowerCase()] || 1;
+  }
+  function renderProgressTrack(step) {
+    const stages = ['Discovery','Scraping','Enriching','Scoring','Complete'];
+    return stages.map((s, i) => {
+      const n = i + 1;
+      const done = step > n;
+      const active = step === n;
+      const failed = step === 0;
+      return '<div class="rt-stage">' +
+        '<div class="rt-circle ' + (done ? 'done' : active ? 'active' : failed ? 'failed' : '') + '">' +
+          (done ? '&#10003;' : n) +
+        '</div>' +
+        '<div class="rt-stage-label ' + (active ? 'active' : '') + '">' + s + '</div>' +
+      '</div>' +
+      (i < 4 ? '<div class="rt-connector ' + (done ? 'done' : '') + '"></div>' : '');
+    }).join('');
+  }
+  function injectTrackerCSS() {
+    if (document.getElementById('tracker-css')) return;
+    const style = document.createElement('style');
+    style.id = 'tracker-css';
+    style.textContent = `
+      .run-tracker { background:#fff; border:1px solid #E2E6EC; border-radius:12px; padding:20px; margin-top:20px; }
+      .run-tracker-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+      .run-tracker-title { font-weight:700; font-size:14px; color:#1E293B; display:flex; align-items:center; gap:6px; }
+      .rt-company { font-size:13px; color:#475569; margin-top:2px; }
+      .rt-progress { display:flex; align-items:center; margin:16px 0; }
+      .rt-stage { display:flex; flex-direction:column; align-items:center; gap:6px; }
+      .rt-circle { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:#F5F6F8; color:#94A3B8; border:2px solid #E2E6EC; transition:all 0.4s; }
+      .rt-circle.done { background:#DCFCE7; color:#16A34A; border-color:#16A34A; }
+      .rt-circle.active { background:#EFF6FF; color:#4A8FD6; border-color:#4A8FD6; animation:pulse-border 1.5s ease-in-out infinite; }
+      .rt-circle.failed { background:#FEE2E2; color:#DC2626; border-color:#DC2626; }
+      .rt-stage-label { font-size:10px; font-weight:600; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+      .rt-stage-label.active { color:#4A8FD6; }
+      .rt-connector { flex:1; height:2px; background:#E2E6EC; margin:0 4px; margin-bottom:18px; transition:background 0.4s; }
+      .rt-connector.done { background:#16A34A; }
+      @keyframes pulse-border { 0%,100% { box-shadow:0 0 0 0 rgba(74,143,214,0.4); } 50% { box-shadow:0 0 0 6px rgba(74,143,214,0); } }
+      .rt-contacts { margin-top:12px; }
+      .rt-contact-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid #F5F6F8; font-size:12px; animation:rtFadeIn 0.3s ease; }
+      .rt-contact-name { font-weight:600; color:#1E293B; }
+      .rt-contact-title { color:#475569; font-size:11px; }
+      .rt-contact-score { font-weight:800; font-family:var(--mono); padding:2px 8px; border-radius:4px; font-size:12px; }
+      .rt-contact-score.high { background:#DCFCE7; color:#16A34A; }
+      .rt-contact-score.mid { background:#EFF6FF; color:#4A8FD6; }
+      .rt-contact-score.low { background:#F5F6F8; color:#94A3B8; }
+      .rt-complete { background:#DCFCE7; border-radius:8px; padding:16px; text-align:center; margin-top:12px; }
+      .rt-complete-title { font-weight:700; color:#16A34A; font-size:15px; margin-bottom:6px; }
+      .rt-complete-sub { font-size:13px; color:#475569; }
+      .rt-sheet-link { display:inline-block; margin-top:10px; background:#16A34A; color:#fff; padding:8px 20px; border-radius:6px; font-size:13px; font-weight:700; text-decoration:none; }
+      .rt-status-dot { width:8px; height:8px; border-radius:50%; background:#D97706; display:inline-block; margin-right:6px; animation:pulse-dot 1.5s ease-in-out infinite; }
+      .rt-status-dot.complete { background:#16A34A; animation:none; }
+      .rt-status-dot.failed { background:#DC2626; animation:none; }
+      @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+      @keyframes rtFadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+      .bulk-run-list { display:flex; flex-direction:column; gap:8px; margin-top:12px; max-height:400px; overflow-y:auto; }
+      .bulk-run-item { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#F5F6F8; border-radius:6px; font-size:13px; }
+      .bulk-run-company { font-weight:700; color:#1E293B; }
+      .bulk-run-status { display:flex; align-items:center; gap:6px; }
+      .bulk-progress-bar { height:6px; background:#E2E6EC; border-radius:3px; margin:12px 0; overflow:hidden; }
+      .bulk-progress-fill { height:100%; background:linear-gradient(90deg,#4A8FD6,#16A34A); border-radius:3px; transition:width 0.5s; }
+      .event-feed { max-height:500px; overflow-y:auto; padding-right:4px; }
+      .event-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #F5F6F8; animation:rtFadeIn 0.3s ease; }
+      .event-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+      .event-text { font-size:13px; color:#1E293B; line-height:1.4; }
+      .event-time { font-size:11px; color:#94A3B8; margin-top:2px; }
+      .current-run-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+      @media(max-width:900px) { .current-run-grid { grid-template-columns:1fr; } }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Single company tracker — find queue row by domain, poll status + contacts
+  async function startSingleTracker(companyName, domain) {
+    const container = document.getElementById('single-tracker-container');
+    if (!container) return;
+    injectTrackerCSS();
+    container.innerHTML = '<div class="run-tracker"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569;"><div class="spinner-ring"></div>Locating pipeline for ' + companyName + '...</div></div>';
+    let queueId = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise(r => setTimeout(r, 2000));
+      const rows = await sbAdmin('GET', 'lb_queue?domain=eq.' + encodeURIComponent(domain) + '&order=created_at.desc&limit=1');
+      if (rows && rows.length > 0) { queueId = rows[0].id; break; }
+    }
+    if (!queueId) {
+      container.innerHTML = '<div class="run-tracker"><div style="font-size:13px;color:#D97706;">Could not locate pipeline queue entry. Results will still appear in Google Sheets within 3-5 minutes.</div></div>';
+      return;
+    }
+    createRunTracker('single-tracker-container', queueId, companyName);
+  }
+
+  // Bulk tracker — shows per-company progress
+  function startBulkTracker(leads) {
+    const container = document.getElementById('bulk-tracker-container');
+    if (!container) return;
+    injectTrackerCSS();
+    const listHtml = leads.map((l, i) =>
+      '<div class="bulk-run-item" id="brt-' + i + '">' +
+        '<div class="bulk-run-company">' + l.company + '</div>' +
+        '<div class="bulk-run-status"><span class="rt-status-dot"></span><span>Submitted</span></div>' +
+      '</div>'
+    ).join('');
+    container.innerHTML = '<div class="run-tracker">' +
+      '<div class="run-tracker-title"><span class="rt-status-dot"></span>Bulk Pipeline Running</div>' +
+      '<div style="font-size:12px;color:#475569;margin-top:4px;">' + leads.length + ' companies submitted</div>' +
+      '<div class="bulk-progress-bar"><div class="bulk-progress-fill" id="brt-fill" style="width:0%"></div></div>' +
+      '<div id="brt-status" style="font-size:12px;color:#475569;margin-bottom:12px;">Processing...</div>' +
+      '<div class="bulk-run-list">' + listHtml + '</div>' +
+    '</div>';
+    // Poll every 8 seconds to update status
+    let pollCount = 0;
+    const pollBulk = setInterval(async () => {
+      pollCount++;
+      try {
+        const domains = leads.map(l => l.domain).filter(Boolean);
+        const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+        const rows = await sbAdmin('GET', 'lb_queue?created_at=gte.' + since + '&order=created_at.desc&limit=100');
+        if (!rows) return;
+        let completed = 0;
+        leads.forEach((l, i) => {
+          const match = rows.find(r => r.domain === l.domain);
+          const itemEl = document.getElementById('brt-' + i);
+          if (!itemEl) return;
+          if (match) {
+            const st = (match.status || 'pending').toLowerCase();
+            if (st === 'complete' || st === 'enriched') {
+              itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot complete"></span><span style="color:#16A34A;">Complete</span>';
+              completed++;
+            } else if (st === 'failed') {
+              itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot failed"></span><span style="color:#DC2626;">Failed</span>';
+              completed++;
+            } else {
+              const stepLabels = { pending:'Queued', discovery:'Discovering', extracting:'Scraping', enriching:'Enriching', scoring:'Scoring' };
+              itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot"></span><span>' + (stepLabels[st] || 'Processing') + '</span>';
+            }
+          }
+        });
+        const pct = Math.round((completed / leads.length) * 100);
+        const fillEl = document.getElementById('brt-fill');
+        const statusEl = document.getElementById('brt-status');
+        if (fillEl) fillEl.style.width = pct + '%';
+        if (statusEl) statusEl.textContent = completed + ' of ' + leads.length + ' complete (' + pct + '%)';
+        if (completed >= leads.length) {
+          clearInterval(pollBulk);
+          if (statusEl) statusEl.innerHTML = '<span style="color:#16A34A;font-weight:700;">All ' + leads.length + ' companies processed.</span>' +
+            ' <a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" style="color:#4A8FD6;font-weight:700;">Open Google Sheet &rarr;</a>';
+        }
+      } catch(e) { console.error('Bulk tracker poll:', e); }
+      if (pollCount > 120) clearInterval(pollBulk); // stop after ~16 min
+    }, 8000);
+  }
+
+  // Core single-company run tracker with live contact feed
+  function createRunTracker(containerId, queueId, companyName) {
+    injectTrackerCSS();
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    let lastContactCount = 0;
+    container.innerHTML = '<div class="run-tracker" id="rt-' + queueId + '">' +
+      '<div class="run-tracker-header">' +
+        '<div>' +
+          '<div class="run-tracker-title"><span class="rt-status-dot" id="rt-dot-' + queueId + '"></span>Pipeline Running</div>' +
+          '<div class="rt-company">' + companyName + '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:#94A3B8;" id="rt-updated-' + queueId + '">Starting...</div>' +
+      '</div>' +
+      '<div class="rt-progress" id="rt-track-' + queueId + '">' + renderProgressTrack(1) + '</div>' +
+      '<div id="rt-detail-' + queueId + '" style="font-size:12px;color:#475569;margin-bottom:12px;">Initializing pipeline...</div>' +
+      '<div class="rt-contacts" id="rt-contacts-' + queueId + '"></div>' +
+    '</div>';
+    async function poll() {
+      try {
+        const [queueRows, contacts] = await Promise.all([
+          sbAdmin('GET', 'lb_queue?id=eq.' + queueId + '&select=*&limit=1'),
+          sbAdmin('GET', 'lb_contacts?queue_id=eq.' + queueId + '&select=name,first_name,last_name,title,icp_score,email,created_at&order=created_at.desc')
+        ]);
+        const q = queueRows && queueRows[0];
+        if (!q) return;
+        const step = statusToStep(q.status);
+        const dot = document.getElementById('rt-dot-' + queueId);
+        const track = document.getElementById('rt-track-' + queueId);
+        const detail = document.getElementById('rt-detail-' + queueId);
+        const updatedEl = document.getElementById('rt-updated-' + queueId);
+        const contactsEl = document.getElementById('rt-contacts-' + queueId);
+        const titleEl = container.querySelector('.run-tracker-title');
+        if (track) track.innerHTML = renderProgressTrack(step);
+        if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
+        const statusLabels = { 1:'Discovering company profile...', 2:'Scraping website pages...', 3:'Enriching contacts via Hunter, Apollo, PDL...', 4:'ICP scoring contacts with Claude AI...', 5:'Pipeline complete!' };
+        if (detail) detail.textContent = statusLabels[step] || 'Processing...';
+        if (contacts && contacts.length > lastContactCount) {
+          lastContactCount = contacts.length;
+          if (contactsEl) {
+            contactsEl.innerHTML = '<div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:8px;">' + contacts.length + ' Contact' + (contacts.length !== 1 ? 's' : '') + ' Found</div>' +
+              contacts.map(c => {
+                const cName = c.name || [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Contact';
+                const score = c.icp_score;
+                const cls = score >= 75 ? 'high' : score >= 50 ? 'mid' : 'low';
+                return '<div class="rt-contact-row">' +
+                  '<div><div class="rt-contact-name">' + cName + '</div>' +
+                  '<div class="rt-contact-title">' + (c.title || '\u2014') + '</div></div>' +
+                  (score ? '<span class="rt-contact-score ' + cls + '">' + score + '</span>' : '<span style="font-size:11px;color:#94A3B8;">Scoring...</span>') +
+                '</div>';
+              }).join('');
+          }
+        }
+        if (q.status === 'complete' || q.status === 'enriched') {
+          if (dot) dot.className = 'rt-status-dot complete';
+          if (titleEl) titleEl.innerHTML = '<span class="rt-status-dot complete"></span>Pipeline Complete';
+          if (contactsEl) {
+            contactsEl.innerHTML += '<div class="rt-complete">' +
+              '<div class="rt-complete-title">' + (contacts ? contacts.length : 0) + ' Contacts Enriched & Scored</div>' +
+              '<div class="rt-complete-sub">Results are ready in your Google Sheet</div>' +
+              '<a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" class="rt-sheet-link">Open Google Sheet &rarr;</a>' +
+            '</div>';
+          }
+          clearInterval(pollInterval);
+        }
+        if (q.status === 'failed') {
+          if (dot) dot.className = 'rt-status-dot failed';
+          if (titleEl) titleEl.innerHTML = '<span class="rt-status-dot failed"></span>Pipeline Failed';
+          if (detail) detail.textContent = 'Something went wrong. Check n8n for details.';
+          clearInterval(pollInterval);
+        }
+      } catch(e) { console.error('Run tracker poll error:', e); }
+    }
+    poll();
+    const pollInterval = setInterval(poll, 8000);
+    return pollInterval;
+  }
+
+  // Territory tracker — watches for new queue entries after territory search
+  function trackTerritoryRun(city, state, vertical) {
+    const container = document.getElementById('territory-tracker-container');
+    if (!container) return;
+    injectTrackerCSS();
+    container.innerHTML = '<div class="run-tracker">' +
+      '<div class="run-tracker-title"><span class="rt-status-dot"></span>Territory Search Active</div>' +
+      '<div style="font-size:12px;color:#475569;margin-top:4px;">' + city + ', ' + state + ' \u2014 ' + vertical.replace(/_/g,' ') + '</div>' +
+      '<div id="territory-companies" style="margin-top:12px;"><div style="font-size:13px;color:#475569;">Discovering companies via Google Places...</div></div>' +
+    '</div>';
+    let knownIds = new Set();
+    let pollCount = 0;
+    const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    async function pollTerritory() {
+      pollCount++;
+      try {
+        const rows = await sbAdmin('GET', 'lb_queue?created_at=gte.' + since + '&order=created_at.desc&limit=30');
+        const el = document.getElementById('territory-companies');
+        if (!rows || !rows.length) {
+          if (pollCount > 5 && el) el.innerHTML = '<div style="font-size:13px;color:#475569;">Waiting for companies to be discovered...</div>';
+          return;
+        }
+        rows.forEach(r => {
+          if (knownIds.has(r.id)) {
+            // Update existing
+            const trackEl = document.getElementById('ttrack-' + r.id);
+            const dotEl = document.getElementById('tdot-' + r.id);
+            if (trackEl) trackEl.innerHTML = renderProgressTrack(statusToStep(r.status));
+            if (dotEl && (r.status === 'complete' || r.status === 'enriched')) dotEl.className = 'rt-status-dot complete';
+            if (dotEl && r.status === 'failed') dotEl.className = 'rt-status-dot failed';
+            return;
+          }
+          knownIds.add(r.id);
+          const meta = r.meta || {};
+          const div = document.createElement('div');
+          div.id = 'tco-' + r.id;
+          div.style.cssText = 'padding:10px 0;border-bottom:1px solid #F5F6F8;';
+          div.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+            '<div><div style="font-weight:700;font-size:13px;">' + (meta.company || r.domain || 'Company') + '</div>' +
+            '<div style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + '</div></div>' +
+            '<span class="rt-status-dot" id="tdot-' + r.id + '"></span>' +
+          '</div>' +
+          '<div style="margin-top:8px;" id="ttrack-' + r.id + '">' + renderProgressTrack(statusToStep(r.status)) + '</div>';
+          if (el) el.appendChild(div);
+        });
+        const allDone = rows.every(r => r.status === 'complete' || r.status === 'enriched' || r.status === 'failed');
+        if (allDone && rows.length > 0 && pollCount > 3) {
+          clearInterval(territoryPoll);
+          const completed = rows.filter(r => r.status === 'complete' || r.status === 'enriched').length;
+          container.innerHTML += '<div class="rt-complete" style="margin-top:12px;">' +
+            '<div class="rt-complete-title">Territory Search Complete</div>' +
+            '<div class="rt-complete-sub">' + completed + ' of ' + rows.length + ' companies processed</div>' +
+            '<a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" class="rt-sheet-link">Open Google Sheet &rarr;</a>' +
+          '</div>';
+        }
+      } catch(e) { console.error('Territory poll error:', e); }
+      if (pollCount > 60) clearInterval(territoryPoll);
+    }
+    setTimeout(pollTerritory, 5000);
+    const territoryPoll = setInterval(pollTerritory, 10000);
+  }
+
+  // ==================== CURRENT RUN TAB ====================
+  let currentRunPoll = null;
+  async function loadCurrentRun() {
+    injectTrackerCSS();
+    if (currentRunPoll) clearInterval(currentRunPoll);
+    await refreshCurrentRun();
+    currentRunPoll = setInterval(refreshCurrentRun, 8000);
+  }
+  async function refreshCurrentRun() {
+    try {
+      await Promise.all([loadActiveRuns(), loadEventStream()]);
+    } catch(e) { console.error('Current run refresh error:', e); }
+  }
+  async function loadActiveRuns() {
+    const el = document.getElementById('cr-active-runs');
+    const dotEl = document.getElementById('cr-active-dot');
+    const updatedEl = document.getElementById('cr-active-updated');
+    if (!el) return;
+    try {
+      const rows = await sbAdmin('GET', 'lb_queue?status=not.in.(complete,enriched,failed)&order=created_at.desc&limit=10');
+      if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
+      if (!rows || !rows.length) {
+        if (dotEl) dotEl.style.background = '#94A3B8';
+        el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No active runs \u2014 system idle</div>';
+        return;
+      }
+      if (dotEl) { dotEl.style.background = '#16A34A'; dotEl.style.animation = 'pulse-dot 1.5s ease-in-out infinite'; }
+      // Count contacts per queue_id
+      const queueIds = rows.map(r => r.id);
+      const contactCounts = {};
+      for (const qid of queueIds) {
+        const contacts = await sbAdmin('GET', 'lb_contacts?queue_id=eq.' + qid + '&select=id');
+        contactCounts[qid] = contacts ? contacts.length : 0;
+      }
+      el.innerHTML = rows.map(r => {
+        const meta = r.meta || {};
+        const step = statusToStep(r.status);
+        return '<div style="padding:14px;background:#F5F6F8;border-radius:8px;margin-bottom:8px;">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+            '<div><div style="font-weight:700;font-size:13px;">' + (meta.company || r.domain || 'Unknown') + '</div>' +
+            '<div style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + ' \u00B7 ' + timeAgo(r.created_at) + '</div></div>' +
+            '<div style="font-size:11px;font-weight:700;color:#4A8FD6;">' + (contactCounts[r.id] || 0) + ' contacts</div>' +
+          '</div>' +
+          '<div class="rt-progress" style="margin:0;">' + renderProgressTrack(step) + '</div>' +
+        '</div>';
+      }).join('');
+    } catch(e) {
+      console.error('Active runs load error:', e);
+      el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#DC2626;">Error loading active runs</div>';
+    }
+  }
+  async function loadEventStream() {
+    const el = document.getElementById('cr-event-feed');
+    const updatedEl = document.getElementById('cr-events-updated');
+    if (!el) return;
+    try {
+      const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+      const [queueRows, pages, rawContacts, contacts, notifications, feedback, territories] = await Promise.all([
+        sbAdmin('GET', 'lb_queue?created_at=gte.' + fourHoursAgo + '&select=id,domain,status,meta,created_at&order=created_at.desc&limit=20'),
+        sbAdmin('GET', 'lb_pages?created_at=gte.' + fourHoursAgo + '&select=id,url,created_at&order=created_at.desc&limit=15'),
+        sbAdmin('GET', 'lb_contacts_raw?created_at=gte.' + fourHoursAgo + '&select=id,name,title,created_at&order=created_at.desc&limit=15'),
+        sbAdmin('GET', 'lb_contacts?created_at=gte.' + fourHoursAgo + '&select=id,name,first_name,last_name,company,icp_score,email,email_source,enrichment,created_at&order=created_at.desc&limit=20'),
+        sbAdmin('GET', 'lb_notifications?created_at=gte.' + fourHoursAgo + '&select=id,subject,created_at&order=created_at.desc&limit=10'),
+        sbAdmin('GET', 'lb_feedback?created_at=gte.' + fourHoursAgo + '&select=id,name,rating,created_at&order=created_at.desc&limit=5'),
+        sbAdmin('GET', 'lb_territory_searches?created_at=gte.' + fourHoursAgo + '&select=id,city,state,vertical,created_at&order=created_at.desc&limit=5')
+      ]);
+      const events = [];
+      // Queue events
+      if (queueRows) queueRows.forEach(r => {
+        const meta = r.meta || {};
+        const company = meta.company || r.domain || 'Unknown';
+        const st = (r.status || '').toLowerCase();
+        const iconMap = { pending:'\uD83D\uDE80', discovery:'\uD83D\uDE80', extracting:'\uD83D\uDD0D', enriching:'\uD83D\uDD2C', scoring:'\uD83C\uDFAF', complete:'\u2705', enriched:'\u2705', failed:'\u274C' };
+        const labelMap = { pending:' pipeline started', discovery:' pipeline started', extracting:'Scraping ', enriching:'Enriching ', scoring:'ICP scoring ', complete:' complete', enriched:' complete', failed:' failed' };
+        const icon = iconMap[st] || '\uD83D\uDE80';
+        const label = st === 'extracting' || st === 'enriching' || st === 'scoring' ? labelMap[st] + company : company + (labelMap[st] || ' processing');
+        events.push({ icon, text: label, time: r.created_at });
+      });
+      // Pages
+      if (pages) pages.forEach(r => {
+        const url = (r.url || '').substring(0, 50) + (r.url && r.url.length > 50 ? '...' : '');
+        events.push({ icon:'\uD83D\uDCC4', text:'Page scraped: ' + url, time: r.created_at });
+      });
+      // Raw contacts
+      if (rawContacts) rawContacts.forEach(r => {
+        events.push({ icon:'\uD83D\uDC64', text:'Contact found: ' + (r.name || 'Unknown') + (r.title ? ' \u2014 ' + r.title : ''), time: r.created_at });
+      });
+      // Scored contacts
+      if (contacts) contacts.forEach(c => {
+        const cName = c.name || [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Contact';
+        const company = c.company || '';
+        const score = c.icp_score;
+        const enr = c.enrichment || {};
+        if (score !== null && score !== undefined) {
+          const icon = score >= 80 ? '\u2B50' : score >= 60 ? '\uD83C\uDFAF' : '\uD83D\uDCCB';
+          const prefix = score >= 80 ? 'HIGH PRIORITY: ' : '';
+          events.push({ icon, text: prefix + cName + (company ? ' @ ' + company : '') + ' \u2014 ICP ' + score, time: c.created_at });
+        }
+        const emailSrc = c.email_source || enr.email_source;
+        if (c.email || (emailSrc && emailSrc !== 'none')) {
+          events.push({ icon:'\uD83D\uDCE7', text:'Email found: ' + cName + (emailSrc ? ' via ' + emailSrc : ''), time: c.created_at });
+        }
+      });
+      // Notifications
+      if (notifications) notifications.forEach(r => {
+        const subj = (r.subject || '').substring(0, 50) + (r.subject && r.subject.length > 50 ? '...' : '');
+        events.push({ icon:'\uD83D\uDCEC', text:'Notification sent: ' + subj, time: r.created_at });
+      });
+      // Feedback
+      if (feedback) feedback.forEach(r => {
+        events.push({ icon:'\uD83D\uDCAC', text:'Feedback from ' + (r.name || 'User') + ': ' + (r.rating || 0) + '\u2605', time: r.created_at });
+      });
+      // Territory searches
+      if (territories) territories.forEach(r => {
+        events.push({ icon:'\uD83D\uDDFA\uFE0F', text:'Territory: ' + (r.city || '') + ', ' + (r.state || '') + ' \u2014 ' + (r.vertical || '').replace(/_/g, ' '), time: r.created_at });
+      });
+      // Sort by time descending, take top 30
+      events.sort((a, b) => new Date(b.time) - new Date(a.time));
+      const top = events.slice(0, 30);
+      if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
+      if (!top.length) {
+        el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No events in the last 4 hours</div>';
+        return;
+      }
+      el.innerHTML = top.map(e =>
+        '<div class="event-item">' +
+          '<div class="event-icon">' + e.icon + '</div>' +
+          '<div><div class="event-text">' + e.text + '</div>' +
+          '<div class="event-time">' + (e.time ? timeAgo(e.time) : '') + '</div></div>' +
+        '</div>'
+      ).join('');
+    } catch(e) {
+      console.error('Event stream error:', e);
+      el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#DC2626;">Error loading events</div>';
+    }
   }
 
   // ==================== INIT ====================
