@@ -445,6 +445,52 @@
   </div>
 </div>
 
+<!-- Login handler in isolated script block (immune to Cloudflare email-decode breakage) -->
+<script>
+  window._login = async function() {
+    var SB = "https://palcqjfgygpidzwjzikn.supabase.co";
+    var KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODE1MzcsImV4cCI6MjA4ODM1NzUzN30.-8yi1QepliAdMhgARQhId93Ny-M0skqaDHgOevM3Zro";
+    var em = document.getElementById('login-email').value.trim();
+    var pw = document.getElementById('login-password').value;
+    var errEl = document.getElementById('login-error');
+    var btn = document.getElementById('btn-login');
+    errEl.textContent = '';
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Signing in\u2026';
+    try {
+      var resp = await fetch(SB + '/auth/v1/token?grant_type=password', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','apikey':KEY},
+        body: JSON.stringify({email: em, password: pw})
+      });
+      var data = await resp.json();
+      if (!resp.ok) throw new Error(data.error_description || data.msg || 'Invalid credentials');
+      window._authToken = data.access_token;
+      window._currentUser = {email: data.user.email, name: data.user.email.split('@')[0]};
+      try {
+        var u = await fetch(SB+'/rest/v1/lb_users?email=eq.'+encodeURIComponent(em)+'&select=name,role', {
+          headers:{'apikey':KEY,'Authorization':'Bearer '+window._authToken}
+        });
+        var ud = await u.json();
+        if (ud[0] && ud[0].name) window._currentUser.name = ud[0].name;
+        window._currentUser.role = (ud[0] && ud[0].role) || 'user';
+      } catch(e){}
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-wrapper').style.display = 'block';
+      var badge = document.getElementById('user-badge');
+      if (badge) badge.textContent = window._currentUser.name;
+      if (typeof loadStats === 'function') loadStats();
+      if (typeof loadDashboard === 'function') loadDashboard();
+    } catch(err) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  };
+</script>
+
 <!-- ===== QUEUE OVERLAY ===== -->
 <div id="queue-overlay" style="display:none;">
   <div class="queue-card">
@@ -1000,7 +1046,7 @@
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   // ==================== CONFIG ====================
   const WEBHOOK = "https://manageai2026.app.n8n.cloud/webhook/lb-discovery";
   const WEBHOOK_TERRITORY = "https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2";
@@ -1402,82 +1448,38 @@
   }
 
   // ==================== AUTH ====================
-  let currentUser = null;
-  let authToken = null;
+  // Login function is in its own isolated script block above (immune to Cloudflare breakage).
+  // Auth state lives on window._currentUser and window._authToken.
   let queueJobId = null;
   let queuePollInterval = null;
 
-  async function login() {
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-    const errEl = document.getElementById('login-error');
-    const btn = document.getElementById('btn-login');
-    errEl.textContent = '';
-    btn.disabled = true;
-    btn.textContent = 'Signing in…';
-    try {
-      const resp = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','apikey':SB_KEY},
-        body: JSON.stringify({email, password})
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error_description || data.msg || 'Invalid credentials');
-      authToken = data.access_token;
-      currentUser = {email: data.user.email, name: data.user.email.split('@')[0]};
-      try {
-        const u = await fetch(SB_URL+'/rest/v1/lb_users?email=eq.'+encodeURIComponent(email)+'&select=name,role', {
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+authToken}
-        });
-        const ud = await u.json();
-        if (ud[0]?.name) currentUser.name = ud[0].name;
-        currentUser.role = ud[0]?.role || 'user';
-      } catch(e){}
-      document.getElementById('login-screen').style.display = "none";
-      document.getElementById('app-wrapper').style.display = 'block';
-      const badge = document.getElementById('user-badge');
-      if (badge) badge.textContent = currentUser.name;
-      loadStats();
-      loadDashboard();
-    } catch(err) {
-      errEl.textContent = err.message;
-      btn.disabled = false;
-      btn.textContent = 'Sign In';
-    }
-  }
-
 
   function logout() {
-    currentUser = null; authToken = null;
+    window._currentUser = null; window._authToken = null;
     document.getElementById('login-screen').style.display = "flex";
     document.getElementById('app-wrapper').style.display = "none";
     document.getElementById('login-password').value = '';
   }
 
-  // Ensure global scope for HTML onclick attributes
-  window._login = login;
-  window.logout = logout;
-  window.setMode = setMode;
-
   // ==================== QUEUE ====================
   async function acquireQueueSlot(companies, mode, submitterName, submitterEmail) {
     try {
       const runningResp = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?status=eq.running&select=user_name,created_at', {
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(authToken||SB_KEY)}
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY)}
       });
       const running = await runningResp.json();
       const queuedResp = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?status=eq.queued&select=id&order=created_at.asc', {
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(authToken||SB_KEY)}
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY)}
       });
       const queued = await queuedResp.json();
       const isBusy = running.length > 0;
       const position = queued.length + (isBusy ? 1 : 0);
       const jobResp = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue', {
         method:'POST',
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(authToken||SB_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
         body: JSON.stringify({
-          user_email: currentUser?.email || submitterEmail || 'unknown',
-          user_name: currentUser?.name || submitterName || 'User',
+          user_email: (window._currentUser||{}).email || submitterEmail || 'unknown',
+          user_name: (window._currentUser||{}).name || submitterName || 'User',
           status: isBusy ? 'queued' : 'running',
           mode, company_count: companies.length,
           companies: companies,
@@ -1512,7 +1514,7 @@
       document.getElementById('queue-countdown').textContent = m + ':' + String(s).padStart(2,'0');
       try {
         const r = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?status=eq.running&select=id', {
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(authToken||SB_KEY)}
+          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY)}
         });
         const running = await r.json();
         if (running.length === 0) {
@@ -1520,7 +1522,7 @@
           document.getElementById('queue-overlay').style.display = "none";
           await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?id=eq.'+queueJobId, {
             method:'PATCH',
-            headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(authToken||SB_KEY),'Content-Type':'application/json'},
+            headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY),'Content-Type':'application/json'},
             body: JSON.stringify({status:'running', started_at: new Date().toISOString()})
           });
           runLeads(window._queuedLeads, window._queuedMode, window._queuedName, window._queuedEmail, true);
@@ -1534,7 +1536,7 @@
     try {
       await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?id=eq.'+queueJobId, {
         method:'PATCH',
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(authToken||SB_KEY),'Content-Type':'application/json'},
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY),'Content-Type':'application/json'},
         body: JSON.stringify({status:'completed', completed_at: new Date().toISOString()})
       });
       queueJobId = null;
@@ -1747,7 +1749,7 @@
   }
 
   async function submitFeedback() {
-    const name = document.getElementById('fb-name').value.trim() || (currentUser?.name || 'Anonymous');
+    const name = document.getElementById('fb-name').value.trim() || ((window._currentUser||{}).name || 'Anonymous');
     const category = document.getElementById('fb-category').value;
     const message = document.getElementById('fb-message').value.trim();
     const reference = document.getElementById('fb-reference').value.trim();
@@ -1768,7 +1770,7 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           name,
-          email: currentUser?.email || 'unknown',
+          email: (window._currentUser||{}).email || 'unknown',
           category: category || 'general',
           rating: fbRating,
           message,
@@ -1784,4 +1786,16 @@
         document.getElementById('fb-category').value = '';
         setRating(0);
       } else {
-        throw new Er
+        throw new Error('Failed to submit feedback');
+      }
+    } catch(err) {
+      alert('Error: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Feedback';
+    }
+  }
+</script>
+</div>
+</body>
+</html>
