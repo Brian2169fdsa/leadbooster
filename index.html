@@ -1920,6 +1920,29 @@
       (i < 4 ? '<div class="rt-connector ' + (done ? 'done' : '') + '"></div>' : '');
     }).join('');
   }
+  // Stage badge — maps lb_queue.status to colored label
+  function renderStageBadge(status) {
+    const st = (status || 'pending').toLowerCase();
+    const map = {
+      pending:    { label:'Queued',              color:'#64748B', bg:'#F1F5F9' },
+      discovery:  { label:'Discovering',         color:'#1D4ED8', bg:'#EFF6FF' },
+      extracting: { label:'Scraping Pages',      color:'#1D4ED8', bg:'#EFF6FF' },
+      enriching:  { label:'Enriching Contacts',  color:'#92400E', bg:'#FEF3C7' },
+      scoring:    { label:'AI Scoring',          color:'#6D28D9', bg:'#EDE9FE' },
+      complete:   { label:'Complete \u2713',     color:'#166534', bg:'#DCFCE7' },
+      enriched:   { label:'Complete \u2713',     color:'#166534', bg:'#DCFCE7' },
+      failed:     { label:'Failed \u2717',       color:'#991B1B', bg:'#FEE2E2' }
+    };
+    const s = map[st] || map.pending;
+    return '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:' + s.color + ';background:' + s.bg + ';white-space:nowrap;">' + s.label + '</span>';
+  }
+  function renderStageDot(status) {
+    const st = (status || 'pending').toLowerCase();
+    if (st === 'complete' || st === 'enriched') return '<span style="width:8px;height:8px;border-radius:50%;background:#16A34A;display:inline-block;flex-shrink:0;"></span>';
+    if (st === 'failed') return '<span style="width:8px;height:8px;border-radius:50%;background:#DC2626;display:inline-block;flex-shrink:0;"></span>';
+    if (st === 'enriching' || st === 'scoring') return '<span style="width:8px;height:8px;border-radius:50%;background:#D97706;display:inline-block;flex-shrink:0;animation:pulse-dot 1.5s ease-in-out infinite;"></span>';
+    return '<span style="width:8px;height:8px;border-radius:50%;background:#4A8FD6;display:inline-block;flex-shrink:0;animation:pulse-dot 1.5s ease-in-out infinite;"></span>';
+  }
   function injectTrackerCSS() {
     if (document.getElementById('tracker-css')) return;
     const style = document.createElement('style');
@@ -2054,22 +2077,20 @@
     }, 8000);
   }
 
-  // Core single-company run tracker with live contact feed
+  // Core single-company run tracker — stage badge + live contact feed
   function createRunTracker(containerId, queueId, companyName) {
     injectTrackerCSS();
     const container = document.getElementById(containerId);
     if (!container) return;
     let lastContactCount = 0;
-    container.innerHTML = '<div class="run-tracker" id="rt-' + queueId + '">' +
-      '<div class="run-tracker-header">' +
-        '<div>' +
-          '<div class="run-tracker-title"><span class="rt-status-dot" id="rt-dot-' + queueId + '"></span>Pipeline Running</div>' +
-          '<div class="rt-company">' + companyName + '</div>' +
-        '</div>' +
-        '<div style="font-size:11px;color:#94A3B8;" id="rt-updated-' + queueId + '">Starting...</div>' +
+    container.innerHTML = '<div class="run-tracker" style="width:100%;box-sizing:border-box;" id="rt-' + queueId + '">' +
+      '<div id="rt-status-line-' + queueId + '" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F5F6F8;">' +
+        renderStageDot('pending') +
+        '<span style="font-weight:700;font-size:14px;color:#1E293B;">' + companyName + '</span>' +
+        '<span style="flex:1;"></span>' +
+        renderStageBadge('pending') +
       '</div>' +
-      '<div class="rt-progress" id="rt-track-' + queueId + '">' + renderProgressTrack(1) + '</div>' +
-      '<div id="rt-detail-' + queueId + '" style="font-size:12px;color:#475569;margin-bottom:12px;">Initializing pipeline...</div>' +
+      '<div id="rt-detail-' + queueId + '" style="font-size:12px;color:#475569;padding:10px 0 4px;">Initializing pipeline...</div>' +
       '<div class="rt-contacts" id="rt-contacts-' + queueId + '"></div>' +
     '</div>';
     async function poll() {
@@ -2080,17 +2101,21 @@
         ]);
         const q = queueRows && queueRows[0];
         if (!q) return;
-        const step = statusToStep(q.status);
-        const dot = document.getElementById('rt-dot-' + queueId);
-        const track = document.getElementById('rt-track-' + queueId);
+        const statusLine = document.getElementById('rt-status-line-' + queueId);
         const detail = document.getElementById('rt-detail-' + queueId);
-        const updatedEl = document.getElementById('rt-updated-' + queueId);
         const contactsEl = document.getElementById('rt-contacts-' + queueId);
-        const titleEl = container.querySelector('.run-tracker-title');
-        if (track) track.innerHTML = renderProgressTrack(step);
-        if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
-        const statusLabels = { 1:'Discovering company profile...', 2:'Scraping website pages...', 3:'Enriching contacts via Hunter, Apollo, PDL...', 4:'ICP scoring contacts with Claude AI...', 5:'Pipeline complete!' };
-        if (detail) detail.textContent = statusLabels[step] || 'Processing...';
+        const cCount = contacts ? contacts.length : 0;
+        const countText = cCount > 0 ? '<span style="font-size:11px;color:#94A3B8;margin-right:8px;">' + cCount + ' contact' + (cCount !== 1 ? 's' : '') + '</span>' : '';
+        if (statusLine) {
+          statusLine.innerHTML = renderStageDot(q.status) +
+            '<span style="font-weight:700;font-size:14px;color:#1E293B;">' + companyName + '</span>' +
+            '<span style="font-size:11px;color:#94A3B8;">' + (q.domain || '') + '</span>' +
+            '<span style="flex:1;"></span>' +
+            countText +
+            renderStageBadge(q.status);
+        }
+        const detailLabels = { pending:'Queued for processing...', discovery:'Discovering company profile...', extracting:'Scraping Pages...', enriching:'Enriching Contacts via Hunter, Apollo, PDL...', scoring:'AI Scoring contacts with Claude...', complete:'Pipeline complete!', enriched:'Pipeline complete!', failed:'Pipeline failed.' };
+        if (detail) detail.textContent = detailLabels[(q.status||'').toLowerCase()] || 'Processing...';
         if (contacts && contacts.length > lastContactCount) {
           lastContactCount = contacts.length;
           if (contactsEl) {
@@ -2108,8 +2133,6 @@
           }
         }
         if (q.status === 'complete' || q.status === 'enriched') {
-          if (dot) dot.className = 'rt-status-dot complete';
-          if (titleEl) titleEl.innerHTML = '<span class="rt-status-dot complete"></span>Pipeline Complete';
           if (contactsEl) {
             contactsEl.innerHTML += '<div class="rt-complete">' +
               '<div class="rt-complete-title">' + (contacts ? contacts.length : 0) + ' Contacts Enriched & Scored</div>' +
@@ -2120,8 +2143,6 @@
           clearInterval(pollInterval);
         }
         if (q.status === 'failed') {
-          if (dot) dot.className = 'rt-status-dot failed';
-          if (titleEl) titleEl.innerHTML = '<span class="rt-status-dot failed"></span>Pipeline Failed';
           if (detail) detail.textContent = 'Something went wrong. Check n8n for details.';
           clearInterval(pollInterval);
         }
@@ -2132,14 +2153,20 @@
     return pollInterval;
   }
 
-  // Territory tracker — watches for new queue entries after territory search
+  // Territory tracker — full-width, stage badges, contact counts
   function trackTerritoryRun(city, state, vertical) {
     const container = document.getElementById('territory-tracker-container');
     if (!container) return;
     injectTrackerCSS();
-    container.innerHTML = '<div class="run-tracker">' +
-      '<div class="run-tracker-title"><span class="rt-status-dot"></span>Territory Search Active</div>' +
-      '<div style="font-size:12px;color:#475569;margin-top:4px;">' + city + ', ' + state + ' \u2014 ' + vertical.replace(/_/g,' ') + '</div>' +
+    const vertLabel = vertical.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    container.innerHTML = '<div class="run-tracker" style="width:100%;box-sizing:border-box;">' +
+      '<div class="run-tracker-header">' +
+        '<div>' +
+          '<div class="run-tracker-title" id="tt-title"><span class="rt-status-dot"></span>\uD83D\uDDFA\uFE0F ' + city + ', ' + state + ' \u2014 ' + vertLabel + '</div>' +
+          '<div id="tt-subtitle" style="font-size:12px;color:#475569;margin-top:4px;">Discovering and enriching companies...</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:#94A3B8;" id="tt-updated">Starting...</div>' +
+      '</div>' +
       '<div id="territory-companies" style="margin-top:12px;"><div style="font-size:13px;color:#475569;">Discovering companies via Google Places...</div></div>' +
     '</div>';
     let knownIds = new Set();
@@ -2150,41 +2177,68 @@
       try {
         const rows = await sbAdmin('GET', 'lb_queue?created_at=gte.' + since + '&order=created_at.desc&limit=30');
         const el = document.getElementById('territory-companies');
+        const updatedEl = document.getElementById('tt-updated');
+        if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
         if (!rows || !rows.length) {
           if (pollCount > 5 && el) el.innerHTML = '<div style="font-size:13px;color:#475569;">Waiting for companies to be discovered...</div>';
           return;
         }
+        // Get contact counts for all queue ids
+        const contactCounts = {};
+        for (const r of rows) {
+          if (!contactCounts[r.id]) {
+            const cts = await sbAdmin('GET', 'lb_contacts?queue_id=eq.' + r.id + '&select=id');
+            contactCounts[r.id] = cts ? cts.length : 0;
+          }
+        }
+        // Update existing rows
         rows.forEach(r => {
           if (knownIds.has(r.id)) {
-            // Update existing
-            const trackEl = document.getElementById('ttrack-' + r.id);
-            const dotEl = document.getElementById('tdot-' + r.id);
-            if (trackEl) trackEl.innerHTML = renderProgressTrack(statusToStep(r.status));
-            if (dotEl && (r.status === 'complete' || r.status === 'enriched')) dotEl.className = 'rt-status-dot complete';
-            if (dotEl && r.status === 'failed') dotEl.className = 'rt-status-dot failed';
+            const rowEl = document.getElementById('tco-' + r.id);
+            if (rowEl) {
+              const meta = r.meta || {};
+              const cc = contactCounts[r.id] || 0;
+              const countHtml = cc > 0 ? '<span style="font-size:11px;color:#94A3B8;margin-right:8px;">' + cc + ' contact' + (cc !== 1 ? 's' : '') + '</span>' : '';
+              rowEl.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5F6F8;">' +
+                renderStageDot(r.status) +
+                '<span style="font-weight:700;font-size:13px;color:#1E293B;">' + (meta.company || r.domain || 'Company') + '</span>' +
+                '<span style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + '</span>' +
+                '<span style="flex:1;"></span>' +
+                countHtml +
+                renderStageBadge(r.status) +
+              '</div>';
+            }
             return;
           }
           knownIds.add(r.id);
           const meta = r.meta || {};
+          const cc = contactCounts[r.id] || 0;
+          const countHtml = cc > 0 ? '<span style="font-size:11px;color:#94A3B8;margin-right:8px;">' + cc + ' contact' + (cc !== 1 ? 's' : '') + '</span>' : '';
           const div = document.createElement('div');
           div.id = 'tco-' + r.id;
-          div.style.cssText = 'padding:10px 0;border-bottom:1px solid #F5F6F8;';
-          div.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;">' +
-            '<div><div style="font-weight:700;font-size:13px;">' + (meta.company || r.domain || 'Company') + '</div>' +
-            '<div style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + '</div></div>' +
-            '<span class="rt-status-dot" id="tdot-' + r.id + '"></span>' +
-          '</div>' +
-          '<div style="margin-top:8px;" id="ttrack-' + r.id + '">' + renderProgressTrack(statusToStep(r.status)) + '</div>';
+          div.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5F6F8;">' +
+            renderStageDot(r.status) +
+            '<span style="font-weight:700;font-size:13px;color:#1E293B;">' + (meta.company || r.domain || 'Company') + '</span>' +
+            '<span style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + '</span>' +
+            '<span style="flex:1;"></span>' +
+            countHtml +
+            renderStageBadge(r.status) +
+          '</div>';
           if (el) el.appendChild(div);
         });
+        // Check completion
         const allDone = rows.every(r => r.status === 'complete' || r.status === 'enriched' || r.status === 'failed');
         if (allDone && rows.length > 0 && pollCount > 3) {
           clearInterval(territoryPoll);
           const completed = rows.filter(r => r.status === 'complete' || r.status === 'enriched').length;
-          container.innerHTML += '<div class="rt-complete" style="margin-top:12px;">' +
-            '<div class="rt-complete-title">Territory Search Complete</div>' +
-            '<div class="rt-complete-sub">' + completed + ' of ' + rows.length + ' companies processed</div>' +
-            '<a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" class="rt-sheet-link">Open Google Sheet &rarr;</a>' +
+          const totalContacts = Object.values(contactCounts).reduce((s, n) => s + n, 0);
+          const subtitleEl = document.getElementById('tt-subtitle');
+          if (subtitleEl) subtitleEl.textContent = 'Complete';
+          const titleEl = document.getElementById('tt-title');
+          if (titleEl) titleEl.innerHTML = '<span class="rt-status-dot complete"></span>\uD83D\uDDFA\uFE0F ' + city + ', ' + state + ' \u2014 ' + vertLabel;
+          container.innerHTML += '<div style="background:#DCFCE7;border-radius:8px;padding:16px;text-align:center;margin-top:12px;">' +
+            '<span style="font-weight:700;color:#166534;font-size:14px;">\u2705 Territory run complete \u2014 ' + completed + ' companies processed \u00B7 ' + totalContacts + ' contacts enriched</span>' +
+            ' <a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" style="color:#166534;font-weight:700;text-decoration:underline;">Open Google Sheet \u2192</a>' +
           '</div>';
         }
       } catch(e) { console.error('Territory poll error:', e); }
