@@ -1056,6 +1056,7 @@
   const SB_URL = "https://palcqjfgygpidzwjzikn.supabase.co";
   // NOTE: Replace with your anon key from Supabase dashboard > Settings > API
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODE1MzcsImV4cCI6MjA4ODM1NzUzN30.-8yi1QepliAdMhgARQhId93Ny-M0skqaDHgOevM3Zro";
+  const SB_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA";
   const SB_TABLE = "lb_requests";
 
   // ==================== MODE SWITCHING ====================
@@ -1407,15 +1408,88 @@
     });
   }
 
+  // Admin-level Supabase request (uses service_role for dashboard reads)
+  async function sbAdmin(method, path) {
+    try {
+      const resp = await fetch(SB_URL + '/rest/v1/' + path, {
+        method,
+        headers: {
+          'apikey': SB_SERVICE_KEY,
+          'Authorization': 'Bearer ' + SB_SERVICE_KEY,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!resp.ok) return null;
+      return await resp.json();
+    } catch { return null; }
+  }
+
   async function loadStats() {
+    // Query lb_contacts via service_role for reliable KPI data
+    const allContacts = await sbAdmin('GET', 'lb_contacts?select=id,icp_score,email,linkedin_url,final_completeness_score,created_at,enrichment');
+    if (!allContacts) return;
+
+    const total = allContacts.length;
+    const el = document.getElementById('kpi-total');
+    if (el) el.textContent = total;
+
     const today = new Date().toISOString().split('T')[0];
-    const all = await sbRequest('GET', SB_TABLE + '?select=id,created_at,company_count&order=created_at.desc&limit=200');
-    if (!all) return;
-    const todayItems = all.filter(r => r.created_at && r.created_at.startsWith(today));
-    const todayTotal = todayItems.reduce((s, r) => s + (r.company_count || 0), 0);
-    const allTotal = all.reduce((s, r) => s + (r.company_count || 0), 0);
-    document.getElementById('stat-today').textContent = todayTotal || '0';
-    document.getElementById('stat-total').textContent = allTotal || '0';
+    const todayCount = allContacts.filter(c => c.created_at && c.created_at.startsWith(today)).length;
+    const el2 = document.getElementById('kpi-today');
+    if (el2) el2.textContent = todayCount;
+
+    const icpScores = allContacts.filter(c => c.icp_score != null && c.icp_score > 0).map(c => c.icp_score);
+    const avgIcp = icpScores.length ? Math.round(icpScores.reduce((a, b) => a + b, 0) / icpScores.length) : 0;
+    const el3 = document.getElementById('kpi-icp');
+    if (el3) el3.textContent = avgIcp;
+
+    const compScores = allContacts.filter(c => c.final_completeness_score != null).map(c => c.final_completeness_score);
+    const avgComp = compScores.length ? Math.round(compScores.reduce((a, b) => a + b, 0) / compScores.length) : 0;
+    const el4 = document.getElementById('kpi-completeness');
+    if (el4) el4.textContent = avgComp > 0 ? avgComp + '%' : 'N/A';
+
+    const withEmail = allContacts.filter(c => {
+      if (c.email && c.email.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.email_source && e.email_source !== 'none';
+    }).length;
+    const emailPct = total > 0 ? Math.round((withEmail / total) * 100) : 0;
+    const el5 = document.getElementById('kpi-email');
+    if (el5) el5.textContent = emailPct + '%';
+
+    const withLinkedin = allContacts.filter(c => {
+      if (c.linkedin_url && c.linkedin_url.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.linkedin_url && e.linkedin_url.trim() !== '';
+    }).length;
+    const linkedinPct = total > 0 ? Math.round((withLinkedin / total) * 100) : 0;
+    const el6 = document.getElementById('kpi-linkedin');
+    if (el6) el6.textContent = linkedinPct + '%';
+
+    // Email delivery widget (top bar)
+    const notif = await sbAdmin('GET', 'lb_notifications?select=subject,status,created_at&order=created_at.desc&limit=1');
+    if (notif && notif.length > 0) {
+      const n = notif[0];
+      const subEl = document.getElementById('email-subject');
+      if (subEl) subEl.textContent = n.subject || 'No subject';
+      const timeEl = document.getElementById('email-time');
+      if (timeEl) timeEl.textContent = n.created_at ? new Date(n.created_at).toLocaleString() : '—';
+      const statusEl = document.getElementById('email-status');
+      if (statusEl) {
+        const st = (n.status || 'unknown').toLowerCase();
+        statusEl.textContent = st.charAt(0).toUpperCase() + st.slice(1);
+        if (st === 'sent' || st === 'delivered') {
+          statusEl.style.background = 'var(--green-light)';
+          statusEl.style.color = 'var(--green)';
+        } else if (st === 'pending') {
+          statusEl.style.background = 'var(--amber-light)';
+          statusEl.style.color = 'var(--amber)';
+        }
+      }
+    } else {
+      const subEl = document.getElementById('email-subject');
+      if (subEl) subEl.textContent = 'No emails sent yet';
+    }
   }
 
   async function loadHistory() {
@@ -1549,10 +1623,10 @@
   async function loadDashboard() {
     // Parallel fetch all dashboard data
     const [contacts, queue, notifications, requests] = await Promise.all([
-      sbRequest('GET', 'lb_contacts?select=id,first_name,last_name,company_name,title,email,phone,linkedin_url,linkedin_confidence,email_source,vertical,icp_score,final_completeness_score,created_at&order=created_at.desc&limit=500'),
-      sbRequest('GET', 'lb_queue?select=id,domain,source,status,priority,meta,created_at&order=created_at.desc&limit=20'),
-      sbRequest('GET', 'lb_notifications?select=*&order=created_at.desc&limit=10'),
-      sbRequest('GET', 'lb_territory_searches?select=*&order=created_at.desc&limit=5')
+      sbAdmin('GET', 'lb_contacts?select=id,first_name,last_name,company_name,title,email,phone,linkedin_url,linkedin_confidence,email_source,vertical,icp_score,final_completeness_score,created_at,enrichment&order=created_at.desc&limit=500'),
+      sbAdmin('GET', 'lb_pipeline_queue?select=id,companies,status,user_name,mode,created_at&order=created_at.desc&limit=20'),
+      sbAdmin('GET', 'lb_notifications?select=*&order=created_at.desc&limit=10'),
+      sbAdmin('GET', 'lb_territory_searches?select=*&order=created_at.desc&limit=5')
     ]);
 
     if (contacts) renderDashKPIs(contacts);
@@ -1572,8 +1646,16 @@
     const todayContacts = contacts.filter(c => c.created_at && c.created_at.startsWith(today));
     const withIcp = contacts.filter(c => c.icp_score !== null && c.icp_score !== undefined);
     const withComplete = contacts.filter(c => c.final_completeness_score !== null && c.final_completeness_score !== undefined);
-    const withEmail = contacts.filter(c => c.email);
-    const withLinkedin = contacts.filter(c => c.linkedin_url);
+    const withEmail = contacts.filter(c => {
+      if (c.email && c.email.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.email_source && e.email_source !== 'none';
+    });
+    const withLinkedin = contacts.filter(c => {
+      if (c.linkedin_url && c.linkedin_url.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.linkedin_url && e.linkedin_url.trim() !== '';
+    });
     const avgIcp = withIcp.length ? Math.round(withIcp.reduce((s,c) => s + (c.icp_score||0), 0) / withIcp.length) : 0;
     const avgComplete = withComplete.length ? Math.round(withComplete.reduce((s,c) => s + (c.final_completeness_score||0), 0) / withComplete.length) : 0;
     const emailPct = contacts.length ? Math.round((withEmail.length / contacts.length) * 100) : 0;
@@ -1588,9 +1670,17 @@
 
   function renderHitRates(contacts) {
     if (!contacts.length) return;
-    const emailPct = Math.round((contacts.filter(c=>c.email).length / contacts.length) * 100);
+    const emailPct = Math.round((contacts.filter(c => {
+      if (c.email && c.email.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.email_source && e.email_source !== 'none';
+    }).length / contacts.length) * 100);
     const phonePct = Math.round((contacts.filter(c=>c.phone).length / contacts.length) * 100);
-    const linkedinPct = Math.round((contacts.filter(c=>c.linkedin_url).length / contacts.length) * 100);
+    const linkedinPct = Math.round((contacts.filter(c => {
+      if (c.linkedin_url && c.linkedin_url.trim() !== '') return true;
+      const e = c.enrichment || {};
+      return e.linkedin_url && e.linkedin_url.trim() !== '';
+    }).length / contacts.length) * 100);
     setBar('d-email-bar', emailPct); safeSet('d-email-pct2', emailPct + '%');
     setBar('d-phone-bar', phonePct); safeSet('d-phone-pct', phonePct + '%');
     setBar('d-linkedin-bar', linkedinPct); safeSet('d-linkedin-pct2', linkedinPct + '%');
@@ -1674,17 +1764,16 @@
     if (!queue.length) { el.innerHTML = '<div class="dash-empty">Queue empty</div>'; return; }
     const recent = queue.slice(0,6);
     el.innerHTML = `<table class="q-table">
-      <thead><tr><th>Company</th><th>Source</th><th>Domain</th><th>Status</th></tr></thead>
+      <thead><tr><th>User</th><th>Mode</th><th>Count</th><th>Status</th></tr></thead>
       <tbody>${recent.map(r => {
-        const meta = r.meta || {};
-        const company = meta.company || r.domain || '—';
-        const source = r.source || '—';
-        const domain = r.domain || '—';
+        const user = r.user_name || '—';
+        const mode = r.mode || '—';
+        const count = r.companies ? (Array.isArray(r.companies) ? r.companies.length : '—') : '—';
         const status = r.status || 'unknown';
         return `<tr>
-        <td style="font-weight:700;">${company}</td>
-        <td>${source}</td>
-        <td style="font-family:var(--mono);font-size:10px;">${domain}</td>
+        <td style="font-weight:700;">${user}</td>
+        <td>${mode}</td>
+        <td style="font-family:var(--mono);font-weight:700;">${count}</td>
         <td><span class="status-chip ${status}"><div class="status-chip-dot"></div>${status}</span></td>
       </tr>`;
       }).join('')}</tbody>
@@ -1694,7 +1783,8 @@
   function renderEmailDelivery(notifications) {
     const el = document.getElementById('d-email-delivery');
     if (!notifications.length) { el.innerHTML = '<div class="dash-empty">No emails yet</div>'; return; }
-    const sent = notifications.filter(n=>n.sent).length;
+    const sent = notifications.filter(n => (n.status || '').toLowerCase() === 'sent' || (n.status || '').toLowerCase() === 'delivered').length;
+    const pending = notifications.filter(n => (n.status || '').toLowerCase() === 'pending').length;
     const total = notifications.length;
     const pct = total ? Math.round((sent/total)*100) : 0;
     el.innerHTML = `
@@ -1707,11 +1797,11 @@
           <div style="height:100%;width:${pct}%;background:var(--green);border-radius:4px;transition:width 0.8s;"></div>
         </div>
         <div style="text-align:center;">
-          <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--text-dim);">${total-sent}</div>
+          <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--text-dim);">${pending}</div>
           <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;">Pending</div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--text-dim);font-weight:600;">${notifications[0]?.subject ? '📧 Last: ' + notifications[0].subject.substring(0,40) + '…' : 'No recent emails'}</div>`;
+      <div style="font-size:11px;color:var(--text-dim);font-weight:600;">${notifications[0]?.subject ? '📧 Last: ' + notifications[0].subject.substring(0,50) : 'No recent emails'}</div>`;
   }
 
   function renderTerritoryRuns(searches) {
