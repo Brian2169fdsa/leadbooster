@@ -740,6 +740,62 @@
       </div>
     </div>
 
+    <!-- Contacts Viewer -->
+    <div class="card" style="margin-top:20px;padding:22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="dash-section-title" style="margin-bottom:0;">Contacts Viewer</div>
+        <button onclick="exportContactsCSV()" style="padding:7px 16px;border-radius:6px;border:1px solid #E2E6EC;background:#fff;font-size:12px;font-weight:700;color:#1E293B;cursor:pointer;font-family:var(--font);">\u2B07 Export CSV</button>
+      </div>
+      <!-- Filter bar -->
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <input type="text" id="cv-search" placeholder="Search name, company, title..." oninput="applyContactFilters()" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:var(--font);outline:none;" />
+        <select id="cv-vertical" onchange="applyContactFilters()" style="padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:var(--font);color:#1E293B;outline:none;">
+          <option value="">All Verticals</option>
+          <option value="construction">Construction</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="home_services">Home Services</option>
+        </select>
+        <select id="cv-icp" onchange="applyContactFilters()" style="padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:var(--font);color:#1E293B;outline:none;">
+          <option value="">All Scores</option>
+          <option value="80">80+ Priority</option>
+          <option value="60">60-79 Qualified</option>
+          <option value="low">Under 60</option>
+        </select>
+      </div>
+      <!-- Table -->
+      <div style="overflow-x:auto;">
+        <table id="cv-table" style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#F8FAFC;">
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('rank')">#</th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('name')">Name <span id="cv-sort-name"></span></th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('title')">Title <span id="cv-sort-title"></span></th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('company')">Company <span id="cv-sort-company"></span></th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('vertical')">Vertical <span id="cv-sort-vertical"></span></th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('icp_score')">ICP <span id="cv-sort-icp_score"></span></th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('completeness')">Complete <span id="cv-sort-completeness"></span></th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Email</th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">LinkedIn</th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('created_at')">Added <span id="cv-sort-created_at"></span></th>
+            </tr>
+          </thead>
+          <tbody id="cv-tbody">
+            <tr><td colspan="10" style="padding:30px;text-align:center;color:#94A3B8;font-weight:600;">Loading contacts...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+        <span id="cv-showing" style="font-size:12px;color:#94A3B8;font-weight:600;">Showing 0 of 0</span>
+        <div style="display:flex;gap:6px;">
+          <button onclick="cvPrevPage()" id="cv-prev" style="padding:6px 14px;border:1px solid #E2E6EC;border-radius:6px;font-size:12px;font-weight:600;background:#fff;cursor:pointer;font-family:var(--font);color:#475569;" disabled>&larr; Previous</button>
+          <button onclick="cvNextPage()" id="cv-next" style="padding:6px 14px;border:1px solid #E2E6EC;border-radius:6px;font-size:12px;font-weight:600;background:#fff;cursor:pointer;font-family:var(--font);color:#475569;">Next &rarr;</button>
+        </div>
+      </div>
+    </div>
+
     <div style="height:20px;"></div>
   </div>
 
@@ -1689,6 +1745,7 @@
       renderQueue(queue || []);
       renderEmailDelivery(notifications || []);
       renderTerritoryRuns(requests || []);
+      loadContactsViewer();
       dashLoaded = true;
     } catch(e) {
       console.error('Dashboard load failed:', e);
@@ -1701,8 +1758,12 @@
   }
 
   function renderDashKPIs(contacts) {
-    const today = new Date().toISOString().split('T')[0];
-    const todayContacts = contacts.filter(c => c.created_at && c.created_at.startsWith(today));
+    // Use Phoenix AZ local date (UTC-7) for "today" filter
+    const now = new Date();
+    const phoenixOffset = -7 * 60;
+    const phoenixTime = new Date(now.getTime() + (now.getTimezoneOffset() + phoenixOffset) * 60000);
+    const localMidnight = phoenixTime.getFullYear() + '-' + String(phoenixTime.getMonth()+1).padStart(2,'0') + '-' + String(phoenixTime.getDate()).padStart(2,'0');
+    const todayContacts = contacts.filter(c => c.created_at && c.created_at.startsWith(localMidnight));
     const withIcp = contacts.filter(c => c.icp_score !== null && c.icp_score !== undefined);
     const withComplete = contacts.filter(c => c.final_completeness_score !== null && c.final_completeness_score !== undefined);
     const withEmail = contacts.filter(c => {
@@ -2405,6 +2466,154 @@
       console.error('Event stream error:', e);
       el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#DC2626;">Error loading events</div>';
     }
+  }
+
+  // ==================== CONTACTS VIEWER ====================
+  let cvAllContacts = [], cvFilteredContacts = [], cvPage = 0, cvSortCol = 'icp_score', cvSortDir = 'desc';
+  const CV_PER_PAGE = 25;
+
+  async function loadContactsViewer() {
+    try {
+      const data = await sbAdmin('GET', 'lb_contacts?select=id,name,first_name,last_name,company,domain,title,email,phone,linkedin_url,linkedin_confidence,email_source,vertical,icp_score,final_completeness_score,created_at,enrichment&order=icp_score.desc.nullslast&limit=500');
+      cvAllContacts = (data || []).map(c => {
+        const e = c.enrichment || {};
+        return {
+          id: c.id,
+          name: c.name || ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || e.name || '-',
+          title: c.title || e.title || '-',
+          company: c.company || e.company || c.domain || '-',
+          vertical: c.vertical || e.vertical || '-',
+          icp_score: c.icp_score != null ? c.icp_score : (e.icp_score != null ? e.icp_score : null),
+          completeness: c.final_completeness_score != null ? c.final_completeness_score : (e.final_completeness_score != null ? e.final_completeness_score : null),
+          email: c.email || e.email || '',
+          linkedin_url: c.linkedin_url || e.linkedin_url || '',
+          created_at: c.created_at || ''
+        };
+      });
+      // populate vertical dropdown
+      const verts = [...new Set(cvAllContacts.map(c => c.vertical).filter(v => v && v !== '-'))].sort();
+      const sel = document.getElementById('cv-vertical');
+      if (sel) {
+        sel.innerHTML = '<option value="">All Verticals</option>' + verts.map(v => '<option value="' + v + '">' + v + '</option>').join('');
+      }
+      applyContactFilters();
+    } catch(e) {
+      console.error('Contacts viewer error:', e);
+      document.getElementById('cv-tbody').innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:#DC2626;">Error loading contacts</td></tr>';
+    }
+  }
+
+  function applyContactFilters() {
+    const search = (document.getElementById('cv-search').value || '').toLowerCase();
+    const vertical = document.getElementById('cv-vertical').value;
+    const icp = document.getElementById('cv-icp').value;
+    cvFilteredContacts = cvAllContacts.filter(c => {
+      if (search && !(c.name + ' ' + c.company + ' ' + c.title).toLowerCase().includes(search)) return false;
+      if (vertical && c.vertical !== vertical) return false;
+      if (icp === '90') return c.icp_score != null && c.icp_score >= 90;
+      if (icp === '70') return c.icp_score != null && c.icp_score >= 70;
+      if (icp === '50') return c.icp_score != null && c.icp_score >= 50;
+      if (icp === 'low') return c.icp_score == null || c.icp_score < 50;
+      return true;
+    });
+    // apply current sort
+    sortFilteredContacts();
+    cvPage = 0;
+    renderContactsTable();
+  }
+
+  function sortContacts(col) {
+    if (cvSortCol === col) {
+      cvSortDir = cvSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      cvSortCol = col;
+      cvSortDir = (col === 'name' || col === 'company' || col === 'title' || col === 'vertical') ? 'asc' : 'desc';
+    }
+    // clear all sort indicators
+    document.querySelectorAll('[id^="cv-sort-"]').forEach(s => s.textContent = '');
+    const ind = document.getElementById('cv-sort-' + col);
+    if (ind) ind.textContent = cvSortDir === 'asc' ? '▲' : '▼';
+    sortFilteredContacts();
+    renderContactsTable();
+  }
+
+  function sortFilteredContacts() {
+    cvFilteredContacts.sort((a, b) => {
+      let va = a[cvSortCol], vb = b[cvSortCol];
+      if (va == null) va = cvSortDir === 'asc' ? Infinity : -Infinity;
+      if (vb == null) vb = cvSortDir === 'asc' ? Infinity : -Infinity;
+      if (typeof va === 'string') {
+        const cmp = va.localeCompare(vb, undefined, { sensitivity: 'base' });
+        return cvSortDir === 'asc' ? cmp : -cmp;
+      }
+      return cvSortDir === 'asc' ? va - vb : vb - va;
+    });
+  }
+
+  function renderContactsTable() {
+    const start = cvPage * CV_PER_PAGE;
+    const page = cvFilteredContacts.slice(start, start + CV_PER_PAGE);
+    const tbody = document.getElementById('cv-tbody');
+    if (!page.length) {
+      tbody.innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:#94A3B8;font-weight:600;">No contacts found</td></tr>';
+    } else {
+      tbody.innerHTML = page.map((c, i) => {
+        const icpColor = c.icp_score >= 90 ? '#166534' : c.icp_score >= 70 ? '#1D4ED8' : c.icp_score >= 50 ? '#92400E' : '#64748B';
+        const icpBg = c.icp_score >= 90 ? '#DCFCE7' : c.icp_score >= 70 ? '#EFF6FF' : c.icp_score >= 50 ? '#FEF3C7' : '#F1F5F9';
+        const compBg = c.completeness >= 80 ? '#DCFCE7' : c.completeness >= 50 ? '#FEF3C7' : '#F1F5F9';
+        const compColor = c.completeness >= 80 ? '#166534' : c.completeness >= 50 ? '#92400E' : '#64748B';
+        const emailIcon = c.email ? '<span title="' + c.email.replace(/"/g, '&quot;') + '" style="color:#166534;cursor:help;">✉</span>' : '<span style="color:#CBD5E1;">—</span>';
+        const liIcon = c.linkedin_url ? '<a href="' + c.linkedin_url + '" target="_blank" style="color:#1D4ED8;text-decoration:none;" title="View LinkedIn">in</a>' : '<span style="color:#CBD5E1;">—</span>';
+        const added = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '-';
+        return '<tr style="border-bottom:1px solid #F1F5F9;">' +
+          '<td style="padding:7px 10px;font-size:12px;color:#94A3B8;">' + (start + i + 1) + '</td>' +
+          '<td style="padding:7px 10px;font-size:12px;font-weight:600;color:#1E293B;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + c.name + '</td>' +
+          '<td style="padding:7px 10px;font-size:11px;color:#475569;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + c.title + '</td>' +
+          '<td style="padding:7px 10px;font-size:12px;color:#1E293B;">' + c.company + '</td>' +
+          '<td style="padding:7px 10px;font-size:11px;color:#475569;">' + c.vertical + '</td>' +
+          '<td style="padding:7px 10px;"><span style="padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;color:' + icpColor + ';background:' + icpBg + ';">' + (c.icp_score != null ? c.icp_score : '-') + '</span></td>' +
+          '<td style="padding:7px 10px;"><span style="padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;color:' + compColor + ';background:' + compBg + ';">' + (c.completeness != null ? c.completeness + '%' : '-') + '</span></td>' +
+          '<td style="padding:7px 10px;text-align:center;">' + emailIcon + '</td>' +
+          '<td style="padding:7px 10px;text-align:center;">' + liIcon + '</td>' +
+          '<td style="padding:7px 10px;font-size:11px;color:#94A3B8;">' + added + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+    // pagination info
+    const total = cvFilteredContacts.length;
+    const showing = Math.min(start + CV_PER_PAGE, total);
+    document.getElementById('cv-showing').textContent = 'Showing ' + (total ? start + 1 : 0) + '-' + showing + ' of ' + total;
+    document.getElementById('cv-prev').disabled = cvPage === 0;
+    document.getElementById('cv-next').disabled = start + CV_PER_PAGE >= total;
+  }
+
+  function cvPrevPage() { if (cvPage > 0) { cvPage--; renderContactsTable(); } }
+  function cvNextPage() { if ((cvPage + 1) * CV_PER_PAGE < cvFilteredContacts.length) { cvPage++; renderContactsTable(); } }
+
+  function exportContactsCSV() {
+    const rows = cvFilteredContacts.length ? cvFilteredContacts : cvAllContacts;
+    if (!rows.length) return alert('No contacts to export');
+    const headers = ['Name','Title','Company','Vertical','ICP Score','Completeness','Email','LinkedIn','Added'];
+    const csvRows = [headers.join(',')];
+    rows.forEach(c => {
+      csvRows.push([
+        '"' + (c.name || '').replace(/"/g, '""') + '"',
+        '"' + (c.title || '').replace(/"/g, '""') + '"',
+        '"' + (c.company || '').replace(/"/g, '""') + '"',
+        '"' + (c.vertical || '').replace(/"/g, '""') + '"',
+        c.icp_score != null ? c.icp_score : '',
+        c.completeness != null ? c.completeness : '',
+        '"' + (c.email || '').replace(/"/g, '""') + '"',
+        '"' + (c.linkedin_url || '').replace(/"/g, '""') + '"',
+        c.created_at ? c.created_at.split('T')[0] : ''
+      ].join(','));
+    });
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'leadbooster-contacts-' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   // ==================== INIT ====================
