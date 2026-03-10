@@ -341,7 +341,7 @@
       <label>Password</label>
       <input type="password" id="login-password" placeholder="••••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
     </div>
-    <button class="btn-login" id="btn-login" onclick="login()">Sign In</button>
+    <button class="btn-login" id="btn-login" onclick="window._login()">Sign In</button>
   </div>
 </div>
 
@@ -751,12 +751,7 @@
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
-  // Ensure login is globally accessible from HTML onclick attributes
-  window.login = login;
-  window.logout = logout;
-  window.setMode = setMode;
-</script><script>
+<script>
   // ==================== CONFIG ====================
   const WEBHOOK = "https://manageai2026.app.n8n.cloud/webhook/lb-discovery";
   const WEBHOOK_TERRITORY = "https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2";
@@ -1160,7 +1155,7 @@
   let queueJobId = null;
   let queuePollInterval = null;
 
-  async function login() {
+  async function _login() {
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
     const errEl = document.getElementById('login-error');
@@ -1198,6 +1193,10 @@
     }
   }
 
+
+  window._login = _login;
+  window.logout = logout;
+  window.setMode = setMode;
 
   function logout() {
     currentUser = null; authToken = null;
@@ -1342,4 +1341,16 @@
         document.getElementById('fb-category').value = '';
         setRating(0);
       } else {
-        throw new Er
+        throw new Error('Failed to submit feedback');
+      }
+    } catch(err) {
+      alert('Error: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Feedback';
+    }
+  }
+</script>
+</div>
+</body>
+</html>
