@@ -747,7 +747,7 @@
     </div>
 
     <!-- Spreadsheet Info -->
-    <a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8/edit" target="_blank" class="sheet-link" style="margin-top:20px;">
+    <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit" target="_blank" class="sheet-link" style="margin-top:20px;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
       <div>
         <div style="font-size:13px;font-weight:700;color:var(--text);">Lead Booster Results Sheet</div>
@@ -2007,7 +2007,7 @@
         if (completed >= leads.length) {
           clearInterval(pollBulk);
           if (statusEl) statusEl.innerHTML = '<span style="color:#16A34A;font-weight:700;">All ' + leads.length + ' companies processed.</span>' +
-            ' <a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" style="color:#4A8FD6;font-weight:700;">Open Google Sheet &rarr;</a>';
+            ' <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI" target="_blank" style="color:#4A8FD6;font-weight:700;">Open Google Sheet &rarr;</a>';
         }
       } catch(e) { console.error('Bulk tracker poll:', e); }
       if (pollCount > 120) clearInterval(pollBulk); // stop after ~16 min
@@ -2074,7 +2074,7 @@
             contactsEl.innerHTML += '<div class="rt-complete">' +
               '<div class="rt-complete-title">' + (contacts ? contacts.length : 0) + ' Contacts Enriched & Scored</div>' +
               '<div class="rt-complete-sub">Results are ready in your Google Sheet</div>' +
-              '<a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" class="rt-sheet-link">Open Google Sheet &rarr;</a>' +
+              '<a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI" target="_blank" class="rt-sheet-link">Open Google Sheet &rarr;</a>' +
             '</div>';
           }
           clearInterval(pollInterval);
@@ -2175,7 +2175,7 @@
           if (titleEl) titleEl.innerHTML = '<span class="rt-status-dot complete"></span>\uD83D\uDDFA\uFE0F ' + city + ', ' + state + ' \u2014 ' + vertLabel;
           container.innerHTML += '<div style="background:#DCFCE7;border-radius:8px;padding:16px;text-align:center;margin-top:12px;">' +
             '<span style="font-weight:700;color:#166534;font-size:14px;">\u2705 Territory run complete \u2014 ' + completed + ' companies processed \u00B7 ' + totalContacts + ' contacts enriched</span>' +
-            ' <a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" style="color:#166534;font-weight:700;text-decoration:underline;">Open Google Sheet \u2192</a>' +
+            ' <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI" target="_blank" style="color:#166534;font-weight:700;text-decoration:underline;">Open Google Sheet \u2192</a>' +
           '</div>';
         }
       } catch(e) { console.error('Territory poll error:', e); }
@@ -2350,7 +2350,7 @@
 
   async function loadContactsViewer() {
     try {
-      const data = await sbAdmin('GET', 'lb_contacts?select=id,name,first_name,last_name,company,domain,title,email,phone,linkedin_url,linkedin_confidence,email_source,vertical,icp_score,icp_rationale,final_completeness_score,created_at,enriched_at,status,notes,enrichment&order=icp_score.desc.nullslast&limit=500');
+      const data = await sbAdmin('GET', 'lb_contacts?select=*&order=created_at.desc&limit=500');
       cvAllContacts = (data || []).map(c => {
         const e = c.enrichment || {};
         return {
