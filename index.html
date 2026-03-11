@@ -532,6 +532,9 @@
     <button class="mode-tab" onclick="setMode('history')" id="tab-history">
       History
     </button>
+    <button class="mode-tab" onclick="setMode('activecampaign')" id="tab-activecampaign">
+      📧 ActiveCampaign
+    </button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">
       💬 Feedback
     </button>
@@ -1014,6 +1017,233 @@
     <div class="summary-banner" id="summary-banner"></div>
   </div>
 
+  <!-- ==================== ACTIVECAMPAIGN MODE ==================== -->
+  <div id="mode-activecampaign" class="mode-content hidden">
+
+    <!-- Section 1: Coming Soon Banner -->
+    <div style="background:#FFF3CD;border:1.5px solid #FFC107;border-radius:16px;padding:28px 32px;margin-bottom:20px;display:flex;align-items:flex-start;gap:16px;">
+      <div style="font-size:36px;flex-shrink:0;">🔌</div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+          <div style="font-size:18px;font-weight:800;color:#1E293B;">ActiveCampaign Integration — Coming Soon</div>
+          <span style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;">Coming Soon</span>
+        </div>
+        <div style="font-size:13px;color:#475569;line-height:1.7;max-width:700px;">This module will automatically push enriched leads into ActiveCampaign, enroll them in vertical-specific sequences, and report outcomes back to Lead Booster. Configure your API credentials below when ready to activate.</div>
+      </div>
+    </div>
+
+    <!-- Section 2: What It Does -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="font-size:15px;margin-bottom:14px;">📤 Lead Booster → ActiveCampaign</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Pushes every enriched contact with verified email (ICP 60+) to ActiveCampaign as a new contact</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Sets custom fields: ICP Score, ICP Rationale, Vertical, Company, Domain, Enrichment Score</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Applies tier tag automatically: Elite (90+), Strong (75–89), Qualified (60–74)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Enrolls contact in the matching vertical sequence (Construction, Behavioral Health, Healthcare, Medical Transport)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Marks contact source as Lead Booster Pro for attribution</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="font-size:15px;margin-bottom:14px;">📥 ActiveCampaign → Lead Booster</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Fires a webhook when a contact replies, books a meeting, or is marked as a deal</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Outcome is written back to lb_contacts in Supabase (outcome field)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>ICP scoring model learns from outcomes over time — closed deals improve future scoring</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Weekly performance report: open rates, reply rates, meetings booked per vertical and ICP tier</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1E293B;line-height:1.6;">
+            <span style="color:#16A34A;font-size:14px;flex-shrink:0;">✓</span>
+            <span>Dashboard Intelligence card shows sequence performance alongside pipeline health</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: System Components -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">System Components</div>
+      <div class="card-sub">These workflows and tables will be built when integration is activated</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+
+        <div style="border:1px solid var(--border);border-radius:12px;padding:18px 16px;background:var(--bg);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:22px;">⚡</span>
+            <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#F1F5F9;color:#64748B;">NOT BUILT</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">WF-13 Contact Push</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">n8n Workflow</div>
+          <div style="font-size:11px;color:var(--text-mid);line-height:1.6;">Triggers at end of WF-06. Pushes each contact with valid email and ICP 60+ to ActiveCampaign via API. Creates or updates contact, sets custom fields, applies tier tag, enrolls in sequence.</div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:12px;padding:18px 16px;background:var(--bg);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:22px;">📡</span>
+            <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#F1F5F9;color:#64748B;">NOT BUILT</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">WF-14 Outcome Receiver</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">n8n Workflow</div>
+          <div style="font-size:11px;color:var(--text-mid);line-height:1.6;">Webhook listener. Receives outcome events from ActiveCampaign automations (replied, meeting booked, deal closed). Matches to lb_contacts by email, writes outcome to lb_outcomes table.</div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:12px;padding:18px 16px;background:var(--bg);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:22px;">📊</span>
+            <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#F1F5F9;color:#64748B;">NOT BUILT</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">WF-15 Performance Reporter</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">n8n Workflow</div>
+          <div style="font-size:11px;color:var(--text-mid);line-height:1.6;">Weekly pull from ActiveCampaign API. Fetches open rates, reply rates, meetings booked per vertical and ICP tier. Stores in lb_ac_reports. Surfaces in dashboard Intelligence card.</div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:12px;padding:18px 16px;background:var(--bg);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:22px;">🗄️</span>
+            <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#F1F5F9;color:#64748B;">NOT BUILT</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">lb_outcomes</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Supabase Table</div>
+          <div style="font-size:11px;color:var(--text-mid);line-height:1.6;">Stores outcome data per contact. Fields: contact_id, outcome (replied/meeting/qualified/closed/disqualified), outcome_date, was_icp_accurate, score_delta.</div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:12px;padding:18px 16px;background:var(--bg);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:22px;">🗄️</span>
+            <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#F1F5F9;color:#64748B;">NOT BUILT</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">lb_ac_reports</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Supabase Table</div>
+          <div style="font-size:11px;color:var(--text-mid);line-height:1.6;">Stores weekly ActiveCampaign performance reports per vertical and ICP tier. Used by dashboard Intelligence card to show sequence ROI.</div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:12px;padding:18px 16px;background:var(--bg);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:22px;">🎯</span>
+            <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#F1F5F9;color:#64748B;">NOT BUILT</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">AC Sequences (x4)</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">ActiveCampaign</div>
+          <div style="font-size:11px;color:var(--text-mid);line-height:1.6;">Four vertical-specific email sequences to be built in ActiveCampaign: Construction, Behavioral Health, Healthcare, Medical Transport. Each tailored to that vertical's pain points and ManageAI's value prop.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Section 4: Configuration Panel -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">Configuration</div>
+      <div class="card-sub">Enter your ActiveCampaign credentials when ready to activate</div>
+      <div style="opacity:0.6;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+          <div class="field">
+            <label>ActiveCampaign Account URL</label>
+            <input type="text" placeholder="yourname.api-us1.com" disabled style="cursor:not-allowed;background:var(--surface2);" />
+          </div>
+          <div class="field">
+            <label>ActiveCampaign API Key</label>
+            <input type="text" placeholder="Enter API key from AC Settings → Developer" disabled style="cursor:not-allowed;background:var(--surface2);" />
+          </div>
+        </div>
+        <div class="field" style="max-width:260px;margin-bottom:14px;">
+          <label>Min ICP Score to Push</label>
+          <input type="number" placeholder="60" disabled style="cursor:not-allowed;background:var(--surface2);" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:20px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);position:relative;cursor:not-allowed;">
+              <div style="width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid var(--border);position:absolute;top:1px;left:1px;"></div>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:var(--text-mid);">Push contacts with pattern_guess emails</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:20px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);position:relative;cursor:not-allowed;">
+              <div style="width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid var(--border);position:absolute;top:1px;left:1px;"></div>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:var(--text-mid);">Enable outcome webhooks</span>
+          </div>
+        </div>
+        <button class="btn-primary" disabled style="max-width:220px;opacity:0.5;cursor:not-allowed;">Save Configuration</button>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:10px;font-weight:500;">Configuration will activate once all components are built</div>
+      </div>
+    </div>
+
+    <!-- Section 5: Build Prompts -->
+    <div class="card">
+      <div class="card-title">🔨 Build Prompts</div>
+      <div class="card-sub">Run these in Claude Code when ready to activate the integration. Run in order.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.ac-chevron').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:none;cursor:pointer;font-family:var(--font);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:var(--accent-light);color:var(--accent);">Step 1 of 3</span>
+              <span style="font-size:13px;font-weight:700;color:var(--text);">Build WF-13 Contact Push</span>
+            </div>
+            <span class="ac-chevron" style="font-size:14px;color:var(--text-dim);">▸</span>
+          </button>
+          <div style="display:none;padding:16px;background:var(--bg);border-top:1px solid var(--border);">
+            <div style="background:var(--surface);border-radius:8px;padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--text-mid);line-height:1.7;">Build prompt will be added here — see Claude for the full prompt</div>
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.ac-chevron').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:none;cursor:pointer;font-family:var(--font);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:var(--accent-light);color:var(--accent);">Step 2 of 3</span>
+              <span style="font-size:13px;font-weight:700;color:var(--text);">Build WF-14 + lb_outcomes</span>
+            </div>
+            <span class="ac-chevron" style="font-size:14px;color:var(--text-dim);">▸</span>
+          </button>
+          <div style="display:none;padding:16px;background:var(--bg);border-top:1px solid var(--border);">
+            <div style="background:var(--surface);border-radius:8px;padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--text-mid);line-height:1.7;">Build prompt will be added here — see Claude for the full prompt</div>
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.ac-chevron').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:none;cursor:pointer;font-family:var(--font);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:var(--accent-light);color:var(--accent);">Step 3 of 3</span>
+              <span style="font-size:13px;font-weight:700;color:var(--text);">Build WF-15 + lb_ac_reports</span>
+            </div>
+            <span class="ac-chevron" style="font-size:14px;color:var(--text-dim);">▸</span>
+          </button>
+          <div style="display:none;padding:16px;background:var(--bg);border-top:1px solid var(--border);">
+            <div style="background:var(--surface);border-radius:8px;padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--text-mid);line-height:1.7;">Build prompt will be added here — see Claude for the full prompt</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
   <!-- ==================== FEEDBACK MODE ==================== -->
   <div id="mode-feedback" class="mode-content hidden">
     <div class="card">
@@ -1104,7 +1334,7 @@
 
   function setMode(mode) {
     currentMode = mode;
-    ['dashboard','single','bulk','territory','current','history','feedback'].forEach(m => {
+    ['dashboard','single','bulk','territory','current','history','activecampaign','feedback'].forEach(m => {
       const el = document.getElementById('mode-' + m);
       if (el) el.classList.toggle('hidden', m !== mode);
       const tab = document.getElementById('tab-' + m);
