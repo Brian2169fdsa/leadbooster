@@ -442,6 +442,7 @@
       var data = await resp.json();
       if (!resp.ok) throw new Error(data.error_description || data.msg || 'Invalid credentials');
       window._authToken = data.access_token;
+      sessionStorage.setItem('lb_token', data.access_token);
       window._currentUser = {email: data.user.email, name: data.user.email.split('@')[0]};
       try {
         var u = await fetch(SB+'/rest/v1/lb_users?email=eq.'+encodeURIComponent(em)+'&select=name,role', {
@@ -451,6 +452,7 @@
         if (ud[0] && ud[0].name) window._currentUser.name = ud[0].name;
         window._currentUser.role = (ud[0] && ud[0].role) || 'user';
       } catch(e){}
+      sessionStorage.setItem('lb_user', JSON.stringify(window._currentUser));
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-wrapper').style.display = 'block';
       var badge = document.getElementById('user-badge');
@@ -1759,6 +1761,8 @@
   // Login function is in its own isolated script block above (immune to Cloudflare breakage).
   // Auth state lives on window._currentUser and window._authToken.
   function logout() {
+    sessionStorage.removeItem('lb_token');
+    sessionStorage.removeItem('lb_user');
     window._currentUser = null; window._authToken = null;
     document.getElementById('login-screen').style.display = "flex";
     document.getElementById('app-wrapper').style.display = "none";
@@ -2775,5 +2779,21 @@
   }
 </script>
 </div>
+<script>
+(function() {
+  const token = sessionStorage.getItem('lb_token');
+  const user = sessionStorage.getItem('lb_user');
+  if (token && user) {
+    window._authToken = token;
+    window._currentUser = JSON.parse(user);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-wrapper').style.display = 'block';
+    const badge = document.getElementById('user-badge');
+    if (badge) badge.textContent = window._currentUser.name;
+    if (typeof loadStats === 'function') loadStats();
+    if (typeof loadDashboard === 'function') loadDashboard();
+  }
+})();
+</script>
 </body>
 </html>
