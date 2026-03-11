@@ -211,7 +211,6 @@
 
     /* Results */
     .results-card { display: none; }
-    .results-card.show { display: block; }
     .result-row {
       display: flex; align-items: center; gap: 10px; padding: 11px 14px;
       border-bottom: 1px solid var(--border); animation: slideIn 0.3s ease;
@@ -345,7 +344,6 @@
     .source-pill.hunter { background: #FEF3C7; color: #92400E; }
     .source-pill.apollo { background: #EDE9FE; color: #5B21B6; }
     .source-pill.pdl { background: #D1FAE5; color: #065F46; }
-    .source-pill.snovio { background: #FEE2E2; color: #991B1B; }
     .source-pill.website { background: var(--accent-light); color: var(--accent); }
     .source-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
     .source-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
@@ -1112,6 +1110,8 @@
       const tab = document.getElementById('tab-' + m);
       if (tab) tab.classList.toggle('active', m === mode);
     });
+    const rc = document.getElementById('results-card');
+    if (rc) rc.style.display = 'none';
     if (mode === 'history') loadHistory();
     if (mode === 'dashboard') loadDashboard();
     if (mode === 'current') loadCurrentRun();
@@ -1346,20 +1346,6 @@
       territoryResults = companies.slice(0, MAX_COMPANIES);
       renderTerritoryPreview(vertical);
 
-      // Auto-fire enrichment pipeline for each company sequentially
-      if (territoryResults.length > 0) {
-        const submitterName = document.getElementById('t-submitter-name') ? document.getElementById('t-submitter-name').value.trim() : '';
-        const submitterEmail = document.getElementById('t-submitter-email') ? document.getElementById('t-submitter-email').value.trim() : '';
-        const leads = territoryResults.map(co => ({
-          company: co.company,
-          domain: co.domain || '',
-          vertical: co.vertical || vertical,
-          notes: 'Territory search: ' + city + ', ' + state
-        })).filter(l => l.company && l.domain);
-        if (leads.length > 0) {
-          setTimeout(() => runLeads(leads, 'territory', submitterName, submitterEmail), 500);
-        }
-      }
 
     } catch(err) {
       // Demo mode: show placeholder message
@@ -1596,26 +1582,11 @@
   // ==================== AUTH ====================
   // Login function is in its own isolated script block above (immune to Cloudflare breakage).
   // Auth state lives on window._currentUser and window._authToken.
-  let queueJobId = null;
-
-
   function logout() {
     window._currentUser = null; window._authToken = null;
     document.getElementById('login-screen').style.display = "flex";
     document.getElementById('app-wrapper').style.display = "none";
     document.getElementById('login-password').value = '';
-  }
-
-  async function markJobComplete() {
-    if (!queueJobId) return;
-    try {
-      await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?id=eq.'+queueJobId, {
-        method:'PATCH',
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY),'Content-Type':'application/json'},
-        body: JSON.stringify({status:'completed', completed_at: new Date().toISOString()})
-      });
-      queueJobId = null;
-    } catch(e){}
   }
 
   // ==================== DASHBOARD ====================
@@ -2567,11 +2538,6 @@
     a.click();
     URL.revokeObjectURL(a.href);
   }
-
-  // ==================== INIT ====================
-  document.addEventListener('DOMContentLoaded', () => {
-    // stats load after login
-  });
 
   // ==================== FEEDBACK ====================
   let fbRating = 0;
