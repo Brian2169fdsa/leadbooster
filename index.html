@@ -744,12 +744,20 @@
     <div class="card" style="margin-top:20px;padding:22px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div class="dash-section-title" style="margin-bottom:0;">Contacts Viewer</div>
-        <button onclick="exportContactsCSV()" style="padding:7px 16px;border-radius:6px;border:1px solid #E2E6EC;background:#fff;font-size:12px;font-weight:700;color:#1E293B;cursor:pointer;font-family:var(--font);">\u2B07 Export CSV</button>
+        <button onclick="exportContactsCSV()" style="padding:7px 16px;border-radius:6px;border:1px solid #E2E6EC;background:#fff;font-size:12px;font-weight:700;color:#1E293B;cursor:pointer;font-family:var(--font);">Export CSV</button>
+      </div>
+      <!-- Vertical tabs -->
+      <div style="display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid #E2E6EC;">
+        <button class="cv-tab active" data-vertical="" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid var(--accent);background:none;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font);">All Leads</button>
+        <button class="cv-tab" data-vertical="construction" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">construction</button>
+        <button class="cv-tab" data-vertical="behavioral_health" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">behavioral_health</button>
+        <button class="cv-tab" data-vertical="healthcare" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">healthcare</button>
+        <button class="cv-tab" data-vertical="medical_transport" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">medical_transport</button>
       </div>
       <!-- Filter bar -->
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
         <input type="text" id="cv-search" placeholder="Search name, company, title..." oninput="applyContactFilters()" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:var(--font);outline:none;" />
-        <select id="cv-vertical" onchange="applyContactFilters()" style="padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:var(--font);color:#1E293B;outline:none;">
+        <select id="cv-vertical" onchange="applyContactFilters()" style="display:none;">
           <option value="">All Verticals</option>
           <option value="construction">Construction</option>
           <option value="behavioral_health">Behavioral Health</option>
@@ -796,6 +804,16 @@
       </div>
     </div>
 
+    <!-- Spreadsheet Info -->
+    <a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8/edit" target="_blank" class="sheet-link" style="margin-top:20px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Lead Booster Results Sheet</div>
+        <div style="font-size:11px;font-weight:500;color:var(--text-dim);margin-top:1px;">Leads appear here within 3–5 minutes · Sort by ICP Score column</div>
+      </div>
+      <div class="sheet-arrow">Open Google Sheets &rarr;</div>
+    </a>
+
     <div style="height:20px;"></div>
   </div>
 
@@ -821,6 +839,7 @@
         <div class="chips" id="s-chips">
           <button class="chip active" data-v="behavioral_health" onclick="selectChip(this,'s-chips')">Behavioral Health</button>
           <button class="chip" data-v="construction" onclick="selectChip(this,'s-chips')">Construction</button>
+          <button class="chip" data-v="healthcare" onclick="selectChip(this,'s-chips')">Healthcare</button>
           <button class="chip" data-v="medical_transport" onclick="selectChip(this,'s-chips')">Medical Transport</button>
           <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'s-chips')">B2B Services</button>
           <button class="chip" data-v="health_wellness" onclick="selectChip(this,'s-chips')">Health &amp; Wellness</button>
@@ -889,6 +908,7 @@
         <select id="b-vertical">
           <option value="behavioral_health">Behavioral Health</option>
           <option value="construction">Construction</option>
+          <option value="healthcare">Healthcare</option>
           <option value="medical_transport">Medical Transport</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
           <option value="health_wellness">Health &amp; Wellness</option>
@@ -936,6 +956,7 @@
         <div class="chips" id="t-chips">
           <button class="chip active" data-v="behavioral_health" onclick="selectChip(this,'t-chips')">Behavioral Health</button>
           <button class="chip" data-v="construction" onclick="selectChip(this,'t-chips')">Construction</button>
+          <button class="chip" data-v="healthcare" onclick="selectChip(this,'t-chips')">Healthcare</button>
           <button class="chip" data-v="medical_transport" onclick="selectChip(this,'t-chips')">Medical Transport</button>
           <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'t-chips')">B2B Services</button>
           <button class="chip" data-v="health_wellness" onclick="selectChip(this,'t-chips')">Health &amp; Wellness</button>
@@ -2501,6 +2522,20 @@
       console.error('Contacts viewer error:', e);
       document.getElementById('cv-tbody').innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:#DC2626;">Error loading contacts</td></tr>';
     }
+  }
+
+  function selectCvTab(el) {
+    document.querySelectorAll('.cv-tab').forEach(t => {
+      t.classList.remove('active');
+      t.style.borderBottomColor = 'transparent';
+      t.style.color = '#64748B';
+    });
+    el.classList.add('active');
+    el.style.borderBottomColor = 'var(--accent)';
+    el.style.color = 'var(--accent)';
+    const sel = document.getElementById('cv-vertical');
+    sel.value = el.dataset.vertical;
+    applyContactFilters();
   }
 
   function applyContactFilters() {
