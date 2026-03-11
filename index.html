@@ -57,29 +57,6 @@
     .btn-login:hover { background: #3a7ec4; }
     .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* ===== QUEUE OVERLAY ===== */
-    #queue-overlay {
-      position: fixed; inset: 0; z-index: 8888;
-      background: rgba(30,51,72,0.92);
-      display: none; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
-    }
-    #queue-overlay.show { display: flex; }
-    .queue-card {
-      background: #fff; border-radius: 20px; padding: 48px 52px;
-      width: 100%; max-width: 480px; text-align: center;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.3);
-    }
-    .queue-spinner { width: 72px; height: 72px; margin: 0 auto 24px; border: 5px solid var(--accent-light); border-top-color: var(--accent); border-radius: 50%; animation: qspin 1s linear infinite; }
-    @keyframes qspin { to { transform: rotate(360deg); } }
-    .queue-title { font-size: 20px; font-weight: 800; color: var(--nav); margin-bottom: 8px; }
-    .queue-sub { font-size: 13px; color: var(--text-mid); margin-bottom: 20px; }
-    .queue-position-badge { display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 13px; font-weight: 700; padding: 6px 18px; border-radius: 20px; margin-bottom: 20px; }
-    .queue-countdown { font-family: var(--mono); font-size: 42px; font-weight: 700; color: var(--nav); margin-bottom: 4px; letter-spacing: 2px; }
-    .queue-countdown-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
-    .queue-progress-bar { background: var(--surface); border-radius: 20px; height: 6px; overflow: hidden; margin-bottom: 20px; }
-    .queue-progress-fill { height: 100%; background: var(--accent); border-radius: 20px; transition: width 1s linear; }
-    .queue-status-line { font-size: 12px; color: var(--text-dim); }
     .user-badge { display: flex; align-items: center; gap: 8px; }
     .user-badge-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
     .user-badge-name { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 600; }
@@ -491,43 +468,8 @@
   };
 </script>
 
-<!-- ===== QUEUE OVERLAY ===== -->
-<div id="queue-overlay" style="display:none;">
-  <div class="queue-card">
-    <div class="queue-spinner"></div>
-    <div class="queue-title">You're in the queue</div>
-    <div class="queue-sub">Another run is in progress. Your leads are next — sit tight.</div>
-    <div class="queue-position-badge" id="queue-position-badge">Position #2 in line</div>
-    <div class="queue-countdown" id="queue-countdown">0:00</div>
-    <div class="queue-countdown-label">Estimated wait time</div>
-    <div class="queue-progress-bar"><div class="queue-progress-fill" id="queue-progress-fill" style="width:0%"></div></div>
-    <div class="queue-status-line" id="queue-status-line">Checking queue status…</div>
-  </div>
-</div>
 
 
-<!-- ==================== QUEUE MODAL ==================== -->
-<div id="queue-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;">
-  <div style="background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);padding:40px;max-width:380px;width:100%;text-align:center;">
-    <div style="margin-bottom:20px;">
-      <svg width="56" height="56" viewBox="0 0 56 56" fill="none" style="display:block;margin:0 auto 12px;">
-        <circle cx="28" cy="28" r="26" stroke="#E2E6EC" stroke-width="4"/>
-        <path d="M28 8 A20 20 0 0 1 48 28" stroke="#4A8FD6" stroke-width="4" stroke-linecap="round">
-          <animateTransform attributeName="transform" type="rotate" from="0 28 28" to="360 28 28" dur="1.2s" repeatCount="indefinite"/>
-        </path>
-      </svg>
-      <div style="font-size:18px;font-weight:700;color:#1E3348;margin-bottom:6px;">You're in the queue</div>
-      <div style="font-size:13px;color:#475569;margin-bottom:16px;">Another run is in progress. You'll start automatically when it finishes.</div>
-    </div>
-    <div style="background:#F5F6F8;border-radius:10px;padding:16px;margin-bottom:20px;">
-      <div id="q-position" style="font-size:22px;font-weight:800;color:#4A8FD6;margin-bottom:4px;">#1 in queue</div>
-      <div id="q-eta" style="font-size:12px;color:#7A8B9A;margin-bottom:12px;">Est. wait calculating…</div>
-      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#475569;margin-bottom:4px;">Estimated Time Remaining</div>
-      <div id="q-countdown" style="font-size:32px;font-weight:800;color:#1E3348;font-family:'JetBrains Mono',monospace;">—:——</div>
-    </div>
-    <div style="font-size:11px;color:#7A8B9A;">This page will update automatically. Do not close this tab.</div>
-  </div>
-</div>
 
 <!-- ==================== APP WRAPPER ==================== -->
 <div id="app-wrapper" style="display:none;">
@@ -1293,12 +1235,7 @@
     return await resp.json();
   }
 
-  async function runLeads(leads, mode, submitterName, submitterEmail, skipQueueCheck) {
-    // Queue check — only on first call, not when called from queue poller
-    if (!skipQueueCheck) {
-      const canRun = await acquireQueueSlot(leads, mode, submitterName, submitterEmail);
-      if (!canRun) return; // queued — will auto-fire when slot opens
-    }
+  async function runLeads(leads, mode, submitterName, submitterEmail) {
     if (!leads.length) return;
     showResults();
     let ok = 0, fail = 0;
@@ -1640,7 +1577,6 @@
   // Login function is in its own isolated script block above (immune to Cloudflare breakage).
   // Auth state lives on window._currentUser and window._authToken.
   let queueJobId = null;
-  let queuePollInterval = null;
 
 
   function logout() {
@@ -1648,76 +1584,6 @@
     document.getElementById('login-screen').style.display = "flex";
     document.getElementById('app-wrapper').style.display = "none";
     document.getElementById('login-password').value = '';
-  }
-
-  // ==================== QUEUE ====================
-  async function acquireQueueSlot(companies, mode, submitterName, submitterEmail) {
-    try {
-      const runningResp = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?status=eq.running&select=user_name,created_at', {
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY)}
-      });
-      const running = await runningResp.json();
-      const queuedResp = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?status=eq.queued&select=id&order=created_at.asc', {
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY)}
-      });
-      const queued = await queuedResp.json();
-      const isBusy = running.length > 0;
-      const position = queued.length + (isBusy ? 1 : 0);
-      const jobResp = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue', {
-        method:'POST',
-        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
-        body: JSON.stringify({
-          user_email: (window._currentUser||{}).email || submitterEmail || 'unknown',
-          user_name: (window._currentUser||{}).name || submitterName || 'User',
-          status: isBusy ? 'queued' : 'running',
-          mode, company_count: companies.length,
-          companies: companies,
-          queue_position: position,
-          estimated_seconds: companies.length * 45
-        })
-      });
-      const job = await jobResp.json();
-      queueJobId = Array.isArray(job) ? job[0]?.id : job?.id;
-      if (isBusy) {
-        window._queuedLeads = companies;
-        window._queuedMode = mode;
-        window._queuedName = submitterName;
-        window._queuedEmail = submitterEmail;
-        showQueueModal(position + 1, companies.length * 45 * (position + 1));
-        return false;
-      }
-      return true;
-    } catch(e) { return true; }
-  }
-
-  function showQueueModal(position, etaSeconds) {
-    const mins = Math.ceil(etaSeconds / 60);
-    let countdown = etaSeconds;
-    document.getElementById('queue-position-badge').textContent = '#' + position + ' in queue';
-    document.getElementById('queue-status-line').textContent = 'Est. ' + mins + ' min wait';
-    document.getElementById('queue-overlay').style.display = "flex";
-    if (queuePollInterval) clearInterval(queuePollInterval);
-    queuePollInterval = setInterval(async () => {
-      countdown = Math.max(0, countdown - 1);
-      const m = Math.floor(countdown/60), s = countdown % 60;
-      document.getElementById('queue-countdown').textContent = m + ':' + String(s).padStart(2,'0');
-      try {
-        const r = await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?status=eq.running&select=id', {
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY)}
-        });
-        const running = await r.json();
-        if (running.length === 0) {
-          clearInterval(queuePollInterval);
-          document.getElementById('queue-overlay').style.display = "none";
-          await fetch(SB_URL+'/rest/v1/lb_pipeline_queue?id=eq.'+queueJobId, {
-            method:'PATCH',
-            headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(window._authToken||SB_KEY),'Content-Type':'application/json'},
-            body: JSON.stringify({status:'running', started_at: new Date().toISOString()})
-          });
-          runLeads(window._queuedLeads, window._queuedMode, window._queuedName, window._queuedEmail, true);
-        }
-      } catch(e){}
-    }, 1000);
   }
 
   async function markJobComplete() {
