@@ -2006,24 +2006,14 @@
     if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
     return Math.floor(diff/86400) + 'd ago';
   }
-  function statusToStep(status, createdAt) {
+  function statusToStep(status) {
     const st = (status||'').toLowerCase();
-    // Terminal states
     if (st === 'complete' || st === 'enriched') return 5;
     if (st === 'failed') return 0;
-    // Explicit intermediate stages (if pipeline ever writes them)
     if (st === 'scoring' || st === 'scored') return 4;
     if (st === 'enriching') return 3;
-    if (st === 'extracting' || st === 'scraping' || st === 'scraped') return 2;
-    if (st === 'discovery') return 1;
-    // For 'pending'/'queued' — estimate stage from elapsed time since pipeline
-    // runs ~3-5 min: Discovery 0-45s, Scraping 45-90s, Enriching 90-180s, Scoring 180-240s
-    if (createdAt) {
-      const elapsed = (Date.now() - new Date(createdAt).getTime()) / 1000;
-      if (elapsed > 180) return 4; // Scoring
-      if (elapsed > 90) return 3;  // Enriching
-      if (elapsed > 45) return 2;  // Scraping
-    }
+    if (st === 'scraping' || st === 'extracting' || st === 'scraped') return 2;
+    if (st === 'pending' || st === 'discovery' || st === 'processing') return 1;
     return 1;
   }
   function renderProgressTrack(step) {
@@ -2380,7 +2370,7 @@
     injectTrackerCSS();
     if (currentRunPoll) clearInterval(currentRunPoll);
     await refreshCurrentRun();
-    currentRunPoll = setInterval(refreshCurrentRun, 8000);
+    currentRunPoll = setInterval(refreshCurrentRun, 5000);
   }
   async function refreshCurrentRun() {
     try {
@@ -2394,7 +2384,7 @@
     if (!el) return;
     try {
       const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-      const rows = await sbAdmin('GET', 'lb_queue?status=not.in.(complete,failed)&created_at=gte.' + twoHoursAgo + '&order=created_at.desc&limit=10');
+      const rows = await sbAdmin('GET', 'lb_requests?select=*&status=in.(pending,processing,scraping,enriching,scoring,complete)&created_at=gte.' + twoHoursAgo + '&order=created_at.desc&limit=20');
       if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
       if (!rows || !rows.length) {
         if (dotEl) { dotEl.style.background = '#94A3B8'; dotEl.style.animation = 'none'; }
@@ -2405,21 +2395,27 @@
         '</div>';
         return;
       }
-      if (dotEl) { dotEl.style.background = '#16A34A'; dotEl.style.animation = 'pulse-dot 1.5s ease-in-out infinite'; }
-      // Count contacts per queue_id
-      const queueIds = rows.map(r => r.id);
-      const contactCounts = {};
-      for (const qid of queueIds) {
-        const contacts = await sbAdmin('GET', 'lb_contacts?queue_id=eq.' + qid + '&select=id');
-        contactCounts[qid] = contacts ? contacts.length : 0;
+      const hasActive = rows.some(r => r.status !== 'complete');
+      if (dotEl) {
+        if (hasActive) { dotEl.style.background = '#16A34A'; dotEl.style.animation = 'pulse-dot 1.5s ease-in-out infinite'; }
+        else { dotEl.style.background = '#16A34A'; dotEl.style.animation = 'none'; }
       }
+      // Batch-fetch contact counts by domain
+      const domains = [...new Set(rows.map(r => r.domain).filter(Boolean))];
+      const contactCounts = {};
+      await Promise.all(domains.map(async d => {
+        const contacts = await sbAdmin('GET', 'lb_contacts?domain=eq.' + encodeURIComponent(d) + '&select=id');
+        contactCounts[d] = contacts ? contacts.length : 0;
+      }));
       el.innerHTML = rows.map(r => {
-        const meta = r.meta || {};
-        const step = statusToStep(r.status, r.created_at);
+        const step = statusToStep(r.status);
         const stepNames = { 1: 'Discovering', 2: 'Scraping', 3: 'Enriching', 4: 'Scoring', 5: 'Complete', 0: 'Failed' };
         const stepLabel = stepNames[step] || 'Processing';
         let badgeDot, badgeLabel;
-        if (step === 3 || step === 4) {
+        if (step === 5) {
+          badgeDot = '<span style="width:6px;height:6px;border-radius:50%;background:#16A34A;display:inline-block;"></span>';
+          badgeLabel = '<span style="font-size:10px;font-weight:700;color:#16A34A;">' + stepLabel + '</span>';
+        } else if (step === 3 || step === 4) {
           badgeDot = '<span style="width:6px;height:6px;border-radius:50%;background:#D97706;display:inline-block;animation:pulse-dot 1.5s ease-in-out infinite;"></span>';
           badgeLabel = '<span style="font-size:10px;font-weight:700;color:#D97706;">' + stepLabel + '</span>';
         } else if (step === 1 || step === 2) {
@@ -2429,16 +2425,19 @@
           badgeDot = '<span style="width:6px;height:6px;border-radius:50%;background:#94A3B8;display:inline-block;"></span>';
           badgeLabel = '<span style="font-size:10px;font-weight:700;color:#94A3B8;">' + stepLabel + '</span>';
         }
+        const company = r.company_name || r.company || r.domain || 'Unknown';
+        const domain = r.domain || '';
+        const count = contactCounts[domain] || 0;
         return '<div style="padding:14px;background:#F5F6F8;border-radius:8px;margin-bottom:8px;">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
             '<div>' +
               '<div style="display:flex;align-items:center;gap:6px;">' +
-                '<span style="font-weight:700;font-size:13px;">' + (meta.company || r.domain || 'Unknown') + '</span>' +
+                '<span style="font-weight:700;font-size:13px;">' + company + '</span>' +
                 '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:#fff;border-radius:10px;border:1px solid #E2E6EC;">' + badgeDot + badgeLabel + '</span>' +
               '</div>' +
-              '<div style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + ' \u00B7 ' + timeAgo(r.created_at) + '</div>' +
+              '<div style="font-size:11px;color:#94A3B8;">' + domain + ' \u00B7 ' + timeAgo(r.created_at) + '</div>' +
             '</div>' +
-            '<div style="font-size:11px;font-weight:700;color:#4A8FD6;">' + (contactCounts[r.id] || 0) + ' contacts</div>' +
+            '<div style="font-size:11px;font-weight:700;color:#4A8FD6;">' + count + ' contacts</div>' +
           '</div>' +
           '<div class="rt-progress" style="margin:0;">' + renderProgressTrack(step) + '</div>' +
         '</div>';
@@ -2448,77 +2447,67 @@
       el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#DC2626;">Error loading active runs</div>';
     }
   }
+  let crSeenContactIds = new Set();
+  let crPrevRequestStatuses = {};
   async function loadEventStream() {
     const el = document.getElementById('cr-event-feed');
     const updatedEl = document.getElementById('cr-events-updated');
     if (!el) return;
     try {
-      const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
-      const [queueRows, pages, rawContacts, contacts, notifications, feedback, territories] = await Promise.all([
-        sbAdmin('GET', 'lb_queue?created_at=gte.' + fourHoursAgo + '&select=id,domain,status,meta,created_at&order=created_at.desc&limit=20'),
-        sbAdmin('GET', 'lb_pages?created_at=gte.' + fourHoursAgo + '&select=id,url,created_at&order=created_at.desc&limit=15'),
-        sbAdmin('GET', 'lb_contacts_raw?created_at=gte.' + fourHoursAgo + '&select=id,name,title,created_at&order=created_at.desc&limit=15'),
-        sbAdmin('GET', 'lb_contacts?created_at=gte.' + fourHoursAgo + '&select=id,name,first_name,last_name,company,icp_score,email,email_source,enrichment,created_at&order=created_at.desc&limit=20'),
-        sbAdmin('GET', 'lb_notifications?created_at=gte.' + fourHoursAgo + '&select=id,subject,created_at&order=created_at.desc&limit=10'),
-        sbAdmin('GET', 'lb_feedback?created_at=gte.' + fourHoursAgo + '&select=id,name,rating,created_at&order=created_at.desc&limit=5'),
-        sbAdmin('GET', 'lb_territory_searches?created_at=gte.' + fourHoursAgo + '&select=id,city,state,vertical,created_at&order=created_at.desc&limit=5')
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+      const [contacts, requests] = await Promise.all([
+        sbAdmin('GET', 'lb_contacts?select=id,first_name,last_name,title,email,email_source,company_name,icp_score,created_at&created_at=gte.' + twoHoursAgo + '&order=created_at.desc&limit=50'),
+        sbAdmin('GET', 'lb_requests?select=id,company_name,domain,status,created_at&created_at=gte.' + twoHoursAgo + '&order=created_at.desc&limit=20')
       ]);
       const events = [];
-      // Queue events
-      if (queueRows) queueRows.forEach(r => {
-        const meta = r.meta || {};
-        const company = meta.company || r.domain || 'Unknown';
-        const st = (r.status || '').toLowerCase();
-        const iconMap = { pending:'\uD83D\uDE80', discovery:'\uD83D\uDE80', extracting:'\uD83D\uDD0D', enriching:'\uD83D\uDD2C', scoring:'\uD83C\uDFAF', complete:'\u2705', enriched:'\u2705', failed:'\u274C' };
-        const labelMap = { pending:' pipeline started', discovery:' pipeline started', extracting:'Scraping ', enriching:'Enriching ', scoring:'ICP scoring ', complete:' complete', enriched:' complete', failed:' failed' };
-        const icon = iconMap[st] || '\uD83D\uDE80';
-        const label = st === 'extracting' || st === 'enriching' || st === 'scoring' ? labelMap[st] + company : company + (labelMap[st] || ' processing');
-        events.push({ icon, text: label, time: r.created_at });
-      });
-      // Pages
-      if (pages) pages.forEach(r => {
-        const url = (r.url || '').substring(0, 50) + (r.url && r.url.length > 50 ? '...' : '');
-        events.push({ icon:'\uD83D\uDCC4', text:'Page scraped: ' + url, time: r.created_at });
-      });
-      // Raw contacts
-      if (rawContacts) rawContacts.forEach(r => {
-        events.push({ icon:'\uD83D\uDC64', text:'Contact found: ' + (r.name || 'Unknown') + (r.title ? ' \u2014 ' + r.title : ''), time: r.created_at });
-      });
-      // Scored contacts
+      const newSeenIds = new Set();
+      // Contact events — deduplicated by id
       if (contacts) contacts.forEach(c => {
-        const cName = c.name || [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Contact';
-        const company = c.company || '';
-        const score = c.icp_score;
-        const enr = c.enrichment || {};
-        if (score !== null && score !== undefined) {
-          const icon = score >= 80 ? '\u2B50' : score >= 60 ? '\uD83C\uDFAF' : '\uD83D\uDCCB';
-          const prefix = score >= 80 ? 'HIGH PRIORITY: ' : '';
-          events.push({ icon, text: prefix + cName + (company ? ' @ ' + company : '') + ' \u2014 ICP ' + score, time: c.created_at });
+        if (newSeenIds.has(c.id)) return;
+        newSeenIds.add(c.id);
+        const firstName = c.first_name || '';
+        const lastName = c.last_name || '';
+        const fullName = (firstName + ' ' + lastName).trim() || 'Contact';
+        // Contact found event
+        events.push({ icon:'\uD83D\uDC64', text:'Contact found: ' + fullName + (c.title ? ' \u2014 ' + c.title : ''), time: c.created_at });
+        // Email found event
+        if (c.email) {
+          events.push({ icon:'\uD83D\uDCE7', text:'Email found: ' + firstName + (c.email_source ? ' via ' + c.email_source : ''), time: c.created_at });
         }
-        const emailSrc = c.email_source || enr.email_source;
-        if (c.email || (emailSrc && emailSrc !== 'none')) {
-          events.push({ icon:'\uD83D\uDCE7', text:'Email found: ' + cName + (emailSrc ? ' via ' + emailSrc : ''), time: c.created_at });
+        // High priority event
+        if (c.icp_score != null && c.icp_score >= 75) {
+          const company = c.company_name || '';
+          events.push({ icon:'\u2B50', text:'HIGH PRIORITY: ' + fullName + (company ? ' @ ' + company : '') + ' \u2014 ICP ' + c.icp_score, time: c.created_at });
         }
       });
-      // Notifications
-      if (notifications) notifications.forEach(r => {
-        const subj = (r.subject || '').substring(0, 50) + (r.subject && r.subject.length > 50 ? '...' : '');
-        events.push({ icon:'\uD83D\uDCEC', text:'Notification sent: ' + subj, time: r.created_at });
+      crSeenContactIds = newSeenIds;
+      // Request completion events
+      if (requests) requests.forEach(r => {
+        const prev = crPrevRequestStatuses[r.id];
+        if (r.status === 'complete' && prev && prev !== 'complete') {
+          const company = r.company_name || r.domain || 'Unknown';
+          events.push({ icon:'\u2705', text:'Pipeline complete: ' + company, time: r.created_at });
+        }
       });
-      // Feedback
-      if (feedback) feedback.forEach(r => {
-        events.push({ icon:'\uD83D\uDCAC', text:'Feedback from ' + (r.name || 'User') + ': ' + (r.rating || 0) + '\u2605', time: r.created_at });
-      });
-      // Territory searches
-      if (territories) territories.forEach(r => {
-        events.push({ icon:'\uD83D\uDDFA\uFE0F', text:'Territory: ' + (r.city || '') + ', ' + (r.state || '') + ' \u2014 ' + (r.vertical || '').replace(/_/g, ' '), time: r.created_at });
-      });
-      // Sort by time descending, take top 30
+      // Update tracked statuses for next poll
+      const newStatuses = {};
+      if (requests) requests.forEach(r => { newStatuses[r.id] = r.status; });
+      // On first load, also show already-completed requests
+      if (Object.keys(crPrevRequestStatuses).length === 0 && requests) {
+        requests.forEach(r => {
+          if (r.status === 'complete') {
+            const company = r.company_name || r.domain || 'Unknown';
+            events.push({ icon:'\u2705', text:'Pipeline complete: ' + company, time: r.created_at });
+          }
+        });
+      }
+      crPrevRequestStatuses = newStatuses;
+      // Sort by time descending
       events.sort((a, b) => new Date(b.time) - new Date(a.time));
-      const top = events.slice(0, 30);
+      const top = events.slice(0, 50);
       if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
       if (!top.length) {
-        el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No events in the last 4 hours</div>';
+        el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No events in the last 2 hours</div>';
         return;
       }
       el.innerHTML = top.map(e =>
@@ -2528,6 +2517,8 @@
           '<div class="event-time">' + (e.time ? timeAgo(e.time) : '') + '</div></div>' +
         '</div>'
       ).join('');
+      // Auto-scroll to top
+      el.scrollTop = 0;
     } catch(e) {
       console.error('Event stream error:', e);
       el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#DC2626;">Error loading events</div>';
