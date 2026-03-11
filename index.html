@@ -1837,9 +1837,25 @@
     if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
     return Math.floor(diff/86400) + 'd ago';
   }
-  function statusToStep(status) {
-    const map = { pending: 1, discovery: 1, extracting: 2, enriching: 3, scoring: 4, complete: 5, enriched: 5, failed: 0 };
-    return map[(status||'').toLowerCase()] || 1;
+  function statusToStep(status, createdAt) {
+    const st = (status||'').toLowerCase();
+    // Terminal states
+    if (st === 'complete' || st === 'enriched') return 5;
+    if (st === 'failed') return 0;
+    // Explicit intermediate stages (if pipeline ever writes them)
+    if (st === 'scoring' || st === 'scored') return 4;
+    if (st === 'enriching') return 3;
+    if (st === 'extracting' || st === 'scraping' || st === 'scraped') return 2;
+    if (st === 'discovery') return 1;
+    // For 'pending'/'queued' — estimate stage from elapsed time since pipeline
+    // runs ~3-5 min: Discovery 0-45s, Scraping 45-90s, Enriching 90-180s, Scoring 180-240s
+    if (createdAt) {
+      const elapsed = (Date.now() - new Date(createdAt).getTime()) / 1000;
+      if (elapsed > 180) return 4; // Scoring
+      if (elapsed > 90) return 3;  // Enriching
+      if (elapsed > 45) return 2;  // Scraping
+    }
+    return 1;
   }
   function renderProgressTrack(step) {
     const stages = ['Discovery','Scraping','Enriching','Scoring','Complete'];
@@ -1994,8 +2010,9 @@
               itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot failed"></span><span style="color:#DC2626;">Failed</span>';
               completed++;
             } else {
-              const stepLabels = { pending:'Queued', discovery:'Discovering', extracting:'Scraping', enriching:'Enriching', scoring:'Scoring' };
-              itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot"></span><span>' + (stepLabels[st] || 'Processing') + '</span>';
+              const estStep = statusToStep(st, match.created_at);
+              const estLabels = { 1:'Discovering', 2:'Scraping', 3:'Enriching', 4:'Scoring' };
+              itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot"></span><span>' + (estLabels[estStep] || 'Processing') + '</span>';
             }
           }
         });
@@ -2043,16 +2060,19 @@
         const contactsEl = document.getElementById('rt-contacts-' + queueId);
         const cCount = contacts ? contacts.length : 0;
         const countText = cCount > 0 ? '<span style="font-size:11px;color:#94A3B8;margin-right:8px;">' + cCount + ' contact' + (cCount !== 1 ? 's' : '') + '</span>' : '';
+        const estimatedStep = statusToStep(q.status, q.created_at);
+        const estimatedStepNames = { 1:'discovery', 2:'extracting', 3:'enriching', 4:'scoring', 5:'complete', 0:'failed' };
+        const displayStatus = estimatedStepNames[estimatedStep] || q.status;
         if (statusLine) {
-          statusLine.innerHTML = renderStageDot(q.status) +
+          statusLine.innerHTML = renderStageDot(displayStatus) +
             '<span style="font-weight:700;font-size:14px;color:#1E293B;">' + companyName + '</span>' +
             '<span style="font-size:11px;color:#94A3B8;">' + (q.domain || '') + '</span>' +
             '<span style="flex:1;"></span>' +
             countText +
-            renderStageBadge(q.status);
+            renderStageBadge(displayStatus);
         }
         const detailLabels = { pending:'Queued for processing...', discovery:'Discovering company profile...', extracting:'Scraping Pages...', enriching:'Enriching Contacts via Hunter, Apollo, PDL...', scoring:'AI Scoring contacts with Claude...', complete:'Pipeline complete!', enriched:'Pipeline complete!', failed:'Pipeline failed.' };
-        if (detail) detail.textContent = detailLabels[(q.status||'').toLowerCase()] || 'Processing...';
+        if (detail) detail.textContent = detailLabels[displayStatus] || 'Processing...';
         if (contacts && contacts.length > lastContactCount) {
           lastContactCount = contacts.length;
           if (contactsEl) {
@@ -2226,18 +2246,19 @@
       }
       el.innerHTML = rows.map(r => {
         const meta = r.meta || {};
-        const step = statusToStep(r.status);
-        const st = (r.status || 'pending').toLowerCase();
+        const step = statusToStep(r.status, r.created_at);
+        const stepNames = { 1: 'Discovering', 2: 'Scraping', 3: 'Enriching', 4: 'Scoring', 5: 'Complete', 0: 'Failed' };
+        const stepLabel = stepNames[step] || 'Processing';
         let badgeDot, badgeLabel;
-        if (st === 'enriching' || st === 'scoring') {
+        if (step === 3 || step === 4) {
           badgeDot = '<span style="width:6px;height:6px;border-radius:50%;background:#D97706;display:inline-block;animation:pulse-dot 1.5s ease-in-out infinite;"></span>';
-          badgeLabel = '<span style="font-size:10px;font-weight:700;color:#D97706;text-transform:capitalize;">' + st + '</span>';
-        } else if (st === 'extracting' || st === 'discovery') {
+          badgeLabel = '<span style="font-size:10px;font-weight:700;color:#D97706;">' + stepLabel + '</span>';
+        } else if (step === 1 || step === 2) {
           badgeDot = '<span style="width:6px;height:6px;border-radius:50%;background:#4A8FD6;display:inline-block;animation:pulse-dot 1.5s ease-in-out infinite;"></span>';
-          badgeLabel = '<span style="font-size:10px;font-weight:700;color:#4A8FD6;text-transform:capitalize;">' + st + '</span>';
+          badgeLabel = '<span style="font-size:10px;font-weight:700;color:#4A8FD6;">' + stepLabel + '</span>';
         } else {
           badgeDot = '<span style="width:6px;height:6px;border-radius:50%;background:#94A3B8;display:inline-block;"></span>';
-          badgeLabel = '<span style="font-size:10px;font-weight:700;color:#94A3B8;">Queued</span>';
+          badgeLabel = '<span style="font-size:10px;font-weight:700;color:#94A3B8;">' + stepLabel + '</span>';
         }
         return '<div style="padding:14px;background:#F5F6F8;border-radius:8px;margin-bottom:8px;">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
