@@ -442,6 +442,7 @@
       var data = await resp.json();
       if (!resp.ok) throw new Error(data.error_description || data.msg || 'Invalid credentials');
       window._authToken = data.access_token;
+      sessionStorage.setItem('lb_token', data.access_token);
       window._currentUser = {email: data.user.email, name: data.user.email.split('@')[0]};
       try {
         var u = await fetch(SB+'/rest/v1/lb_users?email=eq.'+encodeURIComponent(em)+'&select=name,role', {
@@ -451,6 +452,7 @@
         if (ud[0] && ud[0].name) window._currentUser.name = ud[0].name;
         window._currentUser.role = (ud[0] && ud[0].role) || 'user';
       } catch(e){}
+      sessionStorage.setItem('lb_user', JSON.stringify(window._currentUser));
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-wrapper').style.display = 'block';
       var badge = document.getElementById('user-badge');
@@ -694,8 +696,10 @@
         <button class="cv-tab active" data-vertical="" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid var(--accent);background:none;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font);">All Leads</button>
         <button class="cv-tab" data-vertical="construction" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">construction</button>
         <button class="cv-tab" data-vertical="behavioral_health" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">behavioral_health</button>
-        <button class="cv-tab" data-vertical="healthcare" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">healthcare</button>
         <button class="cv-tab" data-vertical="medical_transport" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">medical_transport</button>
+        <button class="cv-tab" data-vertical="b2b_professional_services" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">b2b_professional_services</button>
+        <button class="cv-tab" data-vertical="health_wellness" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">health_wellness</button>
+        <button class="cv-tab" data-vertical="home_services" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">home_services</button>
       </div>
       <!-- Filter bar -->
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
@@ -704,7 +708,6 @@
           <option value="">All Verticals</option>
           <option value="construction">Construction</option>
           <option value="behavioral_health">Behavioral Health</option>
-          <option value="healthcare">Healthcare</option>
           <option value="medical_transport">Medical Transport</option>
           <option value="home_services">Home Services</option>
         </select>
@@ -783,7 +786,6 @@
         <div class="chips" id="s-chips">
           <button class="chip active" data-v="behavioral_health" onclick="selectChip(this,'s-chips')">Behavioral Health</button>
           <button class="chip" data-v="construction" onclick="selectChip(this,'s-chips')">Construction</button>
-          <button class="chip" data-v="healthcare" onclick="selectChip(this,'s-chips')">Healthcare</button>
           <button class="chip" data-v="medical_transport" onclick="selectChip(this,'s-chips')">Medical Transport</button>
           <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'s-chips')">B2B Services</button>
           <button class="chip" data-v="health_wellness" onclick="selectChip(this,'s-chips')">Health &amp; Wellness</button>
@@ -852,7 +854,6 @@
         <select id="b-vertical">
           <option value="behavioral_health">Behavioral Health</option>
           <option value="construction">Construction</option>
-          <option value="healthcare">Healthcare</option>
           <option value="medical_transport">Medical Transport</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
           <option value="health_wellness">Health &amp; Wellness</option>
@@ -900,7 +901,6 @@
         <div class="chips" id="t-chips">
           <button class="chip active" data-v="behavioral_health" onclick="selectChip(this,'t-chips')">Behavioral Health</button>
           <button class="chip" data-v="construction" onclick="selectChip(this,'t-chips')">Construction</button>
-          <button class="chip" data-v="healthcare" onclick="selectChip(this,'t-chips')">Healthcare</button>
           <button class="chip" data-v="medical_transport" onclick="selectChip(this,'t-chips')">Medical Transport</button>
           <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'t-chips')">B2B Services</button>
           <button class="chip" data-v="health_wellness" onclick="selectChip(this,'t-chips')">Health &amp; Wellness</button>
@@ -1759,6 +1759,8 @@
   // Login function is in its own isolated script block above (immune to Cloudflare breakage).
   // Auth state lives on window._currentUser and window._authToken.
   function logout() {
+    sessionStorage.removeItem('lb_token');
+    sessionStorage.removeItem('lb_user');
     window._currentUser = null; window._authToken = null;
     document.getElementById('login-screen').style.display = "flex";
     document.getElementById('app-wrapper').style.display = "none";
@@ -2775,5 +2777,21 @@
   }
 </script>
 </div>
+<script>
+(function() {
+  const token = sessionStorage.getItem('lb_token');
+  const user = sessionStorage.getItem('lb_user');
+  if (token && user) {
+    window._authToken = token;
+    window._currentUser = JSON.parse(user);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-wrapper').style.display = 'block';
+    const badge = document.getElementById('user-badge');
+    if (badge) badge.textContent = window._currentUser.name;
+    if (typeof loadStats === 'function') loadStats();
+    if (typeof loadDashboard === 'function') loadDashboard();
+  }
+})();
+</script>
 </body>
 </html>
