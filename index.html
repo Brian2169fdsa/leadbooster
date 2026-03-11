@@ -1643,7 +1643,7 @@
       vertical: co.vertical || getActiveChip('t-chips'),
       notes: 'Territory search: ' + document.getElementById('t-city').value + ', ' + document.getElementById('t-state').value
     })).filter(l => l.company);
-    runLeads(leads, 'territory');
+    runLeads(leads, 'territory', window._currentUser?.name || 'Brian', window._currentUser?.email || 'brian@manageai.io');
   }
 
   // ==================== SUPABASE ====================
@@ -1694,71 +1694,17 @@
   }
 
   async function loadStats() {
-    // Query lb_contacts via service_role for reliable KPI data
-    const allContacts = await sbAdmin('GET', 'lb_contacts?select=id,icp_score,email,linkedin_url,final_completeness_score,created_at,enrichment');
+    // Query lb_contacts via service_role for stat-total and stat-today only
+    const allContacts = await sbAdmin('GET', 'lb_contacts?select=id,created_at');
     if (!allContacts) return;
 
-    const total = allContacts.length;
     const el = document.getElementById('stat-total');
-    if (el) el.textContent = total;
+    if (el) el.textContent = allContacts.length;
 
     const today = new Date().toISOString().split('T')[0];
     const todayCount = allContacts.filter(c => c.created_at && c.created_at.startsWith(today)).length;
     const el2 = document.getElementById('stat-today');
     if (el2) el2.textContent = todayCount;
-
-    const icpScores = allContacts.filter(c => c.icp_score != null && c.icp_score > 0).map(c => c.icp_score);
-    const avgIcp = icpScores.length ? Math.round(icpScores.reduce((a, b) => a + b, 0) / icpScores.length) : 0;
-    const el3 = document.getElementById('kpi-icp');
-    if (el3) el3.textContent = avgIcp;
-
-    const compScores = allContacts.filter(c => c.final_completeness_score != null).map(c => c.final_completeness_score);
-    const avgComp = compScores.length ? Math.round(compScores.reduce((a, b) => a + b, 0) / compScores.length) : 0;
-    const el4 = document.getElementById('kpi-completeness');
-    if (el4) el4.textContent = avgComp > 0 ? avgComp + '%' : 'N/A';
-
-    const withEmail = allContacts.filter(c => {
-      if (c.email && c.email.trim() !== '') return true;
-      const e = c.enrichment || {};
-      return e.email_source && e.email_source !== 'none';
-    }).length;
-    const emailPct = total > 0 ? Math.round((withEmail / total) * 100) : 0;
-    const el5 = document.getElementById('kpi-email');
-    if (el5) el5.textContent = emailPct + '%';
-
-    const withLinkedin = allContacts.filter(c => {
-      if (c.linkedin_url && c.linkedin_url.trim() !== '') return true;
-      const e = c.enrichment || {};
-      return e.linkedin_url && e.linkedin_url.trim() !== '';
-    }).length;
-    const linkedinPct = total > 0 ? Math.round((withLinkedin / total) * 100) : 0;
-    const el6 = document.getElementById('kpi-linkedin');
-    if (el6) el6.textContent = linkedinPct + '%';
-
-    // Email delivery widget (top bar)
-    const notif = await sbAdmin('GET', 'lb_notifications?select=subject,status,created_at&order=created_at.desc&limit=1');
-    if (notif && notif.length > 0) {
-      const n = notif[0];
-      const subEl = document.getElementById('email-subject');
-      if (subEl) subEl.textContent = n.subject || 'No subject';
-      const timeEl = document.getElementById('email-time');
-      if (timeEl) timeEl.textContent = n.created_at ? new Date(n.created_at).toLocaleString() : '—';
-      const statusEl = document.getElementById('email-status');
-      if (statusEl) {
-        const st = (n.status || 'unknown').toLowerCase();
-        statusEl.textContent = st.charAt(0).toUpperCase() + st.slice(1);
-        if (st === 'sent' || st === 'delivered') {
-          statusEl.style.background = 'var(--green-light)';
-          statusEl.style.color = 'var(--green)';
-        } else if (st === 'pending') {
-          statusEl.style.background = 'var(--amber-light)';
-          statusEl.style.color = 'var(--amber)';
-        }
-      }
-    } else {
-      const subEl = document.getElementById('email-subject');
-      if (subEl) subEl.textContent = 'No emails sent yet';
-    }
   }
 
   async function loadHistory() {
