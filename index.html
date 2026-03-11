@@ -2535,7 +2535,7 @@
   }
 
   // ==================== CONTACTS VIEWER ====================
-  let cvAllContacts = [], cvFilteredContacts = [], cvPage = 0, cvSortCol = 'icp_score', cvSortDir = 'desc';
+  let cvAllContacts = [], cvFilteredContacts = [], cvPage = 0, cvSortCol = 'icp_score', cvSortDir = 'desc', cvSelectedVertical = '';
   const CV_PER_PAGE = 25;
 
   async function loadContactsViewer() {
@@ -2585,18 +2585,19 @@
       t.classList.remove('active');
       t.style.borderBottomColor = 'transparent';
       t.style.color = '#64748B';
+      t.style.fontWeight = '600';
     });
     el.classList.add('active');
     el.style.borderBottomColor = 'var(--accent)';
     el.style.color = 'var(--accent)';
-    const sel = document.getElementById('cv-vertical');
-    sel.value = el.dataset.vertical;
+    el.style.fontWeight = '700';
+    cvSelectedVertical = el.dataset.vertical || '';
     applyContactFilters();
   }
 
   function applyContactFilters() {
     const search = (document.getElementById('cv-search').value || '').toLowerCase();
-    const vertical = document.getElementById('cv-vertical').value;
+    const vertical = cvSelectedVertical;
     const icp = document.getElementById('cv-icp').value;
     cvFilteredContacts = cvAllContacts.filter(c => {
       if (search && !(c.name + ' ' + c.company + ' ' + c.title).toLowerCase().includes(search)) return false;
