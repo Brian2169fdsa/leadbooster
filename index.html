@@ -1073,17 +1073,6 @@
     <div class="summary-banner" id="summary-banner"></div>
   </div>
 
-  <!-- Sheet link -->
-  <a href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8/edit" target="_blank" class="sheet-link">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
-    <div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);">Lead Booster Results Sheet</div>
-      <div style="font-size:11px;font-weight:500;color:var(--text-dim);margin-top:1px;">Leads appear here within 3–5 minutes · Sort by ICP Score column</div>
-    </div>
-    <div class="sheet-arrow">Open Google Sheets →</div>
-  </a>
-
-
   <!-- ==================== FEEDBACK MODE ==================== -->
   <div id="mode-feedback" class="mode-content hidden">
     <div class="card">
@@ -2495,19 +2484,30 @@
 
   async function loadContactsViewer() {
     try {
-      const data = await sbAdmin('GET', 'lb_contacts?select=id,name,first_name,last_name,company,domain,title,email,phone,linkedin_url,linkedin_confidence,email_source,vertical,icp_score,final_completeness_score,created_at,enrichment&order=icp_score.desc.nullslast&limit=500');
+      const data = await sbAdmin('GET', 'lb_contacts?select=id,name,first_name,last_name,company,domain,title,email,phone,linkedin_url,linkedin_confidence,email_source,vertical,icp_score,icp_rationale,final_completeness_score,created_at,enriched_at,status,notes,enrichment&order=icp_score.desc.nullslast&limit=500');
       cvAllContacts = (data || []).map(c => {
         const e = c.enrichment || {};
         return {
           id: c.id,
+          company: c.company || e.company || c.domain || '-',
+          domain: c.domain || e.domain || '',
+          vertical: c.vertical || e.vertical || '-',
+          first_name: c.first_name || e.first_name || '',
+          last_name: c.last_name || e.last_name || '',
           name: c.name || ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || e.name || '-',
           title: c.title || e.title || '-',
-          company: c.company || e.company || c.domain || '-',
-          vertical: c.vertical || e.vertical || '-',
-          icp_score: c.icp_score != null ? c.icp_score : (e.icp_score != null ? e.icp_score : null),
-          completeness: c.final_completeness_score != null ? c.final_completeness_score : (e.final_completeness_score != null ? e.final_completeness_score : null),
           email: c.email || e.email || '',
+          email_source: c.email_source || e.email_source || '',
+          phone: c.phone || e.phone || '',
+          phone_source: e.phone_source || '',
           linkedin_url: c.linkedin_url || e.linkedin_url || '',
+          linkedin_source: e.linkedin_source || '',
+          completeness: c.final_completeness_score != null ? c.final_completeness_score : (e.final_completeness_score != null ? e.final_completeness_score : null),
+          icp_score: c.icp_score != null ? c.icp_score : (e.icp_score != null ? e.icp_score : null),
+          icp_rationale: c.icp_rationale || e.icp_rationale || '',
+          enriched_at: c.enriched_at || e.enriched_at || '',
+          status: c.status || e.status || '',
+          notes: c.notes || e.notes || '',
           created_at: c.created_at || ''
         };
       });
@@ -2628,19 +2628,29 @@
   function exportContactsCSV() {
     const rows = cvFilteredContacts.length ? cvFilteredContacts : cvAllContacts;
     if (!rows.length) return alert('No contacts to export');
-    const headers = ['Name','Title','Company','Vertical','ICP Score','Completeness','Email','LinkedIn','Added'];
+    const headers = ['Company','Domain','Vertical','First Name','Last Name','Title','Email','Email Source','Phone','Phone Source','LinkedIn','LinkedIn Source','Enrichment Score','ICP Score','ICP Rationale','Enriched At','Status','Notes'];
     const csvRows = [headers.join(',')];
+    const esc = v => '"' + (v || '').replace(/"/g, '""') + '"';
     rows.forEach(c => {
       csvRows.push([
-        '"' + (c.name || '').replace(/"/g, '""') + '"',
-        '"' + (c.title || '').replace(/"/g, '""') + '"',
-        '"' + (c.company || '').replace(/"/g, '""') + '"',
-        '"' + (c.vertical || '').replace(/"/g, '""') + '"',
-        c.icp_score != null ? c.icp_score : '',
+        esc(c.company),
+        esc(c.domain),
+        esc(c.vertical),
+        esc(c.first_name),
+        esc(c.last_name),
+        esc(c.title),
+        esc(c.email),
+        esc(c.email_source),
+        esc(c.phone),
+        esc(c.phone_source),
+        esc(c.linkedin_url),
+        esc(c.linkedin_source),
         c.completeness != null ? c.completeness : '',
-        '"' + (c.email || '').replace(/"/g, '""') + '"',
-        '"' + (c.linkedin_url || '').replace(/"/g, '""') + '"',
-        c.created_at ? c.created_at.split('T')[0] : ''
+        c.icp_score != null ? c.icp_score : '',
+        esc(c.icp_rationale),
+        c.enriched_at ? c.enriched_at.split('T')[0] : '',
+        esc(c.status),
+        esc(c.notes)
       ].join(','));
     });
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
