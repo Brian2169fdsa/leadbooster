@@ -1482,12 +1482,12 @@
     if (!allContacts) return;
 
     const total = allContacts.length;
-    const el = document.getElementById('kpi-total');
+    const el = document.getElementById('stat-total');
     if (el) el.textContent = total;
 
     const today = new Date().toISOString().split('T')[0];
     const todayCount = allContacts.filter(c => c.created_at && c.created_at.startsWith(today)).length;
-    const el2 = document.getElementById('kpi-today');
+    const el2 = document.getElementById('stat-today');
     if (el2) el2.textContent = todayCount;
 
     const icpScores = allContacts.filter(c => c.icp_score != null && c.icp_score > 0).map(c => c.icp_score);
