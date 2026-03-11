@@ -219,7 +219,8 @@
     .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .status-dot.ok { background: var(--green); }
     .status-dot.err { background: var(--red); }
-    .status-dot.pending { background: var(--accent); animation: pulseDot 1.2s infinite; }
+    .status-dot.pending { background: var(--amber); animation: pulseDot 1.2s infinite; }
+    .status-dot.processing { background: var(--amber); animation: pulseDot 1.2s infinite; }
     .result-co { font-size: 12px; font-weight: 700; color: var(--text); }
     .result-dom { font-size: 10px; font-weight: 500; color: var(--text-dim); font-family: var(--mono); margin-top: 1px; }
     .result-status { margin-left: auto; font-size: 11px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
@@ -1420,26 +1421,28 @@
     window.scrollTo({ top: card.offsetTop - 20, behavior: 'smooth' });
   }
 
+  function dotClass(state) {
+    if (state === 'ok' || state === 'complete') return 'ok';
+    if (state === 'err' || state === 'error') return 'err';
+    if (state === 'processing') return 'processing';
+    return 'pending';
+  }
   function addResultRow(id, company, domain, state, msg) {
     const list = document.getElementById('results-list');
     const existing = document.getElementById('row-' + id);
+    const dc = dotClass(state);
     if (existing) {
-      existing.querySelector('.status-dot').className = 'status-dot ' + (state === 'ok' ? 'ok' : state === 'err' ? 'err' : 'pending');
-      existing.querySelector('.result-status').className = 'result-status ' + (state === 'ok' ? 'ok' : state === 'err' ? 'err' : 'pending');
-      existing.querySelector('.result-status').textContent = msg;
+      existing.querySelector('.status-dot').className = 'status-dot ' + dc;
+      existing.querySelector('.result-status').className = 'result-status ' + dc;
+      existing.querySelector('.result-status').innerHTML = msg;
       return;
     }
     const div = document.createElement('div');
     div.className = 'result-row';
     div.id = 'row-' + id;
-    div.innerHTML = `
-      <div class="status-dot ${state === 'ok' ? 'ok' : state === 'err' ? 'err' : 'pending'}"></div>
-      <div>
-        <div class="result-co">${company}</div>
-        <div class="result-dom">${domain}</div>
-      </div>
-      <div class="result-status ${state === 'ok' ? 'ok' : state === 'err' ? 'err' : 'pending'}">${msg}</div>
-    `;
+    div.innerHTML = '<div class="status-dot ' + dc + '"></div>' +
+      '<div><div class="result-co">' + company + '</div><div class="result-dom">' + domain + '</div></div>' +
+      '<div class="result-status ' + dc + '">' + msg + '</div>';
     list.appendChild(div);
   }
 
@@ -1466,32 +1469,65 @@
     return await resp.json();
   }
 
+  // Poll lb_requests by domain to track real pipeline status for a result row
+  function startResultRowPoller(rowId, company, domain) {
+    const statusMap = {
+      pending:   '\u23F3 Pending...',
+      scraping:  '\uD83D\uDD0D Scraping website...',
+      enriching: '\uD83D\uDCA7 Enriching contacts...',
+      scoring:   '\uD83C\uDFAF Scoring contacts...',
+      error:     '\u274C Error \u2014 check pipeline'
+    };
+    const poller = setInterval(async () => {
+      try {
+        const rows = await sbAdmin('GET', 'lb_requests?domain=eq.' + encodeURIComponent(domain) + '&order=created_at.desc&limit=1');
+        if (!rows || !rows.length) return;
+        const r = rows[0];
+        const st = (r.status || 'pending').toLowerCase();
+        if (st === 'complete') {
+          const contacts = await sbAdmin('GET', 'lb_contacts?domain=eq.' + encodeURIComponent(domain) + '&select=id');
+          const count = contacts ? contacts.length : 0;
+          addResultRow(rowId, company, domain, 'complete', '\u2705 Complete \u2014 ' + count + ' contacts found');
+          clearInterval(poller);
+        } else if (st === 'error' || st === 'failed') {
+          addResultRow(rowId, company, domain, 'error', statusMap.error);
+          clearInterval(poller);
+        } else {
+          addResultRow(rowId, company, domain, 'processing', statusMap[st] || '\u23F3 Processing...');
+        }
+      } catch(e) { console.error('Result row poller error:', e); }
+    }, 5000);
+    // Safety timeout — stop after 20 minutes
+    setTimeout(() => clearInterval(poller), 20 * 60 * 1000);
+  }
+
   async function runLeads(leads, mode, submitterName, submitterEmail) {
     if (!leads.length) return;
     showResults();
     let ok = 0, fail = 0;
     const btn = document.getElementById('btn-' + (mode === 'single' ? 'single' : mode === 'bulk' ? 'bulk' : 'territory-run'));
     btn.disabled = true;
-    btn.textContent = 'Submitting…';
+    btn.textContent = 'Submitting\u2026';
 
     // Log request to Supabase
     await logToSupabase(mode, leads, submitterName, submitterEmail);
 
     for (let i = 0; i < leads.length; i++) {
       const l = leads[i];
-      addResultRow(i, l.company, l.domain, 'pending', 'Queued…');
+      addResultRow(i, l.company, l.domain, 'pending', '\u23F3 Pending...');
       await new Promise(r => setTimeout(r, 50));
     }
 
     for (let i = 0; i < leads.length; i++) {
       const l = leads[i];
-      addResultRow(i, l.company, l.domain, 'pending', 'Submitting…');
+      addResultRow(i, l.company, l.domain, 'pending', '\u23F3 Submitting...');
       try {
         await fireWebhook(l.company, l.domain, l.vertical, l.notes, submitterName, submitterEmail);
-        addResultRow(i, l.company, l.domain, 'ok', '✓ Pipeline started');
+        addResultRow(i, l.company, l.domain, 'processing', '\u23F3 Pending...');
+        startResultRowPoller(i, l.company, l.domain);
         ok++;
       } catch(e) {
-        addResultRow(i, l.company, l.domain, 'err', '✗ ' + e.message);
+        addResultRow(i, l.company, l.domain, 'err', '\u2717 ' + e.message);
         fail++;
       }
       if (i < leads.length - 1) await new Promise(r => setTimeout(r, 350));
@@ -2109,26 +2145,26 @@
     document.head.appendChild(style);
   }
 
-  // Single company tracker — find queue row by domain, poll status + contacts
+  // Single company tracker — poll lb_requests by domain for real status
   async function startSingleTracker(companyName, domain) {
     const container = document.getElementById('single-tracker-container');
     if (!container) return;
     injectTrackerCSS();
     container.innerHTML = '<div class="run-tracker"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569;"><div class="spinner-ring"></div>Locating pipeline for ' + companyName + '...</div></div>';
-    let queueId = null;
+    let requestId = null;
     for (let attempt = 0; attempt < 5; attempt++) {
       await new Promise(r => setTimeout(r, 2000));
-      const rows = await sbAdmin('GET', 'lb_queue?domain=eq.' + encodeURIComponent(domain) + '&order=created_at.desc&limit=1');
-      if (rows && rows.length > 0) { queueId = rows[0].id; break; }
+      const rows = await sbAdmin('GET', 'lb_requests?domain=eq.' + encodeURIComponent(domain) + '&order=created_at.desc&limit=1');
+      if (rows && rows.length > 0) { requestId = rows[0].id; break; }
     }
-    if (!queueId) {
-      container.innerHTML = '<div class="run-tracker"><div style="font-size:13px;color:#D97706;">Could not locate pipeline queue entry. Results will still appear in Google Sheets within 3-5 minutes.</div></div>';
+    if (!requestId) {
+      container.innerHTML = '<div class="run-tracker"><div style="font-size:13px;color:#D97706;">Could not locate pipeline entry. Results will still appear in Google Sheets within 3-5 minutes.</div></div>';
       return;
     }
-    createRunTracker('single-tracker-container', queueId, companyName);
+    createRunTracker('single-tracker-container', requestId, companyName, domain);
   }
 
-  // Bulk tracker — shows per-company progress
+  // Bulk tracker — shows per-company progress, polls lb_requests
   function startBulkTracker(leads) {
     const container = document.getElementById('bulk-tracker-container');
     if (!container) return;
@@ -2146,14 +2182,14 @@
       '<div id="brt-status" style="font-size:12px;color:#475569;margin-bottom:12px;">Processing...</div>' +
       '<div class="bulk-run-list">' + listHtml + '</div>' +
     '</div>';
-    // Poll every 8 seconds to update status
+    // Poll every 5 seconds using lb_requests
     let pollCount = 0;
+    const statusLabels = { pending:'Pending', scraping:'Scraping', enriching:'Enriching', scoring:'Scoring' };
     const pollBulk = setInterval(async () => {
       pollCount++;
       try {
-        const domains = leads.map(l => l.domain).filter(Boolean);
         const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-        const rows = await sbAdmin('GET', 'lb_queue?created_at=gte.' + since + '&order=created_at.desc&limit=100');
+        const rows = await sbAdmin('GET', 'lb_requests?created_at=gte.' + since + '&order=created_at.desc&limit=100');
         if (!rows) return;
         let completed = 0;
         leads.forEach((l, i) => {
@@ -2162,16 +2198,14 @@
           if (!itemEl) return;
           if (match) {
             const st = (match.status || 'pending').toLowerCase();
-            if (st === 'complete' || st === 'enriched') {
+            if (st === 'complete') {
               itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot complete"></span><span style="color:#16A34A;">Complete</span>';
               completed++;
-            } else if (st === 'failed') {
+            } else if (st === 'failed' || st === 'error') {
               itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot failed"></span><span style="color:#DC2626;">Failed</span>';
               completed++;
             } else {
-              const estStep = statusToStep(st, match.created_at);
-              const estLabels = { 1:'Discovering', 2:'Scraping', 3:'Enriching', 4:'Scoring' };
-              itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot"></span><span>' + (estLabels[estStep] || 'Processing') + '</span>';
+              itemEl.querySelector('.bulk-run-status').innerHTML = '<span class="rt-status-dot"></span><span>' + (statusLabels[st] || 'Processing') + '</span>';
             }
           }
         });
@@ -2186,52 +2220,54 @@
             ' <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI" target="_blank" style="color:#4A8FD6;font-weight:700;">Open Google Sheet &rarr;</a>';
         }
       } catch(e) { console.error('Bulk tracker poll:', e); }
-      if (pollCount > 120) clearInterval(pollBulk); // stop after ~16 min
-    }, 8000);
+      if (pollCount > 240) clearInterval(pollBulk); // stop after ~20 min
+    }, 5000);
   }
 
-  // Core single-company run tracker — stage badge + live contact feed
-  function createRunTracker(containerId, queueId, companyName) {
+  // Core single-company run tracker — polls lb_requests by id, contacts by domain
+  function createRunTracker(containerId, requestId, companyName, domain) {
     injectTrackerCSS();
     const container = document.getElementById(containerId);
     if (!container) return;
     let lastContactCount = 0;
-    container.innerHTML = '<div class="run-tracker" style="width:100%;box-sizing:border-box;" id="rt-' + queueId + '">' +
-      '<div id="rt-status-line-' + queueId + '" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F5F6F8;">' +
+    const uid = requestId;
+    container.innerHTML = '<div class="run-tracker" style="width:100%;box-sizing:border-box;" id="rt-' + uid + '">' +
+      '<div id="rt-status-line-' + uid + '" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F5F6F8;">' +
         renderStageDot('pending') +
         '<span style="font-weight:700;font-size:14px;color:#1E293B;">' + companyName + '</span>' +
         '<span style="flex:1;"></span>' +
         renderStageBadge('pending') +
       '</div>' +
-      '<div id="rt-detail-' + queueId + '" style="font-size:12px;color:#475569;padding:10px 0 4px;">Initializing pipeline...</div>' +
-      '<div class="rt-contacts" id="rt-contacts-' + queueId + '"></div>' +
+      '<div id="rt-detail-' + uid + '" style="font-size:12px;color:#475569;padding:10px 0 4px;">Initializing pipeline...</div>' +
+      '<div class="rt-contacts" id="rt-contacts-' + uid + '"></div>' +
     '</div>';
+    const contactQuery = domain
+      ? 'lb_contacts?domain=eq.' + encodeURIComponent(domain) + '&select=name,first_name,last_name,title,icp_score,email,created_at&order=created_at.desc'
+      : 'lb_contacts?select=name,first_name,last_name,title,icp_score,email,created_at&order=created_at.desc&limit=1';
     async function poll() {
       try {
-        const [queueRows, contacts] = await Promise.all([
-          sbAdmin('GET', 'lb_queue?id=eq.' + queueId + '&select=*&limit=1'),
-          sbAdmin('GET', 'lb_contacts?queue_id=eq.' + queueId + '&select=name,first_name,last_name,title,icp_score,email,created_at&order=created_at.desc')
+        const [reqRows, contacts] = await Promise.all([
+          sbAdmin('GET', 'lb_requests?id=eq.' + requestId + '&select=*&limit=1'),
+          sbAdmin('GET', contactQuery)
         ]);
-        const q = queueRows && queueRows[0];
+        const q = reqRows && reqRows[0];
         if (!q) return;
-        const statusLine = document.getElementById('rt-status-line-' + queueId);
-        const detail = document.getElementById('rt-detail-' + queueId);
-        const contactsEl = document.getElementById('rt-contacts-' + queueId);
+        const statusLine = document.getElementById('rt-status-line-' + uid);
+        const detail = document.getElementById('rt-detail-' + uid);
+        const contactsEl = document.getElementById('rt-contacts-' + uid);
         const cCount = contacts ? contacts.length : 0;
         const countText = cCount > 0 ? '<span style="font-size:11px;color:#94A3B8;margin-right:8px;">' + cCount + ' contact' + (cCount !== 1 ? 's' : '') + '</span>' : '';
-        const estimatedStep = statusToStep(q.status, q.created_at);
-        const estimatedStepNames = { 1:'discovery', 2:'extracting', 3:'enriching', 4:'scoring', 5:'complete', 0:'failed' };
-        const displayStatus = estimatedStepNames[estimatedStep] || q.status;
+        const st = (q.status || 'pending').toLowerCase();
         if (statusLine) {
-          statusLine.innerHTML = renderStageDot(displayStatus) +
+          statusLine.innerHTML = renderStageDot(st) +
             '<span style="font-weight:700;font-size:14px;color:#1E293B;">' + companyName + '</span>' +
             '<span style="font-size:11px;color:#94A3B8;">' + (q.domain || '') + '</span>' +
             '<span style="flex:1;"></span>' +
             countText +
-            renderStageBadge(displayStatus);
+            renderStageBadge(st);
         }
-        const detailLabels = { pending:'Queued for processing...', discovery:'Discovering company profile...', extracting:'Scraping Pages...', enriching:'Enriching Contacts via Hunter, Apollo, PDL...', scoring:'AI Scoring contacts with Claude...', complete:'Pipeline complete!', enriched:'Pipeline complete!', failed:'Pipeline failed.' };
-        if (detail) detail.textContent = detailLabels[displayStatus] || 'Processing...';
+        const detailLabels = { pending:'Queued for processing...', scraping:'Scraping website pages...', enriching:'Enriching contacts via Hunter, Apollo, PDL...', scoring:'AI Scoring contacts with Claude...', complete:'Pipeline complete!', error:'Pipeline error \u2014 check pipeline.' };
+        if (detail) detail.textContent = detailLabels[st] || 'Processing...';
         if (contacts && contacts.length > lastContactCount) {
           lastContactCount = contacts.length;
           if (contactsEl) {
@@ -2248,7 +2284,7 @@
               }).join('');
           }
         }
-        if (q.status === 'complete' || q.status === 'enriched') {
+        if (st === 'complete') {
           if (contactsEl) {
             contactsEl.innerHTML += '<div class="rt-complete">' +
               '<div class="rt-complete-title">' + (contacts ? contacts.length : 0) + ' Contacts Enriched & Scored</div>' +
@@ -2258,18 +2294,18 @@
           }
           clearInterval(pollInterval);
         }
-        if (q.status === 'failed') {
-          if (detail) detail.textContent = 'Something went wrong. Check n8n for details.';
+        if (st === 'failed' || st === 'error') {
+          if (detail) detail.textContent = 'Something went wrong. Check pipeline for details.';
           clearInterval(pollInterval);
         }
       } catch(e) { console.error('Run tracker poll error:', e); }
     }
     poll();
-    const pollInterval = setInterval(poll, 8000);
+    const pollInterval = setInterval(poll, 5000);
     return pollInterval;
   }
 
-  // Territory tracker — full-width, stage badges, contact counts
+  // Territory tracker — polls lb_requests, contact counts by domain
   function trackTerritoryRun(city, state, vertical) {
     const container = document.getElementById('territory-tracker-container');
     if (!container) return;
@@ -2291,7 +2327,7 @@
     async function pollTerritory() {
       pollCount++;
       try {
-        const rows = await sbAdmin('GET', 'lb_queue?created_at=gte.' + since + '&order=created_at.desc&limit=30');
+        const rows = await sbAdmin('GET', 'lb_requests?created_at=gte.' + since + '&order=created_at.desc&limit=30');
         const el = document.getElementById('territory-companies');
         const updatedEl = document.getElementById('tt-updated');
         if (updatedEl) updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString();
@@ -2299,54 +2335,43 @@
           if (pollCount > 5 && el) el.innerHTML = '<div style="font-size:13px;color:#475569;">Waiting for companies to be discovered...</div>';
           return;
         }
-        // Get contact counts for all queue ids
+        // Get contact counts by domain
+        const domains = [...new Set(rows.map(r => r.domain).filter(Boolean))];
         const contactCounts = {};
-        for (const r of rows) {
-          if (!contactCounts[r.id]) {
-            const cts = await sbAdmin('GET', 'lb_contacts?queue_id=eq.' + r.id + '&select=id');
-            contactCounts[r.id] = cts ? cts.length : 0;
-          }
-        }
-        // Update existing rows
+        await Promise.all(domains.map(async d => {
+          const cts = await sbAdmin('GET', 'lb_contacts?domain=eq.' + encodeURIComponent(d) + '&select=id');
+          contactCounts[d] = cts ? cts.length : 0;
+        }));
+        // Update existing rows and add new ones
         rows.forEach(r => {
-          if (knownIds.has(r.id)) {
-            const rowEl = document.getElementById('tco-' + r.id);
-            if (rowEl) {
-              const meta = r.meta || {};
-              const cc = contactCounts[r.id] || 0;
-              const countHtml = cc > 0 ? '<span style="font-size:11px;color:#94A3B8;margin-right:8px;">' + cc + ' contact' + (cc !== 1 ? 's' : '') + '</span>' : '';
-              rowEl.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5F6F8;">' +
-                renderStageDot(r.status) +
-                '<span style="font-weight:700;font-size:13px;color:#1E293B;">' + (meta.company || r.domain || 'Company') + '</span>' +
-                '<span style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + '</span>' +
-                '<span style="flex:1;"></span>' +
-                countHtml +
-                renderStageBadge(r.status) +
-              '</div>';
-            }
-            return;
-          }
-          knownIds.add(r.id);
-          const meta = r.meta || {};
-          const cc = contactCounts[r.id] || 0;
+          const company = r.company_name || r.company || r.domain || 'Company';
+          const domain = r.domain || '';
+          const cc = contactCounts[domain] || 0;
           const countHtml = cc > 0 ? '<span style="font-size:11px;color:#94A3B8;margin-right:8px;">' + cc + ' contact' + (cc !== 1 ? 's' : '') + '</span>' : '';
-          const div = document.createElement('div');
-          div.id = 'tco-' + r.id;
-          div.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5F6F8;">' +
+          const rowContent = '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5F6F8;">' +
             renderStageDot(r.status) +
-            '<span style="font-weight:700;font-size:13px;color:#1E293B;">' + (meta.company || r.domain || 'Company') + '</span>' +
-            '<span style="font-size:11px;color:#94A3B8;">' + (r.domain || '') + '</span>' +
+            '<span style="font-weight:700;font-size:13px;color:#1E293B;">' + company + '</span>' +
+            '<span style="font-size:11px;color:#94A3B8;">' + domain + '</span>' +
             '<span style="flex:1;"></span>' +
             countHtml +
             renderStageBadge(r.status) +
           '</div>';
+          if (knownIds.has(r.id)) {
+            const rowEl = document.getElementById('tco-' + r.id);
+            if (rowEl) rowEl.innerHTML = rowContent;
+            return;
+          }
+          knownIds.add(r.id);
+          const div = document.createElement('div');
+          div.id = 'tco-' + r.id;
+          div.innerHTML = rowContent;
           if (el) el.appendChild(div);
         });
         // Check completion
-        const allDone = rows.every(r => r.status === 'complete' || r.status === 'enriched' || r.status === 'failed');
+        const allDone = rows.every(r => r.status === 'complete' || r.status === 'failed' || r.status === 'error');
         if (allDone && rows.length > 0 && pollCount > 3) {
           clearInterval(territoryPoll);
-          const completed = rows.filter(r => r.status === 'complete' || r.status === 'enriched').length;
+          const completed = rows.filter(r => r.status === 'complete').length;
           const totalContacts = Object.values(contactCounts).reduce((s, n) => s + n, 0);
           const subtitleEl = document.getElementById('tt-subtitle');
           if (subtitleEl) subtitleEl.textContent = 'Complete';
@@ -2358,10 +2383,10 @@
           '</div>';
         }
       } catch(e) { console.error('Territory poll error:', e); }
-      if (pollCount > 60) clearInterval(territoryPoll);
+      if (pollCount > 240) clearInterval(territoryPoll);
     }
-    setTimeout(pollTerritory, 5000);
-    const territoryPoll = setInterval(pollTerritory, 10000);
+    setTimeout(pollTerritory, 3000);
+    const territoryPoll = setInterval(pollTerritory, 5000);
   }
 
   // ==================== CURRENT RUN TAB ====================
