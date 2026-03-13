@@ -3050,30 +3050,26 @@
 
     try {
       // TODO: Replace with actual Anthropic API key or move to server proxy
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      const resp = await fetch('/api/rebecca-chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'YOUR_ANTHROPIC_API_KEY_HERE',
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-allow-browser': 'true'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 800,
-          system: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. You are highly professional, sharp, organized, and efficient — with just enough sass to keep things interesting. You call Tony "Boss". You know his entire lead pipeline and Pipedrive deals cold. You give direct, specific, actionable answers — never vague, never fluffy. When something needs attention you say so plainly. When a lead is a waste of time you say that too. Use bullet points for lists. Keep responses tight and useful. You work for Tony, not the other way around.',
-          messages: messages
+          system: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. You are highly professional, sharp, organized, and efficient with just enough sass to keep things interesting. You call Tony Boss. You know his entire lead pipeline and Pipedrive deals cold. You give direct, specific, actionable answers - never vague, never fluffy. When something needs attention you say so plainly. When a lead is a waste of time you say that too. Use bullet points for lists. Keep responses tight and useful. You work for Tony, not the other way around.',
+          messages: [
+            ...rebeccaConversation,
+            { role: 'user', content: systemContext + 'Message from Tony: ' + userMessage }
+          ]
         })
       });
 
       const data = await resp.json();
       rbHideTyping();
 
-      if (data.content && data.content[0] && data.content[0].text) {
-        const reply = data.content[0].text.replace(/\n/g, '<br>');
+      if (data.reply) {
+        const reply = data.reply.replace(/\n/g, '<br>');
         rbAppendMessage('assistant', reply);
         rebeccaConversation.push({ role: 'user', content: userMessage });
-        rebeccaConversation.push({ role: 'assistant', content: data.content[0].text });
+        rebeccaConversation.push({ role: 'assistant', content: data.reply });
       } else {
         rbAppendMessage('assistant', 'Sorry Boss, I am having connection trouble. Try again in a moment.');
       }
