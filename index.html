@@ -4145,6 +4145,11 @@ Turner Construction, turnerconstruction.com"
   let pttRecognition = null;
 
   function startPTT() {
+    if (pttRecognition) {
+      try { pttRecognition.abort(); } catch(e) {}
+      pttRecognition = null;
+    }
+    if (pttActive) return;
     pttActive = true;
 
     const btn = document.getElementById('rb-ptt-btn');
@@ -4171,12 +4176,56 @@ Turner Construction, turnerconstruction.com"
         }
       };
 
-      pttRecognition.onerror = function(err) {
-        console.error('PTT error:', err);
+      pttRecognition.onerror = function(event) {
+        if (event.error === 'no-speech') {
+          const status = document.getElementById('rb-ptt-status');
+          if (status) {
+            status.textContent = 'No speech detected - try again';
+            status.style.color = '#f59e0b';
+            setTimeout(() => {
+              if (!pttActive) {
+                status.textContent = 'Hold button to speak';
+                status.style.color = '#94a3b8';
+              }
+            }, 2000);
+          }
+        } else if (event.error === 'aborted') {
+          // Normal - ignore silently
+        } else {
+          console.warn('PTT error:', event.error);
+        }
         stopPTT();
       };
 
-      pttRecognition.start();
+      pttRecognition.onend = function() {
+        pttRecognition = null;
+        if (pttActive) {
+          pttActive = false;
+          const btn = document.getElementById('rb-ptt-btn');
+          const status = document.getElementById('rb-ptt-status');
+          if (btn) {
+            btn.style.background = '#1a2f4e';
+            btn.style.borderColor = '#4a90d9';
+            btn.style.boxShadow = '0 4px 20px rgba(74,144,217,0.3)';
+            btn.style.transform = 'scale(1)';
+          }
+          if (status && status.textContent === 'Listening...') {
+            status.textContent = 'Hold button to speak';
+            status.style.color = '#94a3b8';
+          }
+        }
+      };
+
+      setTimeout(() => {
+        if (pttActive && pttRecognition) {
+          try {
+            pttRecognition.start();
+          } catch(e) {
+            console.warn('PTT start error:', e.message);
+            stopPTT();
+          }
+        }
+      }, 150);
     }
   }
 
@@ -4195,7 +4244,7 @@ Turner Construction, turnerconstruction.com"
     status.style.color = '#94a3b8';
 
     if (pttRecognition) {
-      try { pttRecognition.stop(); } catch(e) {}
+      try { pttRecognition.abort(); } catch(e) {}
       pttRecognition = null;
     }
   }
