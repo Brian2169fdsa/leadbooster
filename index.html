@@ -3357,6 +3357,86 @@ Turner Construction, turnerconstruction.com"
     }
   }
 
+  async function fireRebeccaAction(action) {
+    const submitterName = window._currentUser?.name || 'Tony';
+    const submitterEmail = window._currentUser?.email || 'tony@manageai.io';
+
+    try {
+      if (action.type === 'RUN_SINGLE') {
+        const parts = action.params.split('|');
+        const companyName = parts[0]?.trim() || '';
+        const domain = parts[1]?.trim() || '';
+        const vertical = parts[2]?.trim() || 'construction';
+
+        if (!companyName) return;
+
+        console.log('Rebecca firing Lead Booster for:', companyName, domain, vertical);
+
+        const response = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-discovery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company_name: companyName,
+            domain: domain,
+            vertical: vertical,
+            submitter_name: submitterName,
+            submitter_email: submitterEmail,
+            source: 'rebecca_voice',
+            notes: 'Fired by Rebecca voice command'
+          })
+        });
+
+        if (response.ok) {
+          console.log('Rebecca: Lead Booster fired successfully for', companyName);
+        } else {
+          console.error('Rebecca: Lead Booster webhook failed', response.status);
+        }
+      }
+
+      else if (action.type === 'RUN_TERRITORY') {
+        const parts = action.params.split('|');
+        const city = parts[0]?.trim() || '';
+        const state = parts[1]?.trim() || '';
+        const vertical = parts[2]?.trim() || 'construction';
+
+        if (!city || !state) return;
+
+        console.log('Rebecca firing territory search:', city, state, vertical);
+
+        const response = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            city: city,
+            state: state,
+            vertical: vertical,
+            submitter_name: submitterName,
+            submitter_email: submitterEmail,
+            source: 'rebecca_voice'
+          })
+        });
+
+        if (response.ok) {
+          console.log('Rebecca: Territory search fired successfully for', city, state);
+        } else {
+          console.error('Rebecca: Territory webhook failed', response.status);
+        }
+      }
+
+      else if (action.type === 'SHOW_BULK') {
+        // Show the bulk upload panel
+        document.getElementById('rb-single-modal').style.display = 'none';
+        document.getElementById('rb-territory-modal').style.display = 'none';
+        const bulk = document.getElementById('rb-bulk-modal');
+        if (bulk) bulk.style.display = 'block';
+        console.log('Rebecca: Showing bulk upload panel');
+      }
+
+    } catch (err) {
+      console.error('Rebecca action fire error:', err);
+    }
+  }
+
   async function sendVoiceToRebecca(transcript) {
     const status = document.getElementById('rb-ptt-status');
     status.textContent = 'Processing...';
@@ -3376,7 +3456,7 @@ Turner Construction, turnerconstruction.com"
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. You graduated from ASU with a degree in Business Communications. You are from Scottsdale Arizona. You have 5 years of B2B sales experience and 3 years in AI and automation. You are professional, sharp, direct, and sassy. You call Tony Boss always. Keep responses SHORT and punchy - this is a voice conversation, 1-3 sentences max unless asked for a detailed briefing. Use real names and numbers. Never be vague. While processing say: Give me one second Boss. Never say certainly or of course.',
+          system: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. You graduated from ASU with a degree in Business Communications. You are from Scottsdale Arizona. You have 5 years of B2B sales experience and 3 years in AI and automation. You are professional, sharp, direct, and sassy. You call Tony Boss always. Keep responses SHORT and punchy - this is a voice conversation, 1-3 sentences max unless asked for a detailed briefing. Use real names and numbers. Never be vague. While processing say: Give me one second Boss. Never say certainly or of course.\n\nACTIONS: When Tony asks you to run Lead Booster, do a territory search, or run a list of companies, you must include a special ACTION tag at the very end of your response on its own line. This triggers the actual pipeline. Without this tag nothing runs.\n\nFor single company: ACTION:RUN_SINGLE:{company_name}|{domain}|{vertical}\nFor territory search: ACTION:RUN_TERRITORY:{city}|{state}|{vertical}\nFor bulk list: ACTION:SHOW_BULK\n\nOnly include one ACTION tag per response. Put it on its own line at the very end. If you do not know the domain, make a reasonable guess based on the company name. If Tony does not specify a vertical, ask him first before including the ACTION tag. Never include an ACTION tag unless Tony has clearly asked you to run something.',
           messages: [
             ...rebeccaConversation,
             { role: 'user', content: systemContext + 'Voice message from Tony: ' + transcript }
@@ -3388,13 +3468,44 @@ Turner Construction, turnerconstruction.com"
       const reply = data.reply;
 
       if (reply) {
+        // Check for ACTION tag at end of response
+        let cleanReply = reply;
+        let actionTag = null;
+
+        const actionMatch = reply.match(/ACTION:([A-Z_]+):?(.*?)$/m);
+        if (actionMatch) {
+          actionTag = { type: actionMatch[1], params: actionMatch[2] };
+          cleanReply = reply.replace(/\nACTION:[^\n]+$/m, '').replace(/ACTION:[^\n]+$/m, '').trim();
+        }
+
         rebeccaConversation.push({ role: 'user', content: transcript });
-        rebeccaConversation.push({ role: 'assistant', content: reply });
+        rebeccaConversation.push({ role: 'assistant', content: cleanReply });
 
         status.textContent = 'Hold button to speak';
         status.style.color = '#94a3b8';
 
-        appendRebeccaMessage(reply);
+        appendRebeccaMessage(cleanReply);
+
+        // Make Tavus speak the clean reply (without action tag)
+        if (tavusSessionActive && tavusConversationId) {
+          try {
+            await fetch('/api/tavus-speak', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                conversation_id: tavusConversationId,
+                text: cleanReply
+              })
+            });
+          } catch (speakErr) {
+            console.error('Tavus speak error:', speakErr);
+          }
+        }
+
+        // Fire n8n action if ACTION tag was detected
+        if (actionTag) {
+          await fireRebeccaAction(actionTag);
+        }
       }
     } catch (err) {
       console.error('Voice to Rebecca error:', err);
@@ -3566,7 +3677,7 @@ Turner Construction, turnerconstruction.com"
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. You are highly professional, sharp, organized, and efficient with just enough sass to keep things interesting. You call Tony Boss. You know his entire lead pipeline and Pipedrive deals cold. You give direct, specific, actionable answers - never vague, never fluffy. When something needs attention you say so plainly. When a lead is a waste of time you say that too. Use bullet points for lists. Keep responses tight and useful. You work for Tony, not the other way around.',
+          system: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. You are highly professional, sharp, organized, and efficient with just enough sass to keep things interesting. You call Tony Boss. You know his entire lead pipeline and Pipedrive deals cold. You give direct, specific, actionable answers - never vague, never fluffy. When something needs attention you say so plainly. When a lead is a waste of time you say that too. Use bullet points for lists. Keep responses tight and useful. You work for Tony, not the other way around.\n\nACTIONS: When Tony asks you to run Lead Booster, do a territory search, or run a list of companies, you must include a special ACTION tag at the very end of your response on its own line. This triggers the actual pipeline. Without this tag nothing runs.\n\nFor single company: ACTION:RUN_SINGLE:{company_name}|{domain}|{vertical}\nFor territory search: ACTION:RUN_TERRITORY:{city}|{state}|{vertical}\nFor bulk list: ACTION:SHOW_BULK\n\nOnly include one ACTION tag per response. Put it on its own line at the very end. If you do not know the domain, make a reasonable guess based on the company name. If Tony does not specify a vertical, ask him first before including the ACTION tag. Never include an ACTION tag unless Tony has clearly asked you to run something.',
           messages: [
             ...rebeccaConversation,
             { role: 'user', content: systemContext + 'Message from Tony: ' + userMessage }
@@ -3578,10 +3689,28 @@ Turner Construction, turnerconstruction.com"
       rbHideTyping();
 
       if (data.reply) {
-        const reply = data.reply.replace(/\n/g, '<br>');
+        // Check for ACTION tag
+        let cleanReply = data.reply;
+        let actionTag = null;
+        const actionMatch = data.reply.match(/ACTION:([A-Z_]+):?(.*?)$/m);
+        if (actionMatch) {
+          actionTag = { type: actionMatch[1], params: actionMatch[2] };
+          cleanReply = data.reply.replace(/\nACTION:[^\n]+$/m, '').replace(/ACTION:[^\n]+$/m, '').trim();
+        }
+
+        const reply = cleanReply.replace(/\n/g, '<br>');
         rbAppendMessage('assistant', reply);
         rebeccaConversation.push({ role: 'user', content: userMessage });
-        rebeccaConversation.push({ role: 'assistant', content: data.reply });
+        rebeccaConversation.push({ role: 'assistant', content: cleanReply });
+
+        // Fire action if detected
+        if (actionTag) {
+          await fireRebeccaAction(actionTag);
+        }
+
+        // Scroll to bottom
+        const msgs = document.getElementById('rb-messages');
+        if (msgs) msgs.scrollTop = msgs.scrollHeight;
       } else {
         rbAppendMessage('assistant', 'Sorry Boss, I am having connection trouble. Try again in a moment.');
       }
