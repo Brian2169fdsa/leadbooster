@@ -5,6 +5,9 @@
     },
     "api/tavus-session.js": {
       "maxDuration": 30
+    },
+    "api/tavus-speak.js": {
+      "maxDuration": 15
     }
   }
 }

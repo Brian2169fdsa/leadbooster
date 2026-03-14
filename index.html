@@ -1380,7 +1380,7 @@
         <iframe
           id="rb-tavus-frame"
           style="width:100%; height:480px; border:none; border-radius:16px; display:none;"
-          allow="camera;microphone;autoplay;display-capture"
+          allow="camera;autoplay;display-capture"
         ></iframe>
 
         <!-- Placeholder shown before session starts -->
@@ -3050,6 +3050,16 @@
         document.getElementById('rb-video-controls').style.display = 'flex';
         document.getElementById('rb-ptt-bar').style.display = 'flex';
 
+        // Give iframe time to load then mute participant mic via postMessage
+        setTimeout(() => {
+          const iframeEl = document.getElementById('rb-tavus-frame');
+          if (iframeEl && iframeEl.contentWindow) {
+            try {
+              iframeEl.contentWindow.postMessage({ type: 'mute_mic', muted: true }, '*');
+            } catch(e) {}
+          }
+        }, 3000);
+
         await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
           method: 'POST',
           headers: {
@@ -3260,6 +3270,23 @@
         status.style.color = '#94a3b8';
 
         appendRebeccaMessage(reply);
+
+        // Make Tavus speak the response if session is active
+        if (tavusSessionActive && tavusConversationId) {
+          try {
+            await fetch('/api/tavus-speak', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                conversation_id: tavusConversationId,
+                text: reply
+              })
+            });
+          } catch (speakErr) {
+            console.error('Tavus speak error:', speakErr);
+            // Non-fatal - chat still works even if video speech fails
+          }
+        }
       }
     } catch (err) {
       console.error('Voice to Rebecca error:', err);
