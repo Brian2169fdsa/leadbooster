@@ -451,7 +451,18 @@
 
     /* Daily.co container for Tavus video */
     #rb-daily-container iframe {
-      border-radius: 16px;
+      border-radius: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    /* Popover animation */
+    @keyframes rbPopIn {
+      from { opacity: 0; transform: scale(0.92) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes rbPopOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.92) translateY(20px); }
     }
 
     /* ===== BOTTOM NAV HIDDEN ON DESKTOP ===== */
@@ -763,8 +774,7 @@
       }
 
       #rb-daily-container {
-        height: 300px !important;
-        border-radius: 0 !important;
+        height: 280px !important;
       }
 
       #rb-pipeline-actions {
@@ -863,6 +873,22 @@
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mobile popover adjustments */
+    @media (max-width: 768px) {
+      #rb-popover-shell {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+      }
+      #rb-popover-shell > div {
+        border-radius: 0 !important;
+      }
+      #rb-daily-container {
+        height: 260px !important;
+      }
     }
 
     /* ===== BOTTOM NAV HIDDEN ON DESKTOP ===== */
@@ -1174,8 +1200,7 @@
       }
 
       #rb-daily-container {
-        height: 300px !important;
-        border-radius: 0 !important;
+        height: 280px !important;
       }
 
       #rb-pipeline-actions {
@@ -2189,158 +2214,161 @@
   <!-- ==================== REBECCA MODE ==================== -->
   <div id="mode-rebecca" class="mode-content hidden">
 
-    <!-- Tavus Live Video Section -->
-    <div id="rb-video-section" style="width:100%; margin-bottom:24px;">
+    <!-- Video Call Button — triggers popover -->
+    <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+      <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="background:linear-gradient(135deg, #1a5fb4, #4a90d9); color:white; border:none; border-radius:12px; padding:14px 28px; font-size:15px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(74,144,217,0.35); transition:all 0.2s;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        Video Call with Rebbecca
+      </button>
+      <!-- Pipeline action buttons (inline) -->
+      <button onclick="rebeccaRunSingle()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+        Single Company
+      </button>
+      <button onclick="rebeccaRunTerritory()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+        Territory Search
+      </button>
+      <button onclick="rebeccaRunBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+        Bulk List
+      </button>
+      <button onclick="setMode('current')" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+        View Contacts
+      </button>
+    </div>
 
-      <div style="position:relative; width:100%; background:#0f172a; border-radius:16px; overflow:hidden; min-height:420px; display:flex; align-items:center; justify-content:center;" id="rb-video-container">
-        <!-- Daily.co video target - Rebecca's face renders here -->
-        <div id="rb-daily-container" style="display:none; width:100%; height:480px; border-radius:16px; overflow:hidden; position:relative;">
-          <!-- Daily iframe gets appended here by the SDK -->
-          <!-- Top gradient overlay to hide any Daily UI chrome -->
-          <div style="position:absolute; top:0; left:0; right:0; height:60px; background:linear-gradient(#0f172a 20%, transparent); pointer-events:none; z-index:20;"></div>
-          <!-- Bottom gradient overlay to hide Daily controls -->
-          <div style="position:absolute; bottom:0; left:0; right:0; height:100px; background:linear-gradient(transparent, #0f172a 80%); pointer-events:none; z-index:20;"></div>
-        </div>
-        <!-- Placeholder shown before session starts -->
-        <div id="rb-video-placeholder" style="text-align:center; padding:40px; color:white;">
-          <img
-            src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp"
-            style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid #4a90d9; margin-bottom:16px; display:block; margin-left:auto; margin-right:auto;"
-          />
-          <div style="font-size:20px; font-weight:700; margin-bottom:8px;">Rebbecca Mathews</div>
-          <div style="font-size:13px; color:#94a3b8; margin-bottom:24px;">Executive Sales Assistant — Live Video</div>
-          <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="background:#4a90d9; color:white; border:none; border-radius:12px; padding:14px 32px; font-size:15px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
-            <span>&#x25B6;</span> Start Video Session
-          </button>
-          <div style="font-size:12px; color:#64748b; margin-top:12px;">Powered by Tavus CVI</div>
-        </div>
-        <!-- Session active controls overlay -->
-        <div id="rb-video-controls" style="display:none; position:absolute; bottom:16px; right:16px; gap:8px;">
-          <button onclick="endRebeccaVideo()" style="background:rgba(220,38,38,0.9); color:white; border:none; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">
-            End Session
-          </button>
+    <!-- ===== VIDEO CALL POPOVER (hidden by default) ===== -->
+    <div id="rb-video-popover" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10000; background:rgba(15,23,42,0.7); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+      <!-- Blue outer shell -->
+      <div id="rb-popover-shell" style="background:linear-gradient(135deg, #1a5fb4, #2563eb); border-radius:24px; padding:4px; box-shadow:0 24px 80px rgba(0,0,0,0.5); max-width:720px; width:94vw; max-height:90vh; display:flex; flex-direction:column; animation:rbPopIn 0.25s ease-out;">
+        <!-- White inlay -->
+        <div style="background:white; border-radius:20px; overflow:hidden; display:flex; flex-direction:column; flex:1;">
+          <!-- Header bar -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid #e5e7eb;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #4a90d9;" />
+              <div>
+                <div style="font-size:15px; font-weight:700; color:#1a2f4e;">Rebbecca Mathews</div>
+                <div id="rb-popover-status" style="font-size:12px; color:#4a90d9; font-weight:500;">Connecting...</div>
+              </div>
+            </div>
+            <button onclick="endRebeccaVideo()" style="background:#fee2e2; color:#dc2626; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+              End Call
+            </button>
+          </div>
+
+          <!-- Video area — Daily.co renders here -->
+          <div id="rb-daily-container" style="width:100%; height:420px; background:#0f172a; position:relative; overflow:hidden;">
+            <!-- Daily iframe gets appended here by the SDK -->
+            <!-- Top gradient to hide Daily chrome -->
+            <div style="position:absolute; top:0; left:0; right:0; height:50px; background:linear-gradient(#0f172a 10%, transparent); pointer-events:none; z-index:20;"></div>
+            <!-- Bottom gradient to hide Daily controls -->
+            <div style="position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, #0f172a 70%); pointer-events:none; z-index:20;"></div>
+          </div>
+
+          <!-- Controls bar: PTT + Camera toggle -->
+          <div style="display:flex; align-items:center; justify-content:center; gap:24px; padding:18px 20px; background:#f8fafc; border-top:1px solid #e5e7eb;">
+            <!-- Camera toggle -->
+            <button id="rb-camera-btn" onclick="toggleRebeccaCamera()" style="width:48px; height:48px; border-radius:50%; background:#1a2f4e; border:2px solid #4a90d9; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s;" title="Toggle camera">
+              <svg id="rb-camera-icon-on" width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+              <svg id="rb-camera-icon-off" width="22" height="22" viewBox="0 0 24 24" fill="#dc2626" style="display:none;"><path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></svg>
+            </button>
+
+            <!-- Push-to-talk button -->
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+              <button id="rb-ptt-btn"
+                style="width:72px; height:72px; border-radius:50%; background:#1a2f4e; border:3px solid #4a90d9; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; box-shadow:0 4px 20px rgba(74,144,217,0.3);"
+                onmousedown="startPTT()"
+                onmouseup="stopPTT()"
+                ontouchstart="event.preventDefault(); startPTT()"
+                ontouchend="event.preventDefault(); stopPTT()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h-3v2h8v-2h-3v-2.06A9 9 0 0 0 21 12v-2h-2z"/>
+                </svg>
+              </button>
+              <div id="rb-ptt-status" style="font-size:11px; color:#64748b; letter-spacing:0.04em; text-transform:uppercase;">Hold to talk</div>
+            </div>
+
+            <!-- Invite placeholder (future) -->
+            <button id="rb-invite-btn" onclick="alert('Invite feature coming soon')" style="width:48px; height:48px; border-radius:50%; background:#1a2f4e; border:2px solid #4a90d9; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s;" title="Invite to call">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </button>
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- Push-to-talk bar — always visible on Rebecca tab -->
-      <div id="rb-ptt-bar" style="display:flex; justify-content:center; align-items:center; gap:16px; padding:16px 0;">
-        <div id="rb-ptt-status" style="font-size:12px; color:#94a3b8; letter-spacing:0.05em; text-transform:uppercase;">Hold button to speak</div>
-        <button id="rb-ptt-btn"
-          style="width:72px; height:72px; border-radius:50%; background:#1a2f4e; border:3px solid #4a90d9; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; box-shadow:0 4px 20px rgba(74,144,217,0.3);"
-          onmousedown="startPTT()"
-          onmouseup="stopPTT()"
-          ontouchstart="event.preventDefault(); startPTT()"
-          ontouchend="event.preventDefault(); stopPTT()">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h-3v2h8v-2h-3v-2.06A9 9 0 0 0 21 12v-2h-2z"/>
-          </svg>
-        </button>
-        <div id="rb-ptt-hint" style="font-size:11px; color:#64748b;">Release to send</div>
+    <!-- Pipeline sub-modals (bulk, single, territory) -->
+    <div id="rb-bulk-modal" style="display:none; margin-bottom:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; animation: slideDown 0.3s ease;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="font-size:14px; font-weight:600; color:#1a2f4e;">Bulk Company Upload</div>
+        <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:18px;">x</button>
       </div>
-
-      <!-- Pipeline action buttons -->
-      <div id="rb-pipeline-actions" style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
-        <button onclick="rebeccaRunSingle()" style="flex:1; min-width:160px; background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-          <span>&#x1F3E2;</span> Single Company
-        </button>
-        <button onclick="rebeccaRunTerritory()" style="flex:1; min-width:160px; background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-          <span>&#x1F5FA;</span> Territory Search
-        </button>
-        <button onclick="rebeccaRunBulk()" style="flex:1; min-width:160px; background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-          <span>&#x1F4CB;</span> Bulk List
-        </button>
-        <button onclick="setMode('current')" style="flex:1; min-width:160px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-          <span>&#x1F465;</span> View Contacts
-        </button>
+      <select id="rb-bulk-vertical" style="width:100%; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:12px; font-family:inherit;">
+        <option value="construction">Construction</option>
+        <option value="behavioral_health">Behavioral Health</option>
+        <option value="medical_transport">Medical Transport</option>
+        <option value="healthcare">Healthcare</option>
+        <option value="b2b_professional_services">B2B Professional Services</option>
+      </select>
+      <div id="rb-drop-zone" style="border:2px dashed #e2e8f0; border-radius:8px; padding:20px; text-align:center; margin-bottom:12px; cursor:pointer; transition:border-color 0.2s;"
+        ondragover="event.preventDefault(); this.style.borderColor='#4a90d9';"
+        ondragleave="this.style.borderColor='#e2e8f0';"
+        ondrop="handleRbDrop(event);"
+        onclick="document.getElementById('rb-csv-input').click();">
+        <div style="font-size:13px; color:#64748b;">Drop CSV file here or click to browse</div>
+        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Format: company_name, domain (one per line)</div>
+        <input id="rb-csv-input" type="file" accept=".csv" style="display:none;" onchange="handleRbCsvFile(event);">
       </div>
-
-      <!-- Bulk upload panel -->
-      <div id="rb-bulk-modal" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; animation: slideDown 0.3s ease;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <div style="font-size:14px; font-weight:600; color:#1a2f4e;">Bulk Company Upload</div>
-          <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:18px;">x</button>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+        <div style="font-size:12px; color:#94a3b8;">OR PASTE LIST</div>
+        <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+      </div>
+      <textarea id="rb-bulk-paste" placeholder="Paste companies here, one per line:
+DPR Construction, dpr.com
+Hensel Phelps, henselphelps.com
+Turner Construction, turnerconstruction.com"
+        style="width:100%; height:140px; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:12px; resize:vertical; font-family:monospace; box-sizing:border-box;"></textarea>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+        <div id="rb-bulk-count" style="font-size:12px; color:#64748b;">0 companies ready</div>
+        <div style="display:flex; gap:8px;">
+          <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
+          <button onclick="rebeccaFireBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
         </div>
+      </div>
+    </div>
 
-        <!-- Vertical selector -->
-        <select id="rb-bulk-vertical" style="width:100%; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:12px; font-family:inherit;">
+    <div id="rb-single-modal" style="display:none; margin-bottom:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+      <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Run Single Company</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input id="rb-company-input" placeholder="Company name" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+        <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+        <select id="rb-vertical-input" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
           <option value="construction">Construction</option>
           <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
           <option value="healthcare">Healthcare</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
         </select>
-
-        <!-- CSV drag and drop zone -->
-        <div id="rb-drop-zone" style="border:2px dashed #e2e8f0; border-radius:8px; padding:20px; text-align:center; margin-bottom:12px; cursor:pointer; transition:border-color 0.2s;"
-          ondragover="event.preventDefault(); this.style.borderColor='#4a90d9';"
-          ondragleave="this.style.borderColor='#e2e8f0';"
-          ondrop="handleRbDrop(event);"
-          onclick="document.getElementById('rb-csv-input').click();">
-          <div style="font-size:13px; color:#64748b;">Drop CSV file here or click to browse</div>
-          <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Format: company_name, domain (one per line)</div>
-          <input id="rb-csv-input" type="file" accept=".csv" style="display:none;" onchange="handleRbCsvFile(event);">
-        </div>
-
-        <!-- OR divider -->
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-          <div style="font-size:12px; color:#94a3b8;">OR PASTE LIST</div>
-          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-        </div>
-
-        <!-- Paste area -->
-        <textarea id="rb-bulk-paste" placeholder="Paste companies here, one per line:
-DPR Construction, dpr.com
-Hensel Phelps, henselphelps.com
-Turner Construction, turnerconstruction.com"
-          style="width:100%; height:140px; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:12px; resize:vertical; font-family:monospace; box-sizing:border-box;"></textarea>
-
-        <!-- Count and run -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-          <div id="rb-bulk-count" style="font-size:12px; color:#64748b;">0 companies ready</div>
-          <div style="display:flex; gap:8px;">
-            <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
-            <button onclick="rebeccaFireBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
-          </div>
-        </div>
+        <button onclick="rebeccaFireSingle()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
+        <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
       </div>
+    </div>
 
-      <!-- Input modal for single company -->
-      <div id="rb-single-modal" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
-        <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Run Single Company</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input id="rb-company-input" placeholder="Company name" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-          <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-          <select id="rb-vertical-input" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
-            <option value="construction">Construction</option>
-            <option value="behavioral_health">Behavioral Health</option>
-            <option value="medical_transport">Medical Transport</option>
-            <option value="healthcare">Healthcare</option>
-            <option value="b2b_professional_services">B2B Professional Services</option>
-          </select>
-          <button onclick="rebeccaFireSingle()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
-          <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
-        </div>
+    <div id="rb-territory-modal" style="display:none; margin-bottom:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+      <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Territory Search</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input id="rb-city-input" placeholder="City (e.g. Phoenix)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+        <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1; min-width:80px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+        <select id="rb-territory-vertical" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
+          <option value="construction">Construction</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="healthcare">Healthcare</option>
+        </select>
+        <button onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
+        <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
       </div>
-
-      <!-- Territory modal -->
-      <div id="rb-territory-modal" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
-        <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Territory Search</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input id="rb-city-input" placeholder="City (e.g. Phoenix)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-          <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1; min-width:80px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-          <select id="rb-territory-vertical" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
-            <option value="construction">Construction</option>
-            <option value="behavioral_health">Behavioral Health</option>
-            <option value="medical_transport">Medical Transport</option>
-            <option value="healthcare">Healthcare</option>
-          </select>
-          <button onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
-          <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
-        </div>
-      </div>
-
     </div>
 
     <div class="rb-layout">
@@ -3906,13 +3934,19 @@ Turner Construction, turnerconstruction.com"
     }, 180000); // 3 minutes
   }
 
+  let tavusCameraOn = true;
+
   async function startRebeccaVideo() {
     const btn = document.getElementById('rb-start-video-btn');
     btn.textContent = 'Starting session...';
     btn.disabled = true;
 
+    // Show the popover immediately
+    const popover = document.getElementById('rb-video-popover');
+    popover.style.display = 'flex';
+    document.getElementById('rb-popover-status').textContent = 'Connecting...';
+
     try {
-      // Create the Tavus conversation via our server proxy
       const response = await fetch('/api/tavus-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3932,38 +3966,32 @@ Turner Construction, turnerconstruction.com"
       tavusConversationUrl = data.conversation_url;
       tavusSessionActive = true;
 
-      // Use Daily.co SDK to join the room with mic OFF by default
       if (typeof window.Daily === 'undefined') {
         throw new Error('Daily.js SDK not loaded. Check script tag in head.');
       }
 
       const container = document.getElementById('rb-daily-container');
 
-      // Create Daily frame and append to our container
       tavusCallObject = window.Daily.createFrame(container, {
         iframeStyle: {
           width: '100%',
-          height: '480px',
+          height: '100%',
           border: 'none',
-          borderRadius: '16px'
+          borderRadius: '0'
         },
         showLeaveButton: false,
         showFullscreenButton: false
       });
 
-      // Join with audio OFF - this is the key for PTT
+      document.getElementById('rb-popover-status').textContent = 'Joining call...';
+
       await tavusCallObject.join({
         url: tavusConversationUrl,
         startAudioOff: true,
         startVideoOff: false
       });
 
-      // Show the video container, hide placeholder
-      container.style.display = 'block';
-      document.getElementById('rb-video-placeholder').style.display = 'none';
-      document.getElementById('rb-video-controls').style.display = 'flex';
-
-      // Start idle timer
+      tavusCameraOn = true;
       tavusResetIdleTimer();
 
       // Log session to Supabase
@@ -3984,11 +4012,13 @@ Turner Construction, turnerconstruction.com"
         });
       } catch(e) { /* non-fatal */ }
 
+      document.getElementById('rb-popover-status').textContent = 'Live';
       btn.textContent = 'Video Live';
       rbActionStatus('Video session started — hold the mic button to talk to Rebbecca');
     } catch (err) {
       console.error('Tavus session error:', err);
-      btn.textContent = 'Start Video Session';
+      popover.style.display = 'none';
+      btn.textContent = 'Video Call with Rebbecca';
       btn.disabled = false;
       rbActionStatus('Video session failed: ' + err.message);
     }
@@ -4024,17 +4054,52 @@ Turner Construction, turnerconstruction.com"
     tavusConversationUrl = null;
     tavusSessionActive = false;
 
-    // Reset UI
+    // Close the popover
+    const popover = document.getElementById('rb-video-popover');
+    if (popover) popover.style.display = 'none';
+
+    // Reset the Daily container - re-add gradient overlays
     const container = document.getElementById('rb-daily-container');
     if (container) {
-      container.style.display = 'none';
-      // Re-add the gradient overlays
-      container.innerHTML = '<div style="position:absolute; top:0; left:0; right:0; height:60px; background:linear-gradient(#0f172a 20%, transparent); pointer-events:none; z-index:20;"></div><div style="position:absolute; bottom:0; left:0; right:0; height:100px; background:linear-gradient(transparent, #0f172a 80%); pointer-events:none; z-index:20;"></div>';
+      container.innerHTML = '<div style="position:absolute; top:0; left:0; right:0; height:50px; background:linear-gradient(#0f172a 10%, transparent); pointer-events:none; z-index:20;"></div><div style="position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, #0f172a 70%); pointer-events:none; z-index:20;"></div>';
     }
-    document.getElementById('rb-video-placeholder').style.display = 'block';
-    document.getElementById('rb-video-controls').style.display = 'none';
-    document.getElementById('rb-start-video-btn').textContent = 'Start Video Session';
-    document.getElementById('rb-start-video-btn').disabled = false;
+
+    // Reset button
+    const btn = document.getElementById('rb-start-video-btn');
+    if (btn) {
+      btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg> Video Call with Rebbecca';
+      btn.disabled = false;
+    }
+
+    // Reset camera toggle state
+    tavusCameraOn = true;
+    const camOnIcon = document.getElementById('rb-camera-icon-on');
+    const camOffIcon = document.getElementById('rb-camera-icon-off');
+    if (camOnIcon) camOnIcon.style.display = '';
+    if (camOffIcon) camOffIcon.style.display = 'none';
+    const camBtn = document.getElementById('rb-camera-btn');
+    if (camBtn) { camBtn.style.background = '#1a2f4e'; camBtn.style.borderColor = '#4a90d9'; }
+  }
+
+  function toggleRebeccaCamera() {
+    if (!tavusCallObject) return;
+    tavusCameraOn = !tavusCameraOn;
+    try {
+      tavusCallObject.setLocalVideo(tavusCameraOn);
+    } catch(e) { console.error('Camera toggle error:', e); }
+
+    const camOnIcon = document.getElementById('rb-camera-icon-on');
+    const camOffIcon = document.getElementById('rb-camera-icon-off');
+    const camBtn = document.getElementById('rb-camera-btn');
+    if (tavusCameraOn) {
+      if (camOnIcon) camOnIcon.style.display = '';
+      if (camOffIcon) camOffIcon.style.display = 'none';
+      if (camBtn) { camBtn.style.background = '#1a2f4e'; camBtn.style.borderColor = '#4a90d9'; }
+    } else {
+      if (camOnIcon) camOnIcon.style.display = 'none';
+      if (camOffIcon) camOffIcon.style.display = '';
+      if (camBtn) { camBtn.style.background = '#dc2626'; camBtn.style.borderColor = '#dc2626'; }
+    }
   }
 
   function rebeccaRunSingle() {
@@ -4217,8 +4282,8 @@ Turner Construction, turnerconstruction.com"
     btn.style.borderColor = '#4a90d9';
     btn.style.boxShadow = '0 4px 20px rgba(74,144,217,0.3)';
     btn.style.transform = 'scale(1)';
-    status.textContent = 'Hold button to speak';
-    status.style.color = '#94a3b8';
+    status.textContent = 'Hold to talk';
+    status.style.color = '#64748b';
 
     // Disable microphone in Daily call
     if (tavusCallObject) {
@@ -4630,6 +4695,14 @@ Turner Construction, turnerconstruction.com"
       console.log('Daily.js SDK loaded successfully');
     } else {
       console.warn('Daily.js SDK not loaded - video sessions will not work');
+    }
+
+    // Close popover when clicking backdrop
+    const popover = document.getElementById('rb-video-popover');
+    if (popover) {
+      popover.addEventListener('click', function(e) {
+        if (e.target === popover) endRebeccaVideo();
+      });
     }
 
     const sendBtn = document.getElementById('rb-send');
