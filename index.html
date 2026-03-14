@@ -449,11 +449,14 @@
     #rb-send { width: 44px; height: 44px; border-radius: 50%; background: #1a2f4e; color: #fff; border: none; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
     #rb-send:hover { background: #2a4a6e; }
 
-    /* Daily.co container for Tavus video */
+    /* Daily.co container for Tavus video — iframe is taller than container to clip bottom controls */
     #rb-daily-container iframe {
       border-radius: 0;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
       width: 100% !important;
-      height: 100% !important;
+      height: 560px !important;
     }
     /* Popover animation */
     @keyframes rbPopIn {
@@ -774,7 +777,10 @@
       }
 
       #rb-daily-container {
-        height: 280px !important;
+        height: 300px !important;
+      }
+      #rb-daily-container iframe {
+        height: 380px !important;
       }
 
       #rb-pipeline-actions {
@@ -887,7 +893,10 @@
         border-radius: 0 !important;
       }
       #rb-daily-container {
-        height: 260px !important;
+        height: 300px !important;
+      }
+      #rb-daily-container iframe {
+        height: 380px !important;
       }
     }
 
@@ -1200,7 +1209,10 @@
       }
 
       #rb-daily-container {
-        height: 280px !important;
+        height: 300px !important;
+      }
+      #rb-daily-container iframe {
+        height: 380px !important;
       }
 
       #rb-pipeline-actions {
@@ -2257,11 +2269,9 @@
 
           <!-- Video area — Daily.co renders here -->
           <div id="rb-daily-container" style="width:100%; height:420px; background:#0f172a; position:relative; overflow:hidden;">
-            <!-- Daily iframe gets appended here by the SDK -->
+            <!-- Daily iframe is 560px tall inside 420px container — bottom 140px (controls) clipped -->
             <!-- Top gradient to hide Daily chrome -->
             <div style="position:absolute; top:0; left:0; right:0; height:50px; background:linear-gradient(#0f172a 10%, transparent); pointer-events:none; z-index:20;"></div>
-            <!-- Bottom gradient to hide Daily controls -->
-            <div style="position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, #0f172a 70%); pointer-events:none; z-index:20;"></div>
           </div>
 
           <!-- Controls bar: PTT + Camera toggle -->
@@ -3974,8 +3984,11 @@ Turner Construction, turnerconstruction.com"
 
       tavusCallObject = window.Daily.createFrame(container, {
         iframeStyle: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
           width: '100%',
-          height: '100%',
+          height: '560px',
           border: 'none',
           borderRadius: '0'
         },
@@ -4061,7 +4074,7 @@ Turner Construction, turnerconstruction.com"
     // Reset the Daily container - re-add gradient overlays
     const container = document.getElementById('rb-daily-container');
     if (container) {
-      container.innerHTML = '<div style="position:absolute; top:0; left:0; right:0; height:50px; background:linear-gradient(#0f172a 10%, transparent); pointer-events:none; z-index:20;"></div><div style="position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, #0f172a 70%); pointer-events:none; z-index:20;"></div>';
+      container.innerHTML = '<div style="position:absolute; top:0; left:0; right:0; height:50px; background:linear-gradient(#0f172a 10%, transparent); pointer-events:none; z-index:20;"></div>';
     }
 
     // Reset button
