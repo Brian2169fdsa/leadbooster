@@ -2211,7 +2211,7 @@
           <iframe
             id="rb-tavus-frame"
             style="width:100%; height:100%; border:none; display:block;"
-            allow="camera;autoplay;display-capture"
+            allow="autoplay"
           ></iframe>
           <!-- Overlay to hide Tavus bottom controls bar -->
           <div id="rb-tavus-overlay" style="position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, #0f172a); pointer-events:none; z-index:10;"></div>
@@ -3947,26 +3947,20 @@ Turner Construction, turnerconstruction.com"
       tavusConversationId = data.conversation_id;
       tavusSessionActive = true;
 
+      // Join without mic/camera — we use PTT for voice input, not Tavus built-in mic
+      // Tavus uses Daily.co under the hood; these params skip the "Unblock mic" prompt
+      const sep = data.conversation_url.includes('?') ? '&' : '?';
+      const videoUrl = data.conversation_url + sep + 'startAudioOff=true&startVideoOff=true';
+
       const frame = document.getElementById('rb-tavus-frame');
-      frame.src = data.conversation_url;
+      frame.src = videoUrl;
+      frame.allow = 'autoplay';
       const overlayWrap = document.getElementById('rb-tavus-overlay-wrap');
       if (overlayWrap) overlayWrap.style.display = 'block';
       frame.style.display = 'block';
 
       document.getElementById('rb-video-placeholder').style.display = 'none';
       document.getElementById('rb-video-controls').style.display = 'flex';
-
-      // Mute the Tavus built-in mic — we use PTT only
-      setTimeout(() => {
-        const iframeEl = document.getElementById('rb-tavus-frame');
-        if (iframeEl && iframeEl.contentWindow) {
-          try {
-            iframeEl.contentWindow.postMessage({ type: 'mute_mic', muted: true }, '*');
-            iframeEl.contentWindow.postMessage({ type: 'disable_mic' }, '*');
-            iframeEl.contentWindow.postMessage(JSON.stringify({ action: 'mute', target: 'microphone' }), '*');
-          } catch(e) {}
-        }
-      }, 3000);
 
       // Start 3-minute idle auto-kill timer
       tavusResetIdleTimer();
