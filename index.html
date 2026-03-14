@@ -453,6 +453,10 @@
       .rb-left, .rb-right { width: 100%; }
       #rb-messages { height: 400px; min-height: 300px; }
     }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -1421,6 +1425,57 @@
         </button>
       </div>
 
+      <!-- Bulk upload panel -->
+      <div id="rb-bulk-modal" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; animation: slideDown 0.3s ease;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div style="font-size:14px; font-weight:600; color:#1a2f4e;">Bulk Company Upload</div>
+          <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:18px;">x</button>
+        </div>
+
+        <!-- Vertical selector -->
+        <select id="rb-bulk-vertical" style="width:100%; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:12px; font-family:inherit;">
+          <option value="construction">Construction</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="b2b_professional_services">B2B Professional Services</option>
+        </select>
+
+        <!-- CSV drag and drop zone -->
+        <div id="rb-drop-zone" style="border:2px dashed #e2e8f0; border-radius:8px; padding:20px; text-align:center; margin-bottom:12px; cursor:pointer; transition:border-color 0.2s;"
+          ondragover="event.preventDefault(); this.style.borderColor='#4a90d9';"
+          ondragleave="this.style.borderColor='#e2e8f0';"
+          ondrop="handleRbDrop(event);"
+          onclick="document.getElementById('rb-csv-input').click();">
+          <div style="font-size:13px; color:#64748b;">Drop CSV file here or click to browse</div>
+          <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Format: company_name, domain (one per line)</div>
+          <input id="rb-csv-input" type="file" accept=".csv" style="display:none;" onchange="handleRbCsvFile(event);">
+        </div>
+
+        <!-- OR divider -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+          <div style="font-size:12px; color:#94a3b8;">OR PASTE LIST</div>
+          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+        </div>
+
+        <!-- Paste area -->
+        <textarea id="rb-bulk-paste" placeholder="Paste companies here, one per line:
+DPR Construction, dpr.com
+Hensel Phelps, henselphelps.com
+Turner Construction, turnerconstruction.com"
+          style="width:100%; height:140px; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:12px; resize:vertical; font-family:monospace; box-sizing:border-box;"></textarea>
+
+        <!-- Count and run -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+          <div id="rb-bulk-count" style="font-size:12px; color:#64748b;">0 companies ready</div>
+          <div style="display:flex; gap:8px;">
+            <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
+            <button onclick="rebeccaFireBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Input modal for single company -->
       <div id="rb-single-modal" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
         <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Run Single Company</div>
@@ -1572,6 +1627,8 @@
     if (mode === 'rebecca' && !rebeccaInitialized) {
       loadRebeccaStats();
       rebeccaInitialized = true;
+      const bulkPaste = document.getElementById('rb-bulk-paste');
+      if (bulkPaste) bulkPaste.addEventListener('input', updateRbBulkCount);
     }
   }
 
@@ -3096,7 +3153,85 @@
   }
 
   function rebeccaRunBulk() {
-    setMode('bulk');
+    document.getElementById('rb-single-modal').style.display = 'none';
+    document.getElementById('rb-territory-modal').style.display = 'none';
+    const modal = document.getElementById('rb-bulk-modal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function handleRbDrop(event) {
+    event.preventDefault();
+    document.getElementById('rb-drop-zone').style.borderColor = '#e2e8f0';
+    const file = event.dataTransfer.files[0];
+    if (file && file.name.endsWith('.csv')) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const lines = e.target.result.split('\n').filter(l => l.trim());
+        document.getElementById('rb-bulk-paste').value = lines.join('\n');
+        updateRbBulkCount();
+      };
+      reader.readAsText(file);
+    }
+  }
+
+  function handleRbCsvFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const lines = e.target.result.split('\n').filter(l => l.trim());
+      document.getElementById('rb-bulk-paste').value = lines.join('\n');
+      updateRbBulkCount();
+    };
+    reader.readAsText(file);
+  }
+
+  function updateRbBulkCount() {
+    const lines = document.getElementById('rb-bulk-paste').value.split('\n').filter(l => l.trim());
+    document.getElementById('rb-bulk-count').textContent = lines.length + ' companies ready';
+  }
+
+  async function rebeccaFireBulk() {
+    const vertical = document.getElementById('rb-bulk-vertical').value;
+    const pasteValue = document.getElementById('rb-bulk-paste').value;
+    const lines = pasteValue.split('\n').filter(l => l.trim());
+
+    if (lines.length === 0) {
+      alert('Please add at least one company.');
+      return;
+    }
+
+    document.getElementById('rb-bulk-modal').style.display = 'none';
+
+    const leads = lines.map(line => {
+      const parts = line.split(',').map(p => p.trim());
+      return {
+        company_name: parts[0] || '',
+        domain: parts[1] || '',
+        vertical: vertical
+      };
+    }).filter(l => l.company_name);
+
+    for (let i = 0; i < leads.length; i++) {
+      const lead = leads[i];
+      try {
+        await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-discovery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company_name: lead.company_name,
+            domain: lead.domain,
+            vertical: lead.vertical,
+            submitter_name: window._currentUser?.name || 'Tony',
+            submitter_email: window._currentUser?.email || 'tony@manageai.io',
+            source: 'rebecca_bulk'
+          })
+        });
+      } catch (err) {
+        console.error('Bulk fire error for ' + lead.company_name, err);
+      }
+      if (i < leads.length - 1) await new Promise(r => setTimeout(r, 350));
+    }
   }
 
   async function rebeccaFireSingle() {

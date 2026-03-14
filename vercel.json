@@ -5,6 +5,9 @@
     },
     "api/tavus-session.js": {
       "maxDuration": 30
+    },
+    "api/rebecca-action.js": {
+      "maxDuration": 30
     }
   }
 }
