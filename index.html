@@ -1369,6 +1369,95 @@
 
   <!-- ==================== REBECCA MODE ==================== -->
   <div id="mode-rebecca" class="mode-content hidden">
+
+    <!-- Tavus Live Video Section -->
+    <div id="rb-video-section" style="width:100%; margin-bottom:24px;">
+
+      <!-- Video container -->
+      <div style="position:relative; width:100%; background:#0f172a; border-radius:16px; overflow:hidden; min-height:420px; display:flex; align-items:center; justify-content:center;">
+
+        <!-- Tavus iframe - loads the conversation URL -->
+        <iframe
+          id="rb-tavus-frame"
+          style="width:100%; height:480px; border:none; border-radius:16px; display:none;"
+          allow="camera;microphone;autoplay;display-capture"
+        ></iframe>
+
+        <!-- Placeholder shown before session starts -->
+        <div id="rb-video-placeholder" style="text-align:center; padding:40px; color:white;">
+          <img
+            src="https://manageai.io/wp-content/uploads/2026/03/Ctornabe_professional_headshot_of_a_woman_with_long_hair_warm_eed82aee-76a8-4a84-832c-880c96329eb0_2.webp"
+            style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid #4a90d9; margin-bottom:16px; display:block; margin-left:auto; margin-right:auto;"
+          />
+          <div style="font-size:20px; font-weight:700; margin-bottom:8px;">Rebbecca Mathews</div>
+          <div style="font-size:13px; color:#94a3b8; margin-bottom:24px;">Executive Sales Assistant — Live Video</div>
+          <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="background:#4a90d9; color:white; border:none; border-radius:12px; padding:14px 32px; font-size:15px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+            <span>&#x25B6;</span> Start Video Session
+          </button>
+          <div style="font-size:12px; color:#64748b; margin-top:12px;">Powered by Tavus CVI</div>
+        </div>
+
+        <!-- Session active controls overlay -->
+        <div id="rb-video-controls" style="display:none; position:absolute; bottom:16px; right:16px; gap:8px;">
+          <button onclick="endRebeccaVideo()" style="background:rgba(220,38,38,0.9); color:white; border:none; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">
+            End Session
+          </button>
+        </div>
+      </div>
+
+      <!-- Pipeline action buttons -->
+      <div id="rb-pipeline-actions" style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+        <button onclick="rebeccaRunSingle()" style="flex:1; min-width:160px; background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+          <span>&#x1F3E2;</span> Single Company
+        </button>
+        <button onclick="rebeccaRunTerritory()" style="flex:1; min-width:160px; background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+          <span>&#x1F5FA;</span> Territory Search
+        </button>
+        <button onclick="rebeccaRunBulk()" style="flex:1; min-width:160px; background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+          <span>&#x1F4CB;</span> Bulk List
+        </button>
+        <button onclick="setMode('current')" style="flex:1; min-width:160px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+          <span>&#x1F465;</span> View Contacts
+        </button>
+      </div>
+
+      <!-- Input modal for single company -->
+      <div id="rb-single-modal" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+        <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Run Single Company</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input id="rb-company-input" placeholder="Company name" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+          <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+          <select id="rb-vertical-input" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
+            <option value="construction">Construction</option>
+            <option value="behavioral_health">Behavioral Health</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="b2b_professional_services">B2B Professional Services</option>
+          </select>
+          <button onclick="rebeccaFireSingle()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
+          <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Territory modal -->
+      <div id="rb-territory-modal" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+        <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Territory Search</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input id="rb-city-input" placeholder="City (e.g. Phoenix)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+          <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1; min-width:80px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
+          <select id="rb-territory-vertical" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
+            <option value="construction">Construction</option>
+            <option value="behavioral_health">Behavioral Health</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="healthcare">Healthcare</option>
+          </select>
+          <button onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
+          <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+
+    </div>
+
     <div class="rb-layout">
       <!-- LEFT COLUMN — Profile Card -->
       <div class="rb-left">
@@ -1465,6 +1554,9 @@
   let currentMode = 'dashboard';
 
   function setMode(mode) {
+    if (typeof tavusSessionActive !== 'undefined' && tavusSessionActive && mode !== 'rebecca') {
+      endRebeccaVideo();
+    }
     currentMode = mode;
     ['dashboard','single','bulk','territory','current','history','rebecca','activecampaign','feedback'].forEach(m => {
       const el = document.getElementById('mode-' + m);
@@ -2906,6 +2998,151 @@
 
   // ==================== REBECCA — Executive Sales Assistant ====================
   const PIPEDRIVE_KEY = '2fada79568e20083cf472cd5b307e9e12d171a1d';
+  // ==================== TAVUS VIDEO SESSION ====================
+  // Tavus Replica ID - set in Vercel environment as TAVUS_REPLICA_ID
+  const TAVUS_REPLICA_ID = 'REPLICA_ID_HERE';
+  let tavusConversationId = null;
+  let tavusSessionActive = false;
+
+  async function startRebeccaVideo() {
+    const btn = document.getElementById('rb-start-video-btn');
+    btn.textContent = 'Starting session...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('/api/tavus-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          user_name: window._currentUser?.name || 'Tony'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.conversation_url) {
+        tavusConversationId = data.conversation_id;
+        tavusSessionActive = true;
+
+        const frame = document.getElementById('rb-tavus-frame');
+        frame.src = data.conversation_url;
+        frame.style.display = 'block';
+
+        document.getElementById('rb-video-placeholder').style.display = 'none';
+        document.getElementById('rb-video-controls').style.display = 'flex';
+
+        await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
+          method: 'POST',
+          headers: {
+            'apikey': SB_SERVICE_KEY,
+            'Authorization': 'Bearer ' + SB_SERVICE_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            session_id: data.conversation_id,
+            conversation_id: data.conversation_id,
+            replica_id: TAVUS_REPLICA_ID,
+            user_name: window._currentUser?.name || 'Tony',
+            status: 'active'
+          })
+        });
+      }
+    } catch (err) {
+      btn.textContent = 'Start Video Session';
+      btn.disabled = false;
+      console.error('Tavus session error:', err);
+      alert('Could not start video session. Please try again.');
+    }
+  }
+
+  async function endRebeccaVideo() {
+    if (!tavusConversationId) return;
+
+    try {
+      await fetch('/api/tavus-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'end',
+          conversation_id: tavusConversationId
+        })
+      });
+    } catch (err) {
+      console.error('Error ending session:', err);
+    }
+
+    tavusConversationId = null;
+    tavusSessionActive = false;
+    const frame = document.getElementById('rb-tavus-frame');
+    frame.src = '';
+    frame.style.display = 'none';
+    document.getElementById('rb-video-placeholder').style.display = 'block';
+    document.getElementById('rb-video-controls').style.display = 'none';
+    document.getElementById('rb-start-video-btn').textContent = 'Start Video Session';
+    document.getElementById('rb-start-video-btn').disabled = false;
+  }
+
+  function rebeccaRunSingle() {
+    document.getElementById('rb-territory-modal').style.display = 'none';
+    const modal = document.getElementById('rb-single-modal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function rebeccaRunTerritory() {
+    document.getElementById('rb-single-modal').style.display = 'none';
+    const modal = document.getElementById('rb-territory-modal');
+    modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function rebeccaRunBulk() {
+    setMode('bulk');
+  }
+
+  async function rebeccaFireSingle() {
+    const company = document.getElementById('rb-company-input').value.trim();
+    const domain = document.getElementById('rb-domain-input').value.trim();
+    const vertical = document.getElementById('rb-vertical-input').value;
+
+    if (!company || !domain) {
+      alert('Please enter company name and domain.');
+      return;
+    }
+
+    document.getElementById('rb-single-modal').style.display = 'none';
+    await fireWebhook(company, domain, vertical, '', window._currentUser?.name || 'Tony', window._currentUser?.email || 'tony@manageai.io');
+  }
+
+  async function rebeccaFireTerritory() {
+    const city = document.getElementById('rb-city-input').value.trim();
+    const state = document.getElementById('rb-state-input').value.trim();
+    const vertical = document.getElementById('rb-territory-vertical').value;
+
+    if (!city || !state) {
+      alert('Please enter city and state.');
+      return;
+    }
+
+    document.getElementById('rb-territory-modal').style.display = 'none';
+
+    try {
+      await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city: city,
+          state: state,
+          vertical: vertical,
+          submitter_name: window._currentUser?.name || 'Tony',
+          submitter_email: window._currentUser?.email || 'tony@manageai.io'
+        })
+      });
+    } catch (err) {
+      console.error('Territory search error:', err);
+    }
+  }
+
+  // ==================== REBECCA CHAT ====================
   const RB_PHOTO = 'https://manageai.io/wp-content/uploads/2026/03/Ctornabe_professional_headshot_of_a_woman_with_long_hair_warm_eed82aee-76a8-4a84-832c-880c96329eb0_2.webp';
   let rebeccaConversation = [];
   let rebeccaStats = {};

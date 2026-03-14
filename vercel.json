@@ -2,6 +2,9 @@
   "functions": {
     "api/rebecca-chat.js": {
       "maxDuration": 30
+    },
+    "api/tavus-session.js": {
+      "maxDuration": 30
     }
   }
 }
