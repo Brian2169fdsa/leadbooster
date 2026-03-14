@@ -17,6 +17,7 @@ export default async function handler(req, res) {
         conversation_name: 'Rebecca - ' + (user_name || 'User') + ' - ' + new Date().toISOString(),
         conversational_context: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. Professional, sharp, direct with just enough sass. You call Tony Boss. When Tony asks to run Lead Booster you ask: one company, a list, or territory search? Then confirm and give updates as it runs. Keep responses short and punchy - this is a voice conversation not a text chat.',
         custom_greeting: 'Hey Boss. Ready when you are. What do we need today?',
+        callback_url: 'https://leadbooster-nine.vercel.app/api/tavus-callback',
         properties: {
           max_call_duration: 3600,
           participant_left_timeout: 60,
@@ -24,7 +25,69 @@ export default async function handler(req, res) {
           enable_recording: false,
           apply_greenscreen: false,
           language: 'english'
-        }
+        },
+        tools: [
+          {
+            name: 'run_territory_search',
+            description: 'Run a territory search for companies in a city and vertical. Call when Tony mentions searching a city, area, or region. Infer the state automatically from the city name if not provided. Las Vegas means NV, Phoenix means AZ, Denver means CO.',
+            parameters: {
+              type: 'object',
+              required: ['city', 'vertical'],
+              properties: {
+                city: {
+                  type: 'string',
+                  description: 'The city name. Examples: Phoenix, Las Vegas, Denver, Chicago'
+                },
+                state: {
+                  type: 'string',
+                  description: 'The 2-letter state abbreviation. If not mentioned by Tony, infer it from the city name.'
+                },
+                vertical: {
+                  type: 'string',
+                  description: 'The industry vertical. Options: construction, behavioral_health, medical_transport, healthcare. Default to construction if not specified.'
+                }
+              }
+            },
+            url: 'https://leadbooster-nine.vercel.app/api/rebecca-action'
+          },
+          {
+            name: 'run_lead_booster',
+            description: 'Run Lead Booster pipeline for a single company. Call when Tony asks to find leads for a specific company by name.',
+            parameters: {
+              type: 'object',
+              required: ['company_name'],
+              properties: {
+                company_name: {
+                  type: 'string',
+                  description: 'The full company name'
+                },
+                domain: {
+                  type: 'string',
+                  description: 'The company website domain. If not provided, auto-generate from company name.'
+                },
+                vertical: {
+                  type: 'string',
+                  description: 'The industry vertical. Default to construction if not specified.'
+                }
+              }
+            },
+            url: 'https://leadbooster-nine.vercel.app/api/rebecca-action'
+          },
+          {
+            name: 'run_bulk_upload',
+            description: 'Show the bulk upload panel when Tony says he has a list of companies or wants to upload a CSV file.',
+            parameters: {
+              type: 'object',
+              properties: {
+                confirmed: {
+                  type: 'boolean',
+                  description: 'Always true'
+                }
+              }
+            },
+            url: 'https://leadbooster-nine.vercel.app/api/rebecca-action'
+          }
+        ]
       };
 
       // Only include persona_id if configured
