@@ -4326,7 +4326,7 @@ Turner Construction, turnerconstruction.com"
       const headers = { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY, 'Content-Type': 'application/json' };
       const [contactsResp, queueResp, pdDealsResp, pdPersonsResp] = await Promise.all([
         fetch(SB_URL + '/rest/v1/lb_contacts?select=icp_score,vertical,outcome,created_at&limit=500', { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(SB_URL + '/rest/v1/lb_queue?select=company_name,status,contacts_found,created_at&order=created_at.desc&limit=10', { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(SB_URL + '/rest/v1/lb_queue?select=domain,status,meta,created_at&order=created_at.desc&limit=10', { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
         fetch('https://api.pipedrive.com/v1/deals?status=open&limit=20&api_token=' + PIPEDRIVE_KEY).then(r => r.ok ? r.json() : { data: null }).catch(() => ({ data: null })),
         fetch('https://api.pipedrive.com/v1/persons?limit=50&api_token=' + PIPEDRIVE_KEY).then(r => r.ok ? r.json() : { data: null }).catch(() => ({ data: null }))
       ]);
