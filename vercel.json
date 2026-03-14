@@ -6,6 +6,9 @@
     "api/tavus-session.js": {
       "maxDuration": 30
     },
+    "api/tavus-speak.js": {
+      "maxDuration": 15
+    },
     "api/rebecca-action.js": {
       "maxDuration": 30
     }

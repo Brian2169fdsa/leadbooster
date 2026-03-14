@@ -26,8 +26,9 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      return res.status(response.status).json({ error: err });
+      const errData = await response.text();
+      console.error('Tavus speak error:', errData);
+      return res.status(response.status).json({ error: errData });
     }
 
     const data = await response.json();
