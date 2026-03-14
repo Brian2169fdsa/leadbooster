@@ -449,21 +449,9 @@
     #rb-send { width: 44px; height: 44px; border-radius: 50%; background: #1a2f4e; color: #fff; border: none; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
     #rb-send:hover { background: #2a4a6e; }
 
-    /* Hide Tavus iframe internal UI - overlay covers the control areas */
-    #rb-tavus-overlay-wrap {
-      position: relative;
-      width: 100%;
-      height: 480px;
+    /* Daily.co container for Tavus video */
+    #rb-daily-container iframe {
       border-radius: 16px;
-      overflow: hidden;
-    }
-    #rb-tavus-overlay-wrap #rb-tavus-frame {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: calc(100% + 80px);
-      border: none;
     }
 
     /* ===== BOTTOM NAV HIDDEN ON DESKTOP ===== */
@@ -774,7 +762,7 @@
         border-radius: 0 !important;
       }
 
-      #rb-tavus-frame {
+      #rb-daily-container {
         height: 300px !important;
         border-radius: 0 !important;
       }
@@ -1185,7 +1173,7 @@
         border-radius: 0 !important;
       }
 
-      #rb-tavus-frame {
+      #rb-daily-container {
         height: 300px !important;
         border-radius: 0 !important;
       }
@@ -1284,6 +1272,7 @@
       }
     }
   </style>
+  <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
 </head>
 <body>
 
@@ -2203,22 +2192,15 @@
     <!-- Tavus Live Video Section -->
     <div id="rb-video-section" style="width:100%; margin-bottom:24px;">
 
-      <!-- Video container -->
-      <div style="position:relative; width:100%; background:#0f172a; border-radius:16px; overflow:hidden; min-height:420px; display:flex; align-items:center; justify-content:center;">
-
-        <!-- Tavus iframe wrapper - overlays hide built-in Tavus UI controls -->
-        <div id="rb-tavus-overlay-wrap" style="display:none;">
-          <iframe
-            id="rb-tavus-frame"
-            style="width:100%; height:100%; border:none; display:block;"
-            allow="autoplay"
-          ></iframe>
-          <!-- Overlay to hide Tavus bottom controls bar -->
-          <div id="rb-tavus-overlay" style="position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, #0f172a); pointer-events:none; z-index:10;"></div>
-          <!-- Overlay for Tavus top bar if visible -->
-          <div style="position:absolute; top:0; left:0; right:0; height:60px; background:linear-gradient(#0f172a, transparent); pointer-events:none; z-index:10;"></div>
+      <div style="position:relative; width:100%; background:#0f172a; border-radius:16px; overflow:hidden; min-height:420px; display:flex; align-items:center; justify-content:center;" id="rb-video-container">
+        <!-- Daily.co video target - Rebecca's face renders here -->
+        <div id="rb-daily-container" style="display:none; width:100%; height:480px; border-radius:16px; overflow:hidden; position:relative;">
+          <!-- Daily iframe gets appended here by the SDK -->
+          <!-- Top gradient overlay to hide any Daily UI chrome -->
+          <div style="position:absolute; top:0; left:0; right:0; height:60px; background:linear-gradient(#0f172a 20%, transparent); pointer-events:none; z-index:20;"></div>
+          <!-- Bottom gradient overlay to hide Daily controls -->
+          <div style="position:absolute; bottom:0; left:0; right:0; height:100px; background:linear-gradient(transparent, #0f172a 80%); pointer-events:none; z-index:20;"></div>
         </div>
-
         <!-- Placeholder shown before session starts -->
         <div id="rb-video-placeholder" style="text-align:center; padding:40px; color:white;">
           <img
@@ -2232,7 +2214,6 @@
           </button>
           <div style="font-size:12px; color:#64748b; margin-top:12px;">Powered by Tavus CVI</div>
         </div>
-
         <!-- Session active controls overlay -->
         <div id="rb-video-controls" style="display:none; position:absolute; bottom:16px; right:16px; gap:8px;">
           <button onclick="endRebeccaVideo()" style="background:rgba(220,38,38,0.9); color:white; border:none; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">
@@ -3907,6 +3888,8 @@ Turner Construction, turnerconstruction.com"
   // ==================== TAVUS VIDEO SESSION ====================
   // Tavus Replica ID - set in Vercel environment as TAVUS_REPLICA_ID
   let tavusConversationId = null;
+  let tavusConversationUrl = null;
+  let tavusCallObject = null;
   let tavusSessionActive = false;
   let tavusIdleTimer = null;
   let tavusLastActivity = 0;
@@ -3929,6 +3912,7 @@ Turner Construction, turnerconstruction.com"
     btn.disabled = true;
 
     try {
+      // Create the Tavus conversation via our server proxy
       const response = await fetch('/api/tavus-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3945,76 +3929,108 @@ Turner Construction, turnerconstruction.com"
       }
 
       tavusConversationId = data.conversation_id;
+      tavusConversationUrl = data.conversation_url;
       tavusSessionActive = true;
 
-      // Join without mic/camera — we use PTT for voice input, not Tavus built-in mic
-      // Tavus uses Daily.co under the hood; these params skip the "Unblock mic" prompt
-      const sep = data.conversation_url.includes('?') ? '&' : '?';
-      const videoUrl = data.conversation_url + sep + 'startAudioOff=true&startVideoOff=true';
+      // Use Daily.co SDK to join the room with mic OFF by default
+      if (typeof window.Daily === 'undefined') {
+        throw new Error('Daily.js SDK not loaded. Check script tag in head.');
+      }
 
-      const frame = document.getElementById('rb-tavus-frame');
-      frame.src = videoUrl;
-      frame.allow = 'autoplay';
-      const overlayWrap = document.getElementById('rb-tavus-overlay-wrap');
-      if (overlayWrap) overlayWrap.style.display = 'block';
-      frame.style.display = 'block';
+      const container = document.getElementById('rb-daily-container');
 
+      // Create Daily frame and append to our container
+      tavusCallObject = window.Daily.createFrame(container, {
+        iframeStyle: {
+          width: '100%',
+          height: '480px',
+          border: 'none',
+          borderRadius: '16px'
+        },
+        showLeaveButton: false,
+        showFullscreenButton: false
+      });
+
+      // Join with audio OFF - this is the key for PTT
+      await tavusCallObject.join({
+        url: tavusConversationUrl,
+        startAudioOff: true,
+        startVideoOff: false
+      });
+
+      // Show the video container, hide placeholder
+      container.style.display = 'block';
       document.getElementById('rb-video-placeholder').style.display = 'none';
       document.getElementById('rb-video-controls').style.display = 'flex';
 
-      // Start 3-minute idle auto-kill timer
+      // Start idle timer
       tavusResetIdleTimer();
 
       // Log session to Supabase
-      await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
-        method: 'POST',
-        headers: {
-          'apikey': SB_SERVICE_KEY,
-          'Authorization': 'Bearer ' + SB_SERVICE_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          session_id: data.conversation_id,
-          conversation_id: data.conversation_id,
-          replica_id: 'tavus_env',
-          user_name: window._currentUser?.name || 'Tony',
-          status: 'active'
-        })
-      });
+      try {
+        await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
+          method: 'POST',
+          headers: {
+            'apikey': SB_SERVICE_KEY,
+            'Authorization': 'Bearer ' + SB_SERVICE_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            session_id: data.conversation_id,
+            conversation_id: data.conversation_id,
+            user_name: window._currentUser?.name || 'Tony',
+            status: 'active'
+          })
+        });
+      } catch(e) { /* non-fatal */ }
 
       btn.textContent = 'Video Live';
+      rbActionStatus('Video session started — hold the mic button to talk to Rebbecca');
     } catch (err) {
+      console.error('Tavus session error:', err);
       btn.textContent = 'Start Video Session';
       btn.disabled = false;
-      console.error('Tavus session error:', err);
       rbActionStatus('Video session failed: ' + err.message);
     }
   }
 
   async function endRebeccaVideo() {
     if (tavusIdleTimer) { clearTimeout(tavusIdleTimer); tavusIdleTimer = null; }
-    if (!tavusConversationId) return;
 
-    try {
-      await fetch('/api/tavus-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'end',
-          conversation_id: tavusConversationId
-        })
-      });
-    } catch (err) {
-      console.error('Error ending session:', err);
+    // Leave the Daily call
+    if (tavusCallObject) {
+      try {
+        await tavusCallObject.leave();
+        tavusCallObject.destroy();
+      } catch(e) { console.error('Daily leave error:', e); }
+      tavusCallObject = null;
+    }
+
+    // End the Tavus conversation server-side
+    if (tavusConversationId) {
+      try {
+        await fetch('/api/tavus-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'end',
+            conversation_id: tavusConversationId
+          })
+        });
+      } catch(e) { console.error('End session error:', e); }
     }
 
     tavusConversationId = null;
+    tavusConversationUrl = null;
     tavusSessionActive = false;
-    const frame = document.getElementById('rb-tavus-frame');
-    frame.src = '';
-    frame.style.display = 'none';
-    const overlayWrap = document.getElementById('rb-tavus-overlay-wrap');
-    if (overlayWrap) overlayWrap.style.display = 'none';
+
+    // Reset UI
+    const container = document.getElementById('rb-daily-container');
+    if (container) {
+      container.style.display = 'none';
+      // Re-add the gradient overlays
+      container.innerHTML = '<div style="position:absolute; top:0; left:0; right:0; height:60px; background:linear-gradient(#0f172a 20%, transparent); pointer-events:none; z-index:20;"></div><div style="position:absolute; bottom:0; left:0; right:0; height:100px; background:linear-gradient(transparent, #0f172a 80%); pointer-events:none; z-index:20;"></div>';
+    }
     document.getElementById('rb-video-placeholder').style.display = 'block';
     document.getElementById('rb-video-controls').style.display = 'none';
     document.getElementById('rb-start-video-btn').textContent = 'Start Video Session';
@@ -4158,21 +4174,18 @@ Turner Construction, turnerconstruction.com"
     }
   }
 
-  // ==================== PUSH-TO-TALK ====================
+  // ==================== PUSH-TO-TALK (Daily SDK) ====================
   let pttActive = false;
-  let pttRecognition = null;
 
   function startPTT() {
-    if (pttRecognition) {
-      try { pttRecognition.abort(); } catch(e) {}
-      pttRecognition = null;
-    }
+    if (!tavusSessionActive || !tavusCallObject) return;
     if (pttActive) return;
     pttActive = true;
 
     const btn = document.getElementById('rb-ptt-btn');
     const status = document.getElementById('rb-ptt-status');
 
+    // Visual feedback - button goes red
     btn.style.background = '#dc2626';
     btn.style.borderColor = '#dc2626';
     btn.style.boxShadow = '0 4px 24px rgba(220,38,38,0.5)';
@@ -4180,71 +4193,16 @@ Turner Construction, turnerconstruction.com"
     status.textContent = 'Listening...';
     status.style.color = '#dc2626';
 
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      pttRecognition = new SR();
-      pttRecognition.continuous = false;
-      pttRecognition.interimResults = false;
-      pttRecognition.lang = 'en-US';
-
-      pttRecognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        if (transcript && transcript.trim()) {
-          sendVoiceToRebecca(transcript.trim());
-        }
-      };
-
-      pttRecognition.onerror = function(event) {
-        if (event.error === 'no-speech') {
-          const status = document.getElementById('rb-ptt-status');
-          if (status) {
-            status.textContent = 'No speech detected - try again';
-            status.style.color = '#f59e0b';
-            setTimeout(() => {
-              if (!pttActive) {
-                status.textContent = 'Hold button to speak';
-                status.style.color = '#94a3b8';
-              }
-            }, 2000);
-          }
-        } else if (event.error === 'aborted') {
-          // Normal - ignore silently
-        } else {
-          console.warn('PTT error:', event.error);
-        }
-        stopPTT();
-      };
-
-      pttRecognition.onend = function() {
-        pttRecognition = null;
-        if (pttActive) {
-          pttActive = false;
-          const btn = document.getElementById('rb-ptt-btn');
-          const status = document.getElementById('rb-ptt-status');
-          if (btn) {
-            btn.style.background = '#1a2f4e';
-            btn.style.borderColor = '#4a90d9';
-            btn.style.boxShadow = '0 4px 20px rgba(74,144,217,0.3)';
-            btn.style.transform = 'scale(1)';
-          }
-          if (status && status.textContent === 'Listening...') {
-            status.textContent = 'Hold button to speak';
-            status.style.color = '#94a3b8';
-          }
-        }
-      };
-
-      setTimeout(() => {
-        if (pttActive && pttRecognition) {
-          try {
-            pttRecognition.start();
-          } catch(e) {
-            console.warn('PTT start error:', e.message);
-            stopPTT();
-          }
-        }
-      }, 150);
+    // Enable microphone in Daily call - Tavus will hear Tony speak
+    try {
+      tavusCallObject.setLocalAudio(true);
+      console.log('PTT: mic enabled via Daily SDK');
+    } catch(e) {
+      console.error('PTT enable mic error:', e);
+      stopPTT();
     }
+
+    if (tavusSessionActive) tavusResetIdleTimer();
   }
 
   function stopPTT() {
@@ -4254,6 +4212,7 @@ Turner Construction, turnerconstruction.com"
     const btn = document.getElementById('rb-ptt-btn');
     const status = document.getElementById('rb-ptt-status');
 
+    // Reset button visual
     btn.style.background = '#1a2f4e';
     btn.style.borderColor = '#4a90d9';
     btn.style.boxShadow = '0 4px 20px rgba(74,144,217,0.3)';
@@ -4261,9 +4220,14 @@ Turner Construction, turnerconstruction.com"
     status.textContent = 'Hold button to speak';
     status.style.color = '#94a3b8';
 
-    if (pttRecognition) {
-      try { pttRecognition.abort(); } catch(e) {}
-      pttRecognition = null;
+    // Disable microphone in Daily call
+    if (tavusCallObject) {
+      try {
+        tavusCallObject.setLocalAudio(false);
+        console.log('PTT: mic disabled via Daily SDK');
+      } catch(e) {
+        console.error('PTT disable mic error:', e);
+      }
     }
   }
 
@@ -4662,6 +4626,12 @@ Turner Construction, turnerconstruction.com"
 
   // Event listeners for Rebecca chat
   document.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.Daily !== 'undefined') {
+      console.log('Daily.js SDK loaded successfully');
+    } else {
+      console.warn('Daily.js SDK not loaded - video sessions will not work');
+    }
+
     const sendBtn = document.getElementById('rb-send');
     if (sendBtn) sendBtn.addEventListener('click', sendRebeccaMessage);
 
