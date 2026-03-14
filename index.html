@@ -1405,6 +1405,23 @@
         </div>
       </div>
 
+      <!-- Push-to-talk bar -->
+      <div id="rb-ptt-bar" style="display:none; justify-content:center; align-items:center; gap:16px; padding:16px 0;">
+        <div id="rb-ptt-status" style="font-size:12px; color:#94a3b8; letter-spacing:0.05em; text-transform:uppercase;">Hold button to speak</div>
+        <button id="rb-ptt-btn"
+          style="width:72px; height:72px; border-radius:50%; background:#1a2f4e; border:3px solid #4a90d9; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; box-shadow:0 4px 20px rgba(74,144,217,0.3);"
+          onmousedown="startPTT()"
+          onmouseup="stopPTT()"
+          ontouchstart="event.preventDefault(); startPTT()"
+          ontouchend="event.preventDefault(); stopPTT()">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h-3v2h8v-2h-3v-2.06A9 9 0 0 0 21 12v-2h-2z"/>
+          </svg>
+        </button>
+        <div id="rb-ptt-hint" style="font-size:11px; color:#64748b;">Release to send</div>
+      </div>
+
       <!-- Pipeline action buttons -->
       <div id="rb-pipeline-actions" style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
         <button onclick="rebeccaRunSingle()" style="flex:1; min-width:160px; background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
@@ -3031,6 +3048,7 @@
 
         document.getElementById('rb-video-placeholder').style.display = 'none';
         document.getElementById('rb-video-controls').style.display = 'flex';
+        document.getElementById('rb-ptt-bar').style.display = 'flex';
 
         await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
           method: 'POST',
@@ -3079,6 +3097,7 @@
     frame.style.display = 'none';
     document.getElementById('rb-video-placeholder').style.display = 'block';
     document.getElementById('rb-video-controls').style.display = 'none';
+    document.getElementById('rb-ptt-bar').style.display = 'none';
     document.getElementById('rb-start-video-btn').textContent = 'Start Video Session';
     document.getElementById('rb-start-video-btn').disabled = false;
   }
@@ -3140,6 +3159,127 @@
     } catch (err) {
       console.error('Territory search error:', err);
     }
+  }
+
+  // ==================== PUSH-TO-TALK ====================
+  let pttActive = false;
+  let pttRecognition = null;
+
+  function startPTT() {
+    if (!tavusSessionActive) return;
+    pttActive = true;
+
+    const btn = document.getElementById('rb-ptt-btn');
+    const status = document.getElementById('rb-ptt-status');
+
+    btn.style.background = '#dc2626';
+    btn.style.borderColor = '#dc2626';
+    btn.style.boxShadow = '0 4px 24px rgba(220,38,38,0.5)';
+    btn.style.transform = 'scale(1.08)';
+    status.textContent = 'Listening...';
+    status.style.color = '#dc2626';
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      pttRecognition = new SR();
+      pttRecognition.continuous = false;
+      pttRecognition.interimResults = false;
+      pttRecognition.lang = 'en-US';
+
+      pttRecognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        if (transcript && transcript.trim()) {
+          sendVoiceToRebecca(transcript.trim());
+        }
+      };
+
+      pttRecognition.onerror = function(err) {
+        console.error('PTT error:', err);
+        stopPTT();
+      };
+
+      pttRecognition.start();
+    }
+  }
+
+  function stopPTT() {
+    if (!pttActive) return;
+    pttActive = false;
+
+    const btn = document.getElementById('rb-ptt-btn');
+    const status = document.getElementById('rb-ptt-status');
+
+    btn.style.background = '#1a2f4e';
+    btn.style.borderColor = '#4a90d9';
+    btn.style.boxShadow = '0 4px 20px rgba(74,144,217,0.3)';
+    btn.style.transform = 'scale(1)';
+    status.textContent = 'Hold button to speak';
+    status.style.color = '#94a3b8';
+
+    if (pttRecognition) {
+      try { pttRecognition.stop(); } catch(e) {}
+      pttRecognition = null;
+    }
+  }
+
+  async function sendVoiceToRebecca(transcript) {
+    const status = document.getElementById('rb-ptt-status');
+    status.textContent = 'Processing...';
+    status.style.color = '#4a90d9';
+
+    try {
+      const systemContext = 'Rebecca is Executive Sales Assistant for Tony at ManageAI. Pipeline data: ' +
+        'Total contacts: ' + (rebeccaStats?.totalContacts || 0) + '. ' +
+        'Elite contacts ICP 90 plus: ' + (rebeccaStats?.eliteCount || 0) + '. ' +
+        'Strong contacts ICP 75-89: ' + (rebeccaStats?.strongCount || 0) + '. ' +
+        'Average ICP score: ' + (rebeccaStats?.avgIcp || 0) + '. ' +
+        'Open Pipedrive deals: ' + (rebeccaStats?.pdDeals || 0) + '. ' +
+        'Stale leads: ' + (rebeccaStats?.staleCount || 0) + '. ' +
+        'Recent runs: ' + JSON.stringify(rebeccaStats?.recentRuns || []) + '. ';
+
+      const response = await fetch('/api/rebecca-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. You graduated from ASU with a degree in Business Communications. You are from Scottsdale Arizona. You have 5 years of B2B sales experience and 3 years in AI and automation. You are professional, sharp, direct, and sassy. You call Tony Boss always. Keep responses SHORT and punchy - this is a voice conversation, 1-3 sentences max unless asked for a detailed briefing. Use real names and numbers. Never be vague. While processing say: Give me one second Boss. Never say certainly or of course.',
+          messages: [
+            ...rebeccaConversation,
+            { role: 'user', content: systemContext + 'Voice message from Tony: ' + transcript }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      const reply = data.reply;
+
+      if (reply) {
+        rebeccaConversation.push({ role: 'user', content: transcript });
+        rebeccaConversation.push({ role: 'assistant', content: reply });
+
+        status.textContent = 'Hold button to speak';
+        status.style.color = '#94a3b8';
+
+        appendRebeccaMessage(reply);
+      }
+    } catch (err) {
+      console.error('Voice to Rebecca error:', err);
+      status.textContent = 'Hold button to speak';
+      status.style.color = '#94a3b8';
+    }
+  }
+
+  function appendRebeccaMessage(text) {
+    const messages = document.getElementById('rb-messages');
+    if (!messages) return;
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    const photoUrl = RB_PHOTO;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex; gap:10px; margin-bottom:16px; align-items:flex-start;';
+    div.innerHTML = '<img src="' + photoUrl + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" />' +
+      '<div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">Rebbecca Mathews &middot; ' + now + '</div>' +
+      '<div style="background:white;border:1px solid #e5e7eb;border-radius:16px 16px 16px 4px;padding:12px 16px;font-size:14px;color:#374151;max-width:75%;box-shadow:0 1px 4px rgba(0,0,0,0.06);">' + text + '</div></div>';
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
   }
 
   // ==================== REBECCA CHAT ====================
