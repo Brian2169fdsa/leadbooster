@@ -448,6 +448,24 @@
     #rb-input:focus { border-color: var(--accent); }
     #rb-send { width: 44px; height: 44px; border-radius: 50%; background: #1a2f4e; color: #fff; border: none; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
     #rb-send:hover { background: #2a4a6e; }
+
+    /* Hide Tavus iframe internal UI - overlay covers the control areas */
+    #rb-tavus-overlay-wrap {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    #rb-tavus-overlay-wrap #rb-tavus-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% + 80px);
+      border: none;
+    }
+
     /* ===== BOTTOM NAV HIDDEN ON DESKTOP ===== */
     #mobile-bottom-nav {
       display: none;
@@ -1777,12 +1795,18 @@
       <!-- Video container -->
       <div style="position:relative; width:100%; background:#0f172a; border-radius:16px; overflow:hidden; min-height:420px; display:flex; align-items:center; justify-content:center;">
 
-        <!-- Tavus iframe - loads the conversation URL -->
-        <iframe
-          id="rb-tavus-frame"
-          style="width:100%; height:480px; border:none; border-radius:16px; display:none;"
-          allow="camera;autoplay;display-capture"
-        ></iframe>
+        <!-- Tavus iframe wrapper - overlays hide built-in Tavus UI controls -->
+        <div id="rb-tavus-overlay-wrap" style="display:none;">
+          <iframe
+            id="rb-tavus-frame"
+            style="width:100%; height:100%; border:none; display:block;"
+            allow="camera;autoplay;display-capture"
+          ></iframe>
+          <!-- Overlay to hide Tavus bottom controls bar -->
+          <div id="rb-tavus-overlay" style="position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent, #0f172a); pointer-events:none; z-index:10;"></div>
+          <!-- Overlay for Tavus top bar if visible -->
+          <div style="position:absolute; top:0; left:0; right:0; height:60px; background:linear-gradient(#0f172a, transparent); pointer-events:none; z-index:10;"></div>
+        </div>
 
         <!-- Placeholder shown before session starts -->
         <div id="rb-video-placeholder" style="text-align:center; padding:40px; color:white;">
@@ -3445,6 +3469,8 @@
 
         const frame = document.getElementById('rb-tavus-frame');
         frame.src = data.conversation_url;
+        const overlayWrap = document.getElementById('rb-tavus-overlay-wrap');
+        if (overlayWrap) overlayWrap.style.display = 'block';
         frame.style.display = 'block';
 
         document.getElementById('rb-video-placeholder').style.display = 'none';
@@ -3506,6 +3532,8 @@
     const frame = document.getElementById('rb-tavus-frame');
     frame.src = '';
     frame.style.display = 'none';
+    const overlayWrap = document.getElementById('rb-tavus-overlay-wrap');
+    if (overlayWrap) overlayWrap.style.display = 'none';
     document.getElementById('rb-video-placeholder').style.display = 'block';
     document.getElementById('rb-video-controls').style.display = 'none';
     document.getElementById('rb-ptt-bar').style.display = 'none';
@@ -3664,15 +3692,26 @@
       const reply = data.reply;
 
       if (reply) {
+        // Parse ACTION tag from end of response
+        let cleanReply = reply;
+        let actionTag = null;
+        const actionMatch = reply.match(/\nACTION:([A-Z_]+):?(.*?)$|^ACTION:([A-Z_]+):?(.*?)$/m);
+        if (actionMatch) {
+          const type = actionMatch[1] || actionMatch[3];
+          const params = actionMatch[2] || actionMatch[4] || '';
+          actionTag = { type: type.trim(), params: params.trim() };
+          cleanReply = reply.replace(/\n?ACTION:[A-Z_]+:?[^\n]*$/m, '').trim();
+        }
+
         rebeccaConversation.push({ role: 'user', content: transcript });
-        rebeccaConversation.push({ role: 'assistant', content: reply });
+        rebeccaConversation.push({ role: 'assistant', content: cleanReply });
 
         status.textContent = 'Hold button to speak';
         status.style.color = '#94a3b8';
 
-        appendRebeccaMessage(reply);
+        appendRebeccaMessage(cleanReply);
 
-        // Make Tavus speak the response if session is active
+        // Make Tavus speak the clean reply
         if (tavusSessionActive && tavusConversationId) {
           try {
             await fetch('/api/tavus-speak', {
@@ -3680,13 +3719,18 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 conversation_id: tavusConversationId,
-                text: reply
+                text: cleanReply
               })
             });
           } catch (speakErr) {
             console.error('Tavus speak error:', speakErr);
-            // Non-fatal - chat still works even if video speech fails
           }
+        }
+
+        // Fire n8n action if ACTION tag was detected
+        if (actionTag) {
+          console.log('Rebecca: ACTION detected:', actionTag.type, actionTag.params);
+          await fireRebeccaAction(actionTag);
         }
       }
     } catch (err) {
@@ -3871,16 +3915,98 @@
       rbHideTyping();
 
       if (data.reply) {
-        const reply = data.reply.replace(/\n/g, '<br>');
-        rbAppendMessage('assistant', reply);
+        // Parse ACTION tag from end of response
+        let cleanReply = data.reply;
+        let actionTag = null;
+        const actionMatch = data.reply.match(/\n?ACTION:([A-Z_]+):?(.*?)$/m);
+        if (actionMatch) {
+          actionTag = { type: actionMatch[1].trim(), params: (actionMatch[2] || '').trim() };
+          cleanReply = data.reply.replace(/\n?ACTION:[A-Z_]+:?[^\n]*$/m, '').trim();
+        }
+
+        const displayReply = cleanReply.replace(/\n/g, '<br>');
+        rbAppendMessage('assistant', displayReply);
         rebeccaConversation.push({ role: 'user', content: userMessage });
-        rebeccaConversation.push({ role: 'assistant', content: data.reply });
+        rebeccaConversation.push({ role: 'assistant', content: cleanReply });
+
+        if (actionTag) {
+          await fireRebeccaAction(actionTag);
+        }
       } else {
         rbAppendMessage('assistant', 'Sorry Boss, I am having connection trouble. Try again in a moment.');
       }
     } catch (err) {
       rbHideTyping();
       rbAppendMessage('assistant', 'Sorry Boss, I am having connection trouble. Try again in a moment.');
+    }
+  }
+
+  async function fireRebeccaAction(action) {
+    const submitterName = window._currentUser?.name || 'Tony';
+    const submitterEmail = window._currentUser?.email || 'tony@manageai.io';
+    console.log('Rebecca firing action:', action.type, action.params);
+    try {
+      if (action.type === 'RUN_SINGLE') {
+        const parts = (action.params || '').split('|');
+        const companyName = (parts[0] || '').trim();
+        const domain = (parts[1] || '').trim();
+        const vertical = (parts[2] || 'construction').trim();
+        if (!companyName) {
+          console.warn('Rebecca RUN_SINGLE: missing company name');
+          return;
+        }
+        const response = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-discovery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company_name: companyName,
+            domain: domain,
+            vertical: vertical,
+            submitter_name: submitterName,
+            submitter_email: submitterEmail,
+            source: 'rebecca_voice',
+            notes: 'Fired by Rebecca AI voice command'
+          })
+        });
+        console.log('Rebecca: lb-discovery webhook response:', response.status, 'for', companyName);
+      }
+      else if (action.type === 'RUN_TERRITORY') {
+        const parts = (action.params || '').split('|');
+        const city = (parts[0] || '').trim();
+        const state = (parts[1] || '').trim();
+        const vertical = (parts[2] || 'construction').trim();
+        if (!city || !state) {
+          console.warn('Rebecca RUN_TERRITORY: missing city or state');
+          return;
+        }
+        const response = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            city: city,
+            state: state,
+            vertical: vertical,
+            submitter_name: submitterName,
+            submitter_email: submitterEmail,
+            source: 'rebecca_voice'
+          })
+        });
+        console.log('Rebecca: lb-territory-v2 webhook response:', response.status, 'for', city, state);
+      }
+      else if (action.type === 'SHOW_BULK') {
+        ['rb-single-modal', 'rb-territory-modal'].forEach(function(id) {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
+        const bulk = document.getElementById('rb-bulk-modal');
+        if (bulk) {
+          bulk.style.display = 'block';
+          bulk.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        console.log('Rebecca: showing bulk upload panel');
+      }
+    } catch (err) {
+      console.error('Rebecca fireRebeccaAction error:', err.message);
     }
   }
 
