@@ -1,0 +1,55 @@
+export default async function handler(req, res) {
+  const TAVUS_API_KEY = process.env.TAVUS_API_KEY;
+  const REPLICA_ID = process.env.TAVUS_REPLICA_ID;
+
+  if (req.method === 'POST') {
+    const { action, conversation_id, user_name } = req.body;
+
+    if (action === 'create') {
+      try {
+        const response = await fetch('https://tavusapi.com/v2/conversations', {
+          method: 'POST',
+          headers: {
+            'x-api-key': TAVUS_API_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            replica_id: REPLICA_ID,
+            conversation_name: 'Rebecca - ' + user_name + ' - ' + new Date().toISOString(),
+            conversational_context: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. Professional, sharp, direct with just enough sass. You call Tony Boss. When Tony asks to run Lead Booster you ask: one company, a list, or territory search? Then confirm and give updates as it runs. Keep responses short and punchy - this is a voice conversation not a text chat.',
+            custom_greeting: 'Hey Boss. Ready when you are. What do we need today?',
+            properties: {
+              max_call_duration: 3600,
+              participant_left_timeout: 60,
+              enable_recording: false,
+              apply_greenscreen: false,
+              language: 'english'
+            }
+          })
+        });
+        const data = await response.json();
+        return res.status(200).json({
+          conversation_id: data.conversation_id,
+          conversation_url: data.conversation_url,
+          status: 'created'
+        });
+      } catch (err) {
+        return res.status(500).json({ error: 'Failed to create Tavus session' });
+      }
+    }
+
+    if (action === 'end') {
+      try {
+        await fetch('https://tavusapi.com/v2/conversations/' + conversation_id, {
+          method: 'DELETE',
+          headers: { 'x-api-key': TAVUS_API_KEY }
+        });
+        return res.status(200).json({ status: 'ended' });
+      } catch (err) {
+        return res.status(500).json({ error: 'Failed to end Tavus session' });
+      }
+    }
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' });
+}
