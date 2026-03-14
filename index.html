@@ -3906,9 +3906,22 @@ Turner Construction, turnerconstruction.com"
   const PIPEDRIVE_KEY = '2fada79568e20083cf472cd5b307e9e12d171a1d';
   // ==================== TAVUS VIDEO SESSION ====================
   // Tavus Replica ID - set in Vercel environment as TAVUS_REPLICA_ID
-  const TAVUS_REPLICA_ID = 'REPLICA_ID_HERE';
   let tavusConversationId = null;
   let tavusSessionActive = false;
+  let tavusIdleTimer = null;
+  let tavusLastActivity = 0;
+
+  function tavusResetIdleTimer() {
+    tavusLastActivity = Date.now();
+    if (tavusIdleTimer) clearTimeout(tavusIdleTimer);
+    tavusIdleTimer = setTimeout(() => {
+      if (tavusSessionActive) {
+        console.log('Tavus: auto-killing session after 3 min idle');
+        rbActionStatus('Video session auto-ended — no conversation for 3 minutes');
+        endRebeccaVideo();
+      }
+    }, 180000); // 3 minutes
+  }
 
   async function startRebeccaVideo() {
     const btn = document.getElementById('rb-start-video-btn');
@@ -3927,54 +3940,65 @@ Turner Construction, turnerconstruction.com"
 
       const data = await response.json();
 
-      if (data.conversation_url) {
-        tavusConversationId = data.conversation_id;
-        tavusSessionActive = true;
-
-        const frame = document.getElementById('rb-tavus-frame');
-        frame.src = data.conversation_url;
-        const overlayWrap = document.getElementById('rb-tavus-overlay-wrap');
-        if (overlayWrap) overlayWrap.style.display = 'block';
-        frame.style.display = 'block';
-
-        document.getElementById('rb-video-placeholder').style.display = 'none';
-        document.getElementById('rb-video-controls').style.display = 'flex';
-
-        // Give iframe time to load then mute participant mic via postMessage
-        setTimeout(() => {
-          const iframeEl = document.getElementById('rb-tavus-frame');
-          if (iframeEl && iframeEl.contentWindow) {
-            try {
-              iframeEl.contentWindow.postMessage({ type: 'mute_mic', muted: true }, '*');
-            } catch(e) {}
-          }
-        }, 3000);
-
-        await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
-          method: 'POST',
-          headers: {
-            'apikey': SB_SERVICE_KEY,
-            'Authorization': 'Bearer ' + SB_SERVICE_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            session_id: data.conversation_id,
-            conversation_id: data.conversation_id,
-            replica_id: TAVUS_REPLICA_ID,
-            user_name: window._currentUser?.name || 'Tony',
-            status: 'active'
-          })
-        });
+      if (!response.ok || !data.conversation_url) {
+        throw new Error(data.error || data.details || 'No conversation URL returned');
       }
+
+      tavusConversationId = data.conversation_id;
+      tavusSessionActive = true;
+
+      const frame = document.getElementById('rb-tavus-frame');
+      frame.src = data.conversation_url;
+      const overlayWrap = document.getElementById('rb-tavus-overlay-wrap');
+      if (overlayWrap) overlayWrap.style.display = 'block';
+      frame.style.display = 'block';
+
+      document.getElementById('rb-video-placeholder').style.display = 'none';
+      document.getElementById('rb-video-controls').style.display = 'flex';
+
+      // Mute the Tavus built-in mic — we use PTT only
+      setTimeout(() => {
+        const iframeEl = document.getElementById('rb-tavus-frame');
+        if (iframeEl && iframeEl.contentWindow) {
+          try {
+            iframeEl.contentWindow.postMessage({ type: 'mute_mic', muted: true }, '*');
+            iframeEl.contentWindow.postMessage({ type: 'disable_mic' }, '*');
+            iframeEl.contentWindow.postMessage(JSON.stringify({ action: 'mute', target: 'microphone' }), '*');
+          } catch(e) {}
+        }
+      }, 3000);
+
+      // Start 3-minute idle auto-kill timer
+      tavusResetIdleTimer();
+
+      // Log session to Supabase
+      await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
+        method: 'POST',
+        headers: {
+          'apikey': SB_SERVICE_KEY,
+          'Authorization': 'Bearer ' + SB_SERVICE_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          session_id: data.conversation_id,
+          conversation_id: data.conversation_id,
+          replica_id: 'tavus_env',
+          user_name: window._currentUser?.name || 'Tony',
+          status: 'active'
+        })
+      });
+
+      btn.textContent = 'Video Live';
     } catch (err) {
       btn.textContent = 'Start Video Session';
       btn.disabled = false;
       console.error('Tavus session error:', err);
-      alert('Could not start video session. Please try again.');
+      rbActionStatus('Video session failed: ' + err.message);
     }
   }
 
   async function endRebeccaVideo() {
+    if (tavusIdleTimer) { clearTimeout(tavusIdleTimer); tavusIdleTimer = null; }
     if (!tavusConversationId) return;
 
     try {
@@ -4251,6 +4275,7 @@ Turner Construction, turnerconstruction.com"
 
 
   async function sendVoiceToRebecca(transcript) {
+    if (tavusSessionActive) tavusResetIdleTimer();
     const status = document.getElementById('rb-ptt-status');
     status.textContent = 'Processing...';
     status.style.color = '#4a90d9';
@@ -4469,6 +4494,7 @@ Turner Construction, turnerconstruction.com"
   }
 
   async function sendRebeccaMessage() {
+    if (tavusSessionActive) tavusResetIdleTimer();
     const input = document.getElementById('rb-input');
     const userMessage = input.value.trim();
     if (!userMessage) return;
