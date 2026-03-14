@@ -6,6 +6,11 @@ export default async function handler(req, res) {
     const { action, conversation_id, user_name } = req.body;
 
     if (action === 'create') {
+      if (!TAVUS_API_KEY || !REPLICA_ID) {
+        console.error('Tavus config missing: API_KEY=' + !!TAVUS_API_KEY + ' REPLICA_ID=' + !!REPLICA_ID);
+        return res.status(500).json({ error: 'Tavus API key or Replica ID not configured' });
+      }
+
       try {
         const response = await fetch('https://tavusapi.com/v2/conversations', {
           method: 'POST',
@@ -21,17 +26,31 @@ export default async function handler(req, res) {
             custom_greeting: 'Hey Boss. Ready when you are. What do we need today?',
             apply_greenscreen: false,
             properties: {
-              max_call_duration: 3600,
-              participant_left_timeout: 60,
+              max_call_duration: 300,
+              participant_left_timeout: 30,
               participant_video_off: true,
-              participant_absent_timeout: 300,
+              participant_absent_timeout: 180,
               enable_recording: false,
               apply_greenscreen: false,
-              language: 'english'
+              language: 'english',
+              enable_transcription: false
             }
           })
         });
+
+        if (!response.ok) {
+          const errBody = await response.text();
+          console.error('Tavus API error:', response.status, errBody);
+          return res.status(response.status).json({ error: 'Tavus API error: ' + response.status, details: errBody });
+        }
+
         const data = await response.json();
+
+        if (!data.conversation_url) {
+          console.error('Tavus response missing conversation_url:', JSON.stringify(data));
+          return res.status(500).json({ error: 'Tavus did not return a conversation URL', data });
+        }
+
         return res.status(200).json({
           conversation_id: data.conversation_id,
           conversation_url: data.conversation_url,
@@ -39,7 +58,8 @@ export default async function handler(req, res) {
           status: 'created'
         });
       } catch (err) {
-        return res.status(500).json({ error: 'Failed to create Tavus session' });
+        console.error('Tavus session create error:', err.message);
+        return res.status(500).json({ error: 'Failed to create Tavus session: ' + err.message });
       }
     }
 
