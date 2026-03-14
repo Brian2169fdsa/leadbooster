@@ -1,6 +1,7 @@
 export default async function handler(req, res) {
   const TAVUS_API_KEY = process.env.TAVUS_API_KEY;
   const REPLICA_ID = process.env.TAVUS_REPLICA_ID;
+  const PERSONA_ID = process.env.TAVUS_PERSONA_ID || '';
 
   if (req.method === 'POST') {
     const { action, conversation_id, user_name } = req.body;
@@ -11,31 +12,36 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Tavus API key or Replica ID not configured' });
       }
 
+      const body = {
+        replica_id: REPLICA_ID,
+        conversation_name: 'Rebecca - ' + (user_name || 'User') + ' - ' + new Date().toISOString(),
+        conversational_context: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. Professional, sharp, direct with just enough sass. You call Tony Boss. When Tony asks to run Lead Booster you ask: one company, a list, or territory search? Then confirm and give updates as it runs. Keep responses short and punchy - this is a voice conversation not a text chat.',
+        custom_greeting: 'Hey Boss. Ready when you are. What do we need today?',
+        properties: {
+          max_call_duration: 300,
+          participant_left_timeout: 30,
+          participant_absent_timeout: 180,
+          enable_recording: false,
+          apply_greenscreen: false,
+          language: 'english'
+        }
+      };
+
+      // Only include persona_id if configured
+      if (PERSONA_ID) {
+        body.persona_id = PERSONA_ID;
+      }
+
       try {
+        console.log('Tavus create request:', JSON.stringify(body));
+
         const response = await fetch('https://tavusapi.com/v2/conversations', {
           method: 'POST',
           headers: {
             'x-api-key': TAVUS_API_KEY,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            replica_id: REPLICA_ID,
-            persona_id: 'p07dbe243a07',
-            conversation_name: 'Rebecca - ' + user_name + ' - ' + new Date().toISOString(),
-            conversational_context: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. Professional, sharp, direct with just enough sass. You call Tony Boss. When Tony asks to run Lead Booster you ask: one company, a list, or territory search? Then confirm and give updates as it runs. Keep responses short and punchy - this is a voice conversation not a text chat.',
-            custom_greeting: 'Hey Boss. Ready when you are. What do we need today?',
-            apply_greenscreen: false,
-            properties: {
-              max_call_duration: 300,
-              participant_left_timeout: 30,
-              participant_video_off: true,
-              participant_absent_timeout: 180,
-              enable_recording: false,
-              apply_greenscreen: false,
-              language: 'english',
-              enable_transcription: false
-            }
-          })
+          body: JSON.stringify(body)
         });
 
         if (!response.ok) {
@@ -45,6 +51,7 @@ export default async function handler(req, res) {
         }
 
         const data = await response.json();
+        console.log('Tavus create response:', JSON.stringify(data));
 
         if (!data.conversation_url) {
           console.error('Tavus response missing conversation_url:', JSON.stringify(data));
