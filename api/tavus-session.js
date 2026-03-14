@@ -18,9 +18,9 @@ export default async function handler(req, res) {
         conversational_context: 'You are Rebbecca Mathews, Executive Sales Assistant to Tony at ManageAI. Professional, sharp, direct with just enough sass. You call Tony Boss. When Tony asks to run Lead Booster you ask: one company, a list, or territory search? Then confirm and give updates as it runs. Keep responses short and punchy - this is a voice conversation not a text chat.',
         custom_greeting: 'Hey Boss. Ready when you are. What do we need today?',
         properties: {
-          max_call_duration: 300,
-          participant_left_timeout: 30,
-          participant_absent_timeout: 180,
+          max_call_duration: 3600,
+          participant_left_timeout: 60,
+          participant_absent_timeout: 300,
           enable_recording: false,
           apply_greenscreen: false,
           language: 'english'
