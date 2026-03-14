@@ -4163,11 +4163,17 @@ Turner Construction, turnerconstruction.com"
   let pttRecognition = null;
 
   function startPTT() {
+    if (pttActive) return;
     if (pttRecognition) {
       try { pttRecognition.abort(); } catch(e) {}
       pttRecognition = null;
     }
-    if (pttActive) return;
+
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Voice input requires Chrome or Edge browser. Please use the text chat below instead.');
+      return;
+    }
+
     pttActive = true;
 
     const btn = document.getElementById('rb-ptt-btn');
@@ -4180,71 +4186,50 @@ Turner Construction, turnerconstruction.com"
     status.textContent = 'Listening...';
     status.style.color = '#dc2626';
 
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      pttRecognition = new SR();
-      pttRecognition.continuous = false;
-      pttRecognition.interimResults = false;
-      pttRecognition.lang = 'en-US';
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    pttRecognition = new SR();
+    pttRecognition.continuous = false;
+    pttRecognition.interimResults = false;
+    pttRecognition.lang = 'en-US';
 
-      pttRecognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        if (transcript && transcript.trim()) {
-          sendVoiceToRebecca(transcript.trim());
-        }
-      };
+    pttRecognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      if (transcript && transcript.trim()) {
+        sendVoiceToRebecca(transcript.trim());
+      }
+    };
 
-      pttRecognition.onerror = function(event) {
-        if (event.error === 'no-speech') {
-          const status = document.getElementById('rb-ptt-status');
-          if (status) {
-            status.textContent = 'No speech detected - try again';
-            status.style.color = '#f59e0b';
-            setTimeout(() => {
-              if (!pttActive) {
-                status.textContent = 'Hold button to speak';
-                status.style.color = '#94a3b8';
-              }
-            }, 2000);
-          }
-        } else if (event.error === 'aborted') {
-          // Normal - ignore silently
-        } else {
-          console.warn('PTT error:', event.error);
+    pttRecognition.onerror = function(event) {
+      if (event.error === 'no-speech') {
+        const status = document.getElementById('rb-ptt-status');
+        if (status) {
+          status.textContent = 'Hold longer and speak clearly';
+          status.style.color = '#f59e0b';
         }
+      } else if (event.error === 'aborted') {
+        // Normal - do nothing
+      } else {
+        console.warn('PTT error:', event.error);
+      }
+      stopPTT();
+    };
+
+    pttRecognition.onend = function() {
+      if (pttActive) {
         stopPTT();
-      };
+      }
+    };
 
-      pttRecognition.onend = function() {
-        pttRecognition = null;
-        if (pttActive) {
-          pttActive = false;
-          const btn = document.getElementById('rb-ptt-btn');
-          const status = document.getElementById('rb-ptt-status');
-          if (btn) {
-            btn.style.background = '#1a2f4e';
-            btn.style.borderColor = '#4a90d9';
-            btn.style.boxShadow = '0 4px 20px rgba(74,144,217,0.3)';
-            btn.style.transform = 'scale(1)';
-          }
-          if (status && status.textContent === 'Listening...') {
-            status.textContent = 'Hold button to speak';
-            status.style.color = '#94a3b8';
-          }
+    setTimeout(() => {
+      if (pttActive && pttRecognition) {
+        try {
+          pttRecognition.start();
+        } catch(e) {
+          console.warn('PTT start error:', e.message);
+          stopPTT();
         }
-      };
-
-      setTimeout(() => {
-        if (pttActive && pttRecognition) {
-          try {
-            pttRecognition.start();
-          } catch(e) {
-            console.warn('PTT start error:', e.message);
-            stopPTT();
-          }
-        }
-      }, 150);
-    }
+      }
+    }, 150);
   }
 
   function stopPTT() {
@@ -4262,7 +4247,11 @@ Turner Construction, turnerconstruction.com"
     status.style.color = '#94a3b8';
 
     if (pttRecognition) {
-      try { pttRecognition.abort(); } catch(e) {}
+      try {
+        pttRecognition.stop();
+      } catch(e) {
+        try { pttRecognition.abort(); } catch(e2) {}
+      }
       pttRecognition = null;
     }
   }
