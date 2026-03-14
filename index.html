@@ -448,10 +448,411 @@
     #rb-input:focus { border-color: var(--accent); }
     #rb-send { width: 44px; height: 44px; border-radius: 50%; background: #1a2f4e; color: #fff; border: none; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
     #rb-send:hover { background: #2a4a6e; }
+    /* ===== BOTTOM NAV HIDDEN ON DESKTOP ===== */
+    #mobile-bottom-nav {
+      display: none;
+    }
+
     @media (max-width: 768px) {
-      .rb-layout { flex-direction: column; }
-      .rb-left, .rb-right { width: 100%; }
-      #rb-messages { height: 400px; min-height: 300px; }
+      /* ===== BODY AND APP SHELL ===== */
+      body {
+        padding-bottom: 70px;
+      }
+
+      /* ===== TOP NAV BAR — hide on mobile ===== */
+      .tab-bar,
+      .tab-nav,
+      #tab-bar,
+      [class*='tab-bar'],
+      [id*='tab-bar'] {
+        display: none !important;
+      }
+
+      /* ===== BOTTOM NAVIGATION BAR ===== */
+      #mobile-bottom-nav {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: #1a2f4e;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        z-index: 9999;
+        align-items: stretch;
+        padding: 0;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+      }
+
+      .mobile-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        cursor: pointer;
+        color: rgba(255,255,255,0.5);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        padding: 8px 4px;
+        transition: color 0.15s;
+        -webkit-tap-highlight-color: transparent;
+        border: none;
+        background: none;
+      }
+
+      .mobile-nav-item.active {
+        color: #4a90d9;
+      }
+
+      .mobile-nav-item svg,
+      .mobile-nav-item .nav-icon {
+        width: 22px;
+        height: 22px;
+      }
+
+      /* ===== APP CONTAINER ===== */
+      .app-container,
+      #app-container,
+      .main-content,
+      #main-content {
+        padding: 12px !important;
+        margin: 0 !important;
+      }
+
+      /* ===== HEADER / LOGO BAR ===== */
+      .app-header,
+      #app-header,
+      .header-bar {
+        padding: 12px 16px !important;
+        height: auto !important;
+      }
+
+      .app-header h1,
+      .logo-text {
+        font-size: 16px !important;
+      }
+
+      /* ===== DASHBOARD TAB ===== */
+      .kpi-grid,
+      .kpi-cards,
+      [class*='kpi-grid'],
+      [class*='dash-kpi'] {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+      }
+
+      .kpi-card,
+      [class*='kpi-card'] {
+        padding: 12px !important;
+        border-radius: 10px !important;
+      }
+
+      .kpi-card .kpi-value,
+      [class*='kpi-value'] {
+        font-size: 22px !important;
+      }
+
+      .kpi-card .kpi-label,
+      [class*='kpi-label'] {
+        font-size: 11px !important;
+      }
+
+      .chart-card,
+      .dash-card,
+      [class*='chart-card'],
+      [class*='dash-card'] {
+        width: 100% !important;
+        margin-bottom: 12px !important;
+        padding: 14px !important;
+        border-radius: 10px !important;
+        overflow-x: hidden !important;
+      }
+
+      .leaderboard-table,
+      table {
+        font-size: 12px !important;
+        width: 100% !important;
+      }
+
+      table td,
+      table th {
+        padding: 8px 6px !important;
+        white-space: nowrap;
+      }
+
+      .table-wrapper,
+      [class*='table-wrap'] {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      /* ===== FORMS ===== */
+      .form-row,
+      [class*='form-row'] {
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
+
+      input[type='text'],
+      input[type='email'],
+      input[type='number'],
+      select,
+      textarea {
+        width: 100% !important;
+        font-size: 16px !important;
+        padding: 12px 14px !important;
+        border-radius: 10px !important;
+        box-sizing: border-box !important;
+      }
+
+      .btn-primary,
+      .submit-btn,
+      [class*='run-btn'],
+      button[type='submit'] {
+        width: 100% !important;
+        padding: 14px !important;
+        font-size: 15px !important;
+        border-radius: 10px !important;
+      }
+
+      .chip-row,
+      [class*='chip-row'],
+      .vertical-chips {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+
+      .chip,
+      [class*='chip'] {
+        font-size: 12px !important;
+        padding: 6px 12px !important;
+      }
+
+      /* ===== HISTORY TAB ===== */
+      .history-row,
+      [class*='history-row'] {
+        flex-direction: column !important;
+        gap: 6px !important;
+        padding: 12px !important;
+      }
+
+      .history-badge,
+      [class*='status-badge'] {
+        align-self: flex-start !important;
+      }
+
+      /* ===== CONTACTS VIEWER ===== */
+      .cv-filters,
+      [class*='cv-filter'] {
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+
+      .cv-search,
+      [class*='cv-search'] {
+        width: 100% !important;
+      }
+
+      .cv-table-wrap {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        font-size: 12px !important;
+      }
+
+      .contact-card,
+      [class*='contact-card'] {
+        flex-direction: column !important;
+        gap: 8px !important;
+        padding: 12px !important;
+      }
+
+      /* ===== REBECCA TAB — mobile hero layout ===== */
+      #mode-rebecca {
+        padding: 0 !important;
+      }
+
+      .rb-layout,
+      [class*='rb-layout'],
+      #mode-rebecca > div:first-child {
+        flex-direction: column !important;
+        gap: 0 !important;
+      }
+
+      .rb-left,
+      [class*='rb-left'] {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 12px 16px !important;
+        border-radius: 0 !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        box-shadow: none !important;
+      }
+
+      .rb-photo,
+      [class*='rb-photo'] {
+        width: 52px !important;
+        height: 52px !important;
+        min-width: 52px !important;
+        border-width: 2px !important;
+      }
+
+      .rb-about,
+      .rb-handles,
+      [class*='rb-about'],
+      [class*='rb-handle'],
+      #mode-rebecca .about-section,
+      #mode-rebecca .handles-section {
+        display: none !important;
+      }
+
+      .rb-stats,
+      [class*='rb-stat-row'] {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+        margin: 0 !important;
+      }
+
+      #rb-stat-contacts,
+      #rb-stat-icp,
+      #rb-stat-pipedrive {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+      }
+
+      .rb-right,
+      [class*='rb-right'] {
+        width: 100% !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+
+      #rb-messages {
+        height: calc(100vh - 340px) !important;
+        min-height: 300px !important;
+      }
+
+      #rb-input {
+        font-size: 16px !important;
+        padding: 12px 14px !important;
+      }
+
+      #rb-send {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+      }
+
+      #rb-video-section {
+        margin-bottom: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      #rb-tavus-frame {
+        height: 300px !important;
+        border-radius: 0 !important;
+      }
+
+      #rb-pipeline-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        padding: 12px !important;
+      }
+
+      #rb-pipeline-actions button {
+        font-size: 12px !important;
+        padding: 10px 12px !important;
+        border-radius: 8px !important;
+        justify-content: center !important;
+      }
+
+      #rb-ptt-btn {
+        width: 80px !important;
+        height: 80px !important;
+      }
+
+      #rb-bulk-modal,
+      #rb-single-modal,
+      #rb-territory-modal {
+        margin: 0 8px !important;
+        border-radius: 12px !important;
+      }
+
+      #rb-suggestions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      #rb-suggestions button {
+        width: 100% !important;
+        text-align: left !important;
+        padding: 12px 16px !important;
+        font-size: 13px !important;
+      }
+
+      /* ===== ACTIVECAMPAIGN TAB ===== */
+      .ac-columns,
+      [class*='ac-col'] {
+        flex-direction: column !important;
+        gap: 12px !important;
+      }
+
+      .ac-component-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* ===== CURRENT RUN TAB ===== */
+      .run-tracker,
+      [class*='run-tracker'] {
+        padding: 12px !important;
+      }
+
+      .stage-track,
+      [class*='stage-track'] {
+        overflow-x: auto !important;
+      }
+
+      /* ===== FEEDBACK TAB ===== */
+      .star-row,
+      [class*='star-row'] {
+        gap: 12px !important;
+      }
+
+      .star-btn,
+      [class*='star-btn'] {
+        font-size: 28px !important;
+      }
+
+      /* ===== GENERAL SPACING ===== */
+      .card,
+      .panel,
+      [class*='-card'],
+      [class*='-panel'] {
+        border-radius: 10px !important;
+        margin-bottom: 12px !important;
+      }
+
+      h2 {
+        font-size: 18px !important;
+      }
+
+      h3 {
+        font-size: 15px !important;
+      }
+
+      .section-title,
+      [class*='section-title'] {
+        font-size: 13px !important;
+      }
     }
   </style>
 </head>
@@ -3535,6 +3936,79 @@
     if (typeof loadDashboard === 'function') loadDashboard();
   }
 })();
+</script>
+
+<!-- MOBILE BOTTOM NAVIGATION -->
+<nav id="mobile-bottom-nav">
+  <button class="mobile-nav-item active" id="mob-nav-dashboard" onclick="setMode('dashboard'); setMobileNav('dashboard')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+    <span>Dashboard</span>
+  </button>
+  <button class="mobile-nav-item" id="mob-nav-rebecca" onclick="setMode('rebecca'); setMobileNav('rebecca')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    <span>Rebecca</span>
+  </button>
+  <button class="mobile-nav-item" id="mob-nav-single" onclick="setMode('single'); setMobileNav('single')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+    <span>Search</span>
+  </button>
+  <button class="mobile-nav-item" id="mob-nav-history" onclick="setMode('history'); setMobileNav('history')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+    <span>History</span>
+  </button>
+  <button class="mobile-nav-item" id="mob-nav-more" onclick="toggleMobileMore()">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    <span>More</span>
+  </button>
+</nav>
+
+<!-- MOBILE MORE MENU -->
+<div id="mobile-more-menu" style="display:none; position:fixed; bottom:64px; left:0; right:0; background:white; border-top:1px solid #e5e7eb; z-index:9998; padding:8px 0; box-shadow:0 -4px 20px rgba(0,0,0,0.1);">
+  <button onclick="setMode('bulk'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+    Bulk Upload
+  </button>
+  <button onclick="setMode('territory'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    Territory Search
+  </button>
+  <button onclick="setMode('current'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    Current Run
+  </button>
+  <button onclick="setMode('contacts'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+    Contacts
+  </button>
+  <button onclick="setMode('feedback'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+    Feedback
+  </button>
+</div>
+
+<script>
+  function setMobileNav(mode) {
+    document.querySelectorAll('.mobile-nav-item').forEach(function(btn) { btn.classList.remove('active'); });
+    var target = document.getElementById('mob-nav-' + mode);
+    if (target) target.classList.add('active');
+  }
+
+  function toggleMobileMore() {
+    var menu = document.getElementById('mobile-more-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function closeMobileMore() {
+    document.getElementById('mobile-more-menu').style.display = 'none';
+  }
+
+  document.addEventListener('click', function(e) {
+    var menu = document.getElementById('mobile-more-menu');
+    var moreBtn = document.getElementById('mob-nav-more');
+    if (menu && moreBtn && !menu.contains(e.target) && !moreBtn.contains(e.target)) {
+      menu.style.display = 'none';
+    }
+  });
 </script>
 </body>
 </html>
