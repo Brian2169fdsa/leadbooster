@@ -4137,58 +4137,46 @@ Turner Construction, turnerconstruction.com"
         const eventType = msg.event_type || msg.type || '';
 
         if (eventType === 'conversation.tool_call') {
+          // Extract tool call details
           const fnName = msg.properties?.name || msg.tool_name || msg.function_name || msg.properties?.tool_name || '';
+          const toolCallId = msg.tool_call_id || msg.id || msg.properties?.tool_call_id || '';
           const fnArgs = msg.properties?.parameters || msg.properties || msg.arguments || msg.parameters || {};
-          console.log('Tavus tool_call:', fnName, JSON.stringify(fnArgs));
+          console.log('[Rebecca] Tool call:', fnName, JSON.stringify(fnArgs));
           tavusResetIdleTimer();
 
+          // STEP 1 — Send tool_call_result back to Tavus IMMEDIATELY
+          // This stops Tavus from retrying the tool call
+          // Must happen before any async work
           try {
-            const actionResp = await fetch('/api/rebecca-action', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                tool_name: fnName,
-                parameters: fnArgs,
-                conversation_id: tavusConversationId
-              })
-            });
-            const actionData = await actionResp.json();
-            console.log('Rebecca action result:', JSON.stringify(actionData));
+            if (tavusCallObject?.sendAppMessage) {
+              tavusCallObject.sendAppMessage({
+                type: 'tool_call_result',
+                tool_call_id: toolCallId,
+                result: 'Got it Boss, on it now.'
+              });
+              console.log('[Rebecca] tool_call_result sent immediately, id:', toolCallId);
+            }
+          } catch(e) {
+            console.error('[Rebecca] sendAppMessage error:', e);
+          }
 
-            // Handle special UI actions
-            if (actionData.action === 'show_bulk_panel') {
+          // STEP 2 — Now fire the actual action asynchronously
+          // Rebecca speaks the real result when n8n pings back
+          fetch('/api/rebecca-action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tool_name: fnName,
+              parameters: fnArgs,
+              conversation_id: tavusConversationId
+            })
+          }).then(async r => {
+            const data = await r.json();
+            console.log('[Rebecca] Action result:', JSON.stringify(data));
+            if (data.action === 'show_bulk_panel') {
               document.getElementById('rb-bulk-modal').style.display = 'block';
             }
-
-            // Send tool result back to Tavus so it can continue the conversation
-            try {
-              const toolCallId = msg.tool_call_id || msg.id || '';
-              if (tavusCallObject && tavusCallObject.sendAppMessage) {
-                tavusCallObject.sendAppMessage({
-                  type: 'tool_call_result',
-                  tool_call_id: toolCallId,
-                  result: actionData.result || 'Action completed successfully'
-                });
-                console.log('Sent tool_call_result back to Tavus:', toolCallId);
-              }
-
-              // Also make Rebecca speak the result via Tavus speak API
-              if (tavusConversationId && actionData.result) {
-                await fetch('/api/tavus-speak', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    conversation_id: tavusConversationId,
-                    text: actionData.result
-                  })
-                });
-              }
-            } catch (resultErr) {
-              console.error('Tool result send error:', resultErr);
-            }
-          } catch (toolErr) {
-            console.error('Tool call handler error:', toolErr);
-          }
+          }).catch(e => console.error('[Rebecca] Action fetch error:', e));
         }
       });
 
