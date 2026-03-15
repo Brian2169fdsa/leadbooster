@@ -1376,7 +1376,7 @@
       var badge = document.getElementById('user-badge');
       if (badge) badge.textContent = window._currentUser.name;
       if (typeof loadStats === 'function') loadStats();
-      if (typeof loadDashboard === 'function') loadDashboard();
+      if (typeof setMode === 'function') setMode('rebecca');
     } catch(err) {
       errEl.textContent = err.message;
       errEl.style.display = 'block';
@@ -1413,11 +1413,11 @@
   </div>
 
   <!-- Page title -->
-  <div class="page-title">Request Leads</div>
-  <p class="page-sub">Submit companies for enrichment or search by territory and vertical. Lead Booster scrapes, enriches, and ICP-scores every contact — results appear in your Google Sheet within 3–5 minutes. Maximum 50 companies per run.</p>
+  <div class="page-title" style="display:none;">Request Leads</div>
+  <p class="page-sub" style="display:none;">Submit companies for enrichment or search by territory and vertical. Lead Booster scrapes, enriches, and ICP-scores every contact — results appear in your Google Sheet within 3–5 minutes. Maximum 50 companies per run.</p>
 
   <!-- Stats row -->
-  <div class="stats-row">
+  <div class="stats-row" style="display:none;">
     <div class="stat-card">
       <div class="stat-num" id="stat-today">—</div>
       <div class="stat-label">Submitted Today</div>
@@ -1434,37 +1434,126 @@
 
   <!-- Mode Tabs -->
   <div class="mode-tabs">
-    <button class="mode-tab active" onclick="setMode('dashboard')" id="tab-dashboard">
+    <button class="mode-tab active" onclick="setMode('rebecca')" id="tab-rebecca">
+      🎥 Rebbecca
+    </button>
+    <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard">
       📊 Dashboard
-    </button>
-    <button class="mode-tab" onclick="setMode('single')" id="tab-single">
-      Single Company
-    </button>
-    <button class="mode-tab" onclick="setMode('bulk')" id="tab-bulk">
-      Bulk Upload
-    </button>
-    <button class="mode-tab" onclick="setMode('territory')" id="tab-territory">
-      Territory Search
-    </button>
-    <button class="mode-tab" onclick="setMode('current')" id="tab-current">
-      ⚡ Current Run
-    </button>
-    <button class="mode-tab" onclick="setMode('history')" id="tab-history">
-      History
-    </button>
-    <button class="mode-tab" onclick="setMode('rebecca')" id="tab-rebecca">
-      👩‍💼 Rebbecca
-    </button>
-    <button class="mode-tab" onclick="setMode('activecampaign')" id="tab-activecampaign">
-      📧 ActiveCampaign
     </button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">
       💬 Feedback
     </button>
+    <!-- Hidden tabs — do not delete, just hidden -->
+    <button class="mode-tab" onclick="setMode('single')" id="tab-single" style="display:none;">Single Company</button>
+    <button class="mode-tab" onclick="setMode('bulk')" id="tab-bulk" style="display:none;">Bulk Upload</button>
+    <button class="mode-tab" onclick="setMode('territory')" id="tab-territory" style="display:none;">Territory Search</button>
+    <button class="mode-tab" onclick="setMode('history')" id="tab-history" style="display:none;">History</button>
+    <button class="mode-tab" onclick="setMode('current')" id="tab-current" style="display:none;">Current Run</button>
+    <button class="mode-tab" onclick="setMode('activecampaign')" id="tab-activecampaign" style="display:none;">ActiveCampaign</button>
+  </div>
+
+  <!-- ==================== REBECCA MODE (DEFAULT) ==================== -->
+  <div id="mode-rebecca" class="mode-content">
+    <div style="display:grid;grid-template-columns:1fr 420px;gap:20px;align-items:start;">
+      <!-- LEFT: Video call -->
+      <div class="card" style="padding:0;overflow:hidden;min-height:520px;position:relative;background:#0d1b2a;">
+
+        <!-- Video container — Tavus Daily.js renders here -->
+        <div id="rebecca-video-container" style="width:100%;height:520px;position:relative;">
+          <div id="rebecca-idle-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4a90d9,#1a2f4e);display:flex;align-items:center;justify-content:center;font-size:32px;">👩‍💼</div>
+            <div style="text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-.02em;">Rebbecca Mathews</div>
+              <div style="font-size:12px;font-weight:500;color:#7A8B9A;margin-top:4px;">Executive Sales Assistant · ManageAI</div>
+            </div>
+            <button id="btn-start-call" onclick="startVideoCall()" style="background:#4a90d9;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-.01em;">
+              Start Video Call
+            </button>
+            <div style="font-size:11px;color:#475569;text-align:center;max-width:240px;line-height:1.6;">
+              Talk to Rebbecca live. Ask her to search a territory, run a company, or check your Pipedrive pipeline.
+            </div>
+          </div>
+          <!-- Active call UI — hidden until call starts -->
+          <div id="rebecca-active-state" style="display:none;width:100%;height:100%;position:relative;">
+            <div id="daily-frame-container" style="width:100%;height:100%;"></div>
+            <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10;">
+              <button onclick="endVideoCall()" style="background:#DC2626;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+                End Call
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Status bar at bottom of video -->
+        <div id="rebecca-status-bar" style="background:#0d1b2a;border-top:1px solid #1e3a5f;padding:10px 16px;display:flex;align-items:center;gap:8px;">
+          <div id="rebecca-status-dot" style="width:8px;height:8px;border-radius:50%;background:#475569;flex-shrink:0;"></div>
+          <div id="rebecca-status-text" style="font-size:11px;font-weight:600;color:#7A8B9A;font-family:var(--mono);">Ready to connect</div>
+        </div>
+      </div>
+      <!-- RIGHT: Territory search form + chat log -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <!-- Territory search card -->
+        <div class="card">
+          <div class="card-title" style="font-size:14px;">🗺️ Territory Search</div>
+          <div class="card-sub" style="font-size:11px;margin-bottom:14px;">Set your target and fire. Rebbecca will narrate every stage.</div>
+          <div class="row-2" style="margin-bottom:12px;">
+            <div class="field" style="margin-bottom:0;">
+              <label>City</label>
+              <input type="text" id="rb-city" placeholder="Phoenix" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label>State</label>
+              <input type="text" id="rb-state" placeholder="AZ" maxlength="2" style="text-transform:uppercase;" />
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:12px;">
+            <label>Vertical</label>
+            <div class="chips" id="rb-chips">
+              <button class="chip active" data-v="behavioral_health" onclick="selectChip(this,'rb-chips')">Behavioral Health</button>
+              <button class="chip" data-v="construction" onclick="selectChip(this,'rb-chips')">Construction</button>
+              <button class="chip" data-v="medical_transport" onclick="selectChip(this,'rb-chips')">Medical Transport</button>
+              <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'rb-chips')">B2B Services</button>
+              <button class="chip" data-v="health_wellness" onclick="selectChip(this,'rb-chips')">Health &amp; Wellness</button>
+              <button class="chip" data-v="home_services" onclick="selectChip(this,'rb-chips')">Home Services</button>
+            </div>
+          </div>
+          <div class="row-2" style="margin-bottom:12px;">
+            <div class="field" style="margin-bottom:0;">
+              <label>Max Companies</label>
+              <select id="rb-max">
+                <option value="10">10 companies</option>
+                <option value="20" selected>20 companies</option>
+                <option value="30">30 companies</option>
+                <option value="50">50 companies</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label>Min Employees</label>
+              <input type="number" id="rb-min-employees" value="10" min="1" style="font-family:var(--mono);" />
+            </div>
+          </div>
+          <button id="btn-rb-territory" onclick="rebeccaFireTerritory()" style="width:100%;background:#1a2f4e;color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-.01em;">
+            🚀 Search &amp; Run Territory
+          </button>
+          <!-- Live log -->
+          <div id="rb-territory-log" style="display:none;margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;max-height:120px;overflow-y:auto;">
+            <div id="rb-log-entries" style="font-size:10px;font-family:var(--mono);line-height:2;"></div>
+          </div>
+        </div>
+        <!-- Text chat with Rebbecca -->
+        <div class="card" style="padding:16px;">
+          <div class="card-title" style="font-size:14px;">💬 Text Chat</div>
+          <div id="rb-chat-log" style="min-height:100px;max-height:180px;overflow-y:auto;margin-bottom:10px;font-size:12px;line-height:1.7;"></div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="rb-chat-input" placeholder="Ask Rebbecca anything…" onkeydown="if(event.key==='Enter')sendRebeccaChat()" style="flex:1;font-size:13px;" />
+            <button onclick="sendRebeccaChat()" style="background:#4a90d9;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ==================== DASHBOARD MODE ==================== -->
-  <div id="mode-dashboard" class="mode-content">
+  <div id="mode-dashboard" class="mode-content hidden">
 
     <!-- Row 1: KPI Cards -->
     <div class="dash-grid" id="dash-kpi-row">
@@ -2227,7 +2316,7 @@
   </div>
 
   <!-- ==================== REBECCA MODE ==================== -->
-  <div id="mode-rebecca" class="mode-content hidden">
+  <div id="mode-rebecca-legacy" class="mode-content hidden" style="display:none;">
 
     <!-- Video Call Button — triggers popover -->
     <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
@@ -2245,8 +2334,8 @@
       <button onclick="rebeccaRunBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
         Bulk List
       </button>
-      <button onclick="setMode('current')" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-        View Contacts
+      <button onclick="window.open('https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI','_blank')" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+        📊 View Contacts
       </button>
     </div>
 
@@ -2477,7 +2566,7 @@ Turner Construction, turnerconstruction.com"
   const SB_TABLE = "lb_requests";
 
   // ==================== MODE SWITCHING ====================
-  let currentMode = 'dashboard';
+  let currentMode = 'rebecca';
 
   function setMode(mode) {
     if (typeof tavusSessionActive !== 'undefined' && tavusSessionActive && mode !== 'rebecca') {
@@ -2495,12 +2584,6 @@ Turner Construction, turnerconstruction.com"
     if (mode === 'history') loadHistory();
     if (mode === 'dashboard') loadDashboard();
     if (mode === 'current') loadCurrentRun();
-    if (mode === 'rebecca' && !rebeccaInitialized) {
-      loadRebeccaStats();
-      rebeccaInitialized = true;
-      const bulkPaste = document.getElementById('rb-bulk-paste');
-      if (bulkPaste) bulkPaste.addEventListener('input', updateRbBulkCount);
-    }
   }
 
   // ==================== CHIP SELECT ====================
@@ -2699,6 +2782,221 @@ Turner Construction, turnerconstruction.com"
     }).filter(l => l.company && l.domain);
     if (!leads.length) { alert('No valid entries found. Format: Company Name, domain.com'); return; }
     runLeads(leads, 'bulk', submitterName, submitterEmail);
+  }
+
+  // ==================== REBECCA TAB ====================
+  // ── Video Call ────────────────────────────────────────────────────────────
+  let dailyCall = null;
+  async function startVideoCall() {
+    const btn = document.getElementById('btn-start-call');
+    btn.textContent = 'Connecting…';
+    btn.disabled = true;
+    setRebeccaStatus('connecting', 'Connecting to Rebbecca…');
+    try {
+      // Create Tavus session
+      const sessionResp = await fetch('/api/tavus-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', user_name: window._currentUser?.name || 'Tony' })
+      });
+      const session = await sessionResp.json();
+      if (!session.conversation_url) throw new Error(session.error || 'No conversation URL returned');
+      tavusConversationId = session.conversation_id;
+      // Load Daily.js and create call frame
+      if (!window.DailyIframe) {
+        await loadScript('https://unpkg.com/@daily-co/daily-js');
+      }
+      const container = document.getElementById('daily-frame-container');
+      dailyCall = window.DailyIframe.createFrame(container, {
+        showLeaveButton: false,
+        showFullscreenButton: false,
+        iframeStyle: { width: '100%', height: '100%', border: 'none', borderRadius: '0' }
+      });
+      // Tool call handler
+      dailyCall.on('app-message', async (event) => {
+        try {
+          const msg = event.data || event;
+          if (msg.event_type !== 'conversation.tool_call') return;
+          const toolName = msg.properties?.name || msg.properties?.tool_name || msg.tool_name || msg.function_name || '';
+          const toolCallId = msg.properties?.tool_call_id || msg.tool_call_id || msg.id || '';
+          const parameters = msg.properties?.parameters || msg.parameters || msg.arguments || {};
+          console.log('[Rebecca] Tool call received:', toolName, toolCallId, JSON.stringify(parameters));
+          let resultContent = { success: false, message: 'Unknown error' };
+          try {
+            const resp = await fetch('/api/rebecca-action', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tool_name: toolName, tool_call_id: toolCallId, parameters, conversation_id: tavusConversationId })
+            });
+            resultContent = await resp.json();
+          } catch(e) {
+            resultContent = { success: false, message: 'Connection error.' };
+          }
+          if (resultContent.action === 'show_bulk_panel') setMode('bulk');
+          // Send result back to Tavus so conversation continues
+          try {
+            dailyCall.sendAppMessage({
+              message_type: 'conversation',
+              event_type: 'conversation.tool_call_result',
+              conversation_id: msg.conversation_id,
+              properties: { tool_call_id: toolCallId, content: JSON.stringify(resultContent) }
+            }, '*');
+            console.log('[Rebecca] Sent tool_call_result back to Tavus:', toolCallId);
+          } catch(e) { console.error('[Rebecca] sendAppMessage error:', e); }
+          // Speak the result
+          if (tavusConversationId && resultContent.result) {
+            try {
+              await fetch('/api/tavus-speak', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ conversation_id: tavusConversationId, text: resultContent.result })
+              });
+            } catch(e) {}
+          }
+        } catch(e) { console.error('[Rebecca] Tool call error:', e); }
+      });
+      await dailyCall.join({ url: session.conversation_url, startAudioOff: true, startVideoOff: false });
+      document.getElementById('rebecca-idle-state').style.display = 'none';
+      document.getElementById('rebecca-active-state').style.display = 'block';
+      setRebeccaStatus('live', 'Live — Rebbecca is listening');
+    } catch(err) {
+      console.error('[Rebecca] Call error:', err);
+      btn.textContent = 'Start Video Call';
+      btn.disabled = false;
+      setRebeccaStatus('error', 'Connection failed — ' + err.message);
+    }
+  }
+  async function endVideoCall() {
+    if (dailyCall) {
+      try { await dailyCall.leave(); } catch(e) {}
+      try { dailyCall.destroy(); } catch(e) {}
+      dailyCall = null;
+    }
+    // End the Tavus session on the backend
+    if (tavusConversationId) {
+      try {
+        await fetch('/api/tavus-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'end', conversation_id: tavusConversationId })
+        });
+      } catch(e) {}
+      tavusConversationId = null;
+    }
+    document.getElementById('rebecca-idle-state').style.display = 'flex';
+    document.getElementById('rebecca-active-state').style.display = 'none';
+    document.getElementById('btn-start-call').textContent = 'Start Video Call';
+    document.getElementById('btn-start-call').disabled = false;
+    setRebeccaStatus('ready', 'Ready to connect');
+  }
+  function setRebeccaStatus(state, text) {
+    const dot = document.getElementById('rebecca-status-dot');
+    const label = document.getElementById('rebecca-status-text');
+    if (dot) dot.style.background = state === 'live' ? '#16A34A' : state === 'connecting' ? '#D97706' : state === 'error' ? '#DC2626' : '#475569';
+    if (label) label.textContent = text;
+  }
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  // ── Territory fire from Rebecca tab ──────────────────────────────────────
+  async function rebeccaFireTerritory() {
+    const cityEl = document.getElementById('rb-city');
+    const stateEl = document.getElementById('rb-state');
+    if (!cityEl || !stateEl) return;
+    const city = cityEl.value.trim();
+    const state = stateEl.value.trim().toUpperCase();
+    const vertical = getActiveChip('rb-chips');
+    const max = parseInt(document.getElementById('rb-max')?.value) || 20;
+    const minEmployees = parseInt(document.getElementById('rb-min-employees')?.value) || 10;
+    if (!city || !state) { alert('Enter a city and state first.'); return; }
+    const btn = document.getElementById('btn-rb-territory');
+    btn.disabled = true;
+    btn.textContent = '⏳ Running…';
+    const logEl = document.getElementById('rb-territory-log');
+    const entries = document.getElementById('rb-log-entries');
+    logEl.style.display = 'block';
+    entries.innerHTML = '';
+    function addLog(icon, msg) {
+      const time = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      entries.innerHTML += '<div><span style="color:var(--text-dim)">[' + time + ']</span> ' + icon + ' ' + msg + '</div>';
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    addLog('🔍', 'Searching ' + city + ', ' + state + ' · ' + vertical.replace(/_/g,' ') + ' · ' + max + ' companies');
+    addLog('⚙️', 'Min employees: ' + minEmployees);
+    try {
+      const resp = await fetch(WEBHOOK_TERRITORY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city, state, vertical,
+          max_results: max,
+          min_employees: minEmployees,
+          min_revenue_m: 0.5,
+          source: 'rebecca_tab',
+          submitter_name: window._currentUser?.name || 'Tony',
+          submitter_email: window._currentUser?.email || 'tony@manageai.io'
+        })
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      addLog('✅', 'Search launched. Pipeline is filtering and firing Lead Booster.');
+      addLog('📊', 'Watch Current Run tab and your Google Sheet for results.');
+      if (dailyCall) addLog('🔔', 'Rebbecca will narrate each stage as companies run.');
+      setRebeccaStatus('live', 'Territory running — ' + city + ', ' + state);
+      btn.textContent = '✓ Running — Check Current Run';
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = '🚀 Search & Run Territory';
+      }, 15000);
+    } catch(err) {
+      addLog('❌', 'Error: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = '🚀 Search & Run Territory';
+    }
+  }
+  // ── Text chat with Rebbecca (new tab version) ──────────────────────────
+  async function sendRebeccaChat() {
+    const input = document.getElementById('rb-chat-input');
+    const log = document.getElementById('rb-chat-log');
+    if (!input || !log) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    log.innerHTML += '<div style="text-align:right;margin-bottom:6px;"><span style="background:#EBF3FC;border-radius:12px 12px 2px 12px;padding:6px 12px;display:inline-block;color:#1E293B;font-weight:600;">' + text + '</span></div>';
+    log.scrollTop = log.scrollHeight;
+    var typingId = 'typing-' + Date.now();
+    log.innerHTML += '<div id="' + typingId + '" style="margin-bottom:6px;"><span style="background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 12px 2px;padding:6px 12px;display:inline-block;color:var(--text-dim);font-style:italic;">Rebbecca is typing…</span></div>';
+    log.scrollTop = log.scrollHeight;
+    try {
+      const resp = await fetch('/api/rebecca-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, user: window._currentUser?.name || 'Tony' })
+      });
+      const data = await resp.json();
+      const reply = data.response || data.message || '…';
+      var typingEl = document.getElementById(typingId);
+      if (typingEl) typingEl.remove();
+      log.innerHTML += '<div style="margin-bottom:6px;"><span style="background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 12px 2px;padding:6px 12px;display:inline-block;color:var(--text);">' + reply + '</span></div>';
+      log.scrollTop = log.scrollHeight;
+      // If live call is active, speak the reply
+      if (dailyCall && tavusConversationId) {
+        try {
+          await fetch('/api/tavus-speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ conversation_id: tavusConversationId, text: reply })
+          });
+        } catch(e) {}
+      }
+    } catch(err) {
+      var typingEl2 = document.getElementById(typingId);
+      if (typingEl2) typingEl2.remove();
+      log.innerHTML += '<div style="margin-bottom:6px;color:var(--red);font-size:11px;">Connection error</div>';
+    }
   }
 
   // ==================== TERRITORY SEARCH ====================
@@ -4032,11 +4330,6 @@ Turner Construction, turnerconstruction.com"
             const actionData = await actionResp.json();
             console.log('Rebecca action result:', JSON.stringify(actionData));
 
-            // Show action result in chat
-            if (actionData.result) {
-              rbActionStatus(actionData.result);
-            }
-
             // Handle special UI actions
             if (actionData.action === 'show_bulk_panel') {
               document.getElementById('rb-bulk-modal').style.display = 'block';
@@ -4820,7 +5113,7 @@ Turner Construction, turnerconstruction.com"
     const badge = document.getElementById('user-badge');
     if (badge) badge.textContent = window._currentUser.name;
     if (typeof loadStats === 'function') loadStats();
-    if (typeof loadDashboard === 'function') loadDashboard();
+    if (typeof setMode === 'function') setMode('rebecca');
   }
 })();
 </script>
