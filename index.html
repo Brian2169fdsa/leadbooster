@@ -5252,6 +5252,18 @@ const PSC_STAGES = {
   news_trigger:     { icon:'📰', label:'News Trigger', detail:'WF-09 detected company news event', progress:'10%' }
 };
 
+function getStageFromStatus(status) {
+  var s = (status || '').toLowerCase();
+  if (s === 'complete' || s === 'completed' || s === 'done' || s === 'enriched') return 'complete';
+  if (s === 'scoring' || s === 'scored' || s === 'icp') return 'scoring';
+  if (s === 'enriching' || s === 'enrich') return 'enriching';
+  if (s === 'scraping' || s === 'scraped' || s === 'extracting' || s === 'extracted') return 'scraping';
+  if (s === 'news' || s === 'news_trigger') return 'news_trigger';
+  if (s === 'discovery' || s === 'discovering' || s === 'discovery_started') return 'discovery';
+  if (s === 'pending' || s === 'queued' || s === 'submitted') return 'pending';
+  return 'discovery';
+}
+
 function showPipelineCard(company, domain, vertical, triggerType) {
   pscCurrentDomain = domain || '';
   pscCurrentVertical = vertical || '';
@@ -5333,15 +5345,35 @@ function updatePipelineCardStage(status, contactCount) {
 async function pollPipelineStatus(domain) {
   if (!domain) return;
   try {
-    const resp = await fetch(SB_URL + '/rest/v1/lb_queue?domain=eq.' +
-      encodeURIComponent(domain) +
-      '&order=created_at.desc&limit=1&select=status,contacts_found', {
-      headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
-    });
+    const [resp, pingResp] = await Promise.all([
+      fetch(SB_URL + '/rest/v1/lb_queue?domain=eq.' +
+        encodeURIComponent(domain) +
+        '&order=created_at.desc&limit=1&select=status,contacts_found', {
+        headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
+      }),
+      fetch(SB_URL + '/rest/v1/lb_status_pings?domain=eq.' +
+        encodeURIComponent(domain) +
+        '&order=created_at.desc&limit=1&select=message,stage,created_at', {
+        headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
+      })
+    ]);
     const rows = await resp.json();
+    const pings = await pingResp.json();
     if (!rows || !rows.length) return;
     const row = rows[0];
-    updatePipelineCardStage(row.status || 'pending', row.contacts_found || 0);
+    const contactCount = row.contacts_found || 0;
+    const mappedStage = getStageFromStatus(row.status);
+    updatePipelineCardStage(mappedStage, contactCount);
+
+    // Show Rebecca's actual words if ping is recent (< 2 min)
+    const latestPing = pings?.[0];
+    if (latestPing && latestPing.message) {
+      const pingAge = Date.now() - new Date(latestPing.created_at).getTime();
+      if (pingAge < 120000) {
+        const detailEl = document.getElementById('psc-detail');
+        if (detailEl) detailEl.textContent = latestPing.message;
+      }
+    }
   } catch(e) { console.error('Pipeline card poll error:', e); }
 }
 
@@ -5378,15 +5410,29 @@ async function loadAnalysisTab() {
 
     auditAllRuns = runs;
 
+    // Fetch ping counts per domain for narration badges
+    var pingCounts = {};
+    try {
+      var domains = [...new Set(runs.map(function(r) { return r.domain; }).filter(Boolean))];
+      var pingPromises = domains.map(function(d) {
+        return fetch(SB_URL + '/rest/v1/lb_status_pings?domain=eq.' + encodeURIComponent(d) + '&select=id', {
+          headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
+        }).then(function(r) { return r.json(); }).then(function(rows) { pingCounts[d] = rows.length; }).catch(function() { pingCounts[d] = 0; });
+      });
+      await Promise.all(pingPromises);
+    } catch(e) { /* non-fatal */ }
+
     el.innerHTML = runs.map(function(r, i) {
       var label = r.company_name || (r.city ? r.city + ', ' + r.state : '') || r.domain || 'Unknown';
+      var pc = pingCounts[r.domain] || 0;
+      var pingBadge = pc > 0 ? ' · <span style="color:var(--green);">🔊 ' + pc + ' narrations</span>' : '';
       return '<div style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;">' +
         '<div style="width:44px;height:44px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' +
           (r.city ? '🗺️' : '🏢') +
         '</div>' +
         '<div style="flex:1;">' +
           '<div style="font-size:13px;font-weight:700;color:var(--text);">' + label + '</div>' +
-          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + (r.vertical || '') + ' · ' + (r.total_contacts || 0) + ' contacts · ICP avg ' + (r.avg_icp_score || 0) + ' · ' + new Date(r.created_at).toLocaleDateString() + '</div>' +
+          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + (r.vertical || '') + ' · ' + (r.total_contacts || 0) + ' contacts · ICP avg ' + (r.avg_icp_score || 0) + ' · ' + new Date(r.created_at).toLocaleDateString() + pingBadge + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:8px;">' +
           '<a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=1687677868#gid=1687677868" target="_blank" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;">📊 Sheet</a>' +
@@ -5419,7 +5465,7 @@ async function openAuditModal(domain, vertical) {
       body: JSON.stringify({ domain, vertical })
     });
     const data = await resp.json();
-    renderAuditReport(data);
+    renderAuditReport(data, domain);
   } catch(e) {
     document.getElementById('audit-modal-report').innerHTML =
       '<div style="color:var(--red);padding:20px;">Analysis failed: ' + e.message + '</div>';
@@ -5449,14 +5495,14 @@ async function openAuditModalById(auditId, index) {
       body: JSON.stringify({ audit_id: auditId, domain: run.domain, vertical: run.vertical })
     });
     const data = await resp.json();
-    renderAuditReport(data);
+    renderAuditReport(data, run.domain);
   } catch(e) {
     document.getElementById('audit-modal-report').innerHTML =
       '<div style="color:var(--red);padding:20px;">Failed to load: ' + e.message + '</div>';
   }
 }
 
-function renderAuditReport(data) {
+async function renderAuditReport(data, domain) {
   const reportEl = document.getElementById('audit-modal-report');
   const metricsEl = document.getElementById('audit-modal-metrics');
 
@@ -5485,6 +5531,34 @@ function renderAuditReport(data) {
       .replace(/\n- /g, '<br>• ')
       .replace(/\n/g, '<br>');
     reportEl.innerHTML = html;
+  }
+
+  // Fetch and render status pings (Pipeline Narration)
+  var runDomain = domain || (data.metrics && data.metrics.domain) || '';
+  if (runDomain) {
+    try {
+      var pingsResp = await fetch(
+        SB_URL + '/rest/v1/lb_status_pings?domain=eq.' +
+        encodeURIComponent(runDomain) +
+        '&order=created_at.asc&limit=20',
+        { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
+      );
+      var pings = await pingsResp.json();
+      if (pings && pings.length > 0) {
+        var pingsHtml = '<h3 style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);">Pipeline Narration</h3>' +
+          '<div style="background:var(--surface);border-radius:10px;padding:16px;">' +
+          pings.map(function(p) {
+            return '<div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">' +
+              '<div style="font-size:11px;color:var(--text-dim);white-space:nowrap;padding-top:2px;">' +
+              new Date(p.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div>' +
+              '<div style="font-size:13px;color:var(--text);">' + (p.message || '') + '</div>' +
+              (p.spoken ? '<div style="font-size:10px;color:var(--green);margin-left:auto;flex-shrink:0;">🔊 Spoken</div>' : '') +
+            '</div>';
+          }).join('') +
+          '</div>';
+        reportEl.innerHTML += pingsHtml;
+      }
+    } catch(e) { console.error('Status pings fetch error:', e); }
   }
 }
 
