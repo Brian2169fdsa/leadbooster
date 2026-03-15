@@ -110,6 +110,19 @@ export default async function handler(req, res) {
   try {
     // ===== TERRITORY SEARCH =====
     if (toolName === 'run_territory_search') {
+      // Global in-memory dedup — prevents Tavus multi-fires within 10 seconds
+      const dedupKey = `territory_${(params.city||'').toLowerCase()}_${(params.state||'').toLowerCase()}`;
+      if (!global._rebeccaDedup) global._rebeccaDedup = {};
+      const lastFire = global._rebeccaDedup[dedupKey] || 0;
+      if (Date.now() - lastFire < 10000) {
+        console.log('[rebecca-action] Dedup blocked territory fire:', dedupKey);
+        return res.status(200).json({
+          success: true,
+          message: 'Already searching that territory Boss, hang tight.'
+        });
+      }
+      global._rebeccaDedup[dedupKey] = Date.now();
+
       let city = (params.city || '').trim();
       let state = (params.state || '').trim();
       let vertical = normalizeVertical(params.vertical);
