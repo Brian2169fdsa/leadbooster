@@ -4041,6 +4041,33 @@ Turner Construction, turnerconstruction.com"
             if (actionData.action === 'show_bulk_panel') {
               document.getElementById('rb-bulk-modal').style.display = 'block';
             }
+
+            // Send tool result back to Tavus so it can continue the conversation
+            try {
+              const toolCallId = msg.tool_call_id || msg.id || '';
+              if (tavusCallObject && tavusCallObject.sendAppMessage) {
+                tavusCallObject.sendAppMessage({
+                  type: 'tool_call_result',
+                  tool_call_id: toolCallId,
+                  result: actionData.result || 'Action completed successfully'
+                });
+                console.log('Sent tool_call_result back to Tavus:', toolCallId);
+              }
+
+              // Also make Rebecca speak the result via Tavus speak API
+              if (tavusConversationId && actionData.result) {
+                await fetch('/api/tavus-speak', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    conversation_id: tavusConversationId,
+                    text: actionData.result
+                  })
+                });
+              }
+            } catch (resultErr) {
+              console.error('Tool result send error:', resultErr);
+            }
           } catch (toolErr) {
             console.error('Tool call handler error:', toolErr);
           }
@@ -4836,9 +4863,9 @@ Turner Construction, turnerconstruction.com"
     <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
     Current Run
   </button>
-  <button onclick="setMode('contacts'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
+  <button onclick="setMode('history'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-    Contacts
+    History
   </button>
   <button onclick="setMode('feedback'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer; display:flex; align-items:center; gap:12px;">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="#6b7280"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>

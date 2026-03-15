@@ -17,6 +17,9 @@
     },
     "api/tavus-persona-setup.js": {
       "maxDuration": 30
+    },
+    "api/rebecca-status.js": {
+      "maxDuration": 15
     }
   }
 }
