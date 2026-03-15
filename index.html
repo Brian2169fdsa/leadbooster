@@ -1376,8 +1376,7 @@
       var badge = document.getElementById('user-badge');
       if (badge) badge.textContent = window._currentUser.name;
       if (typeof loadStats === 'function') loadStats();
-      if (typeof loadDashboard === 'function') loadDashboard();
-      setMode('rebecca');
+      if (typeof setMode === 'function') setMode('rebecca');
     } catch(err) {
       errEl.textContent = err.message;
       errEl.style.display = 'block';
@@ -2335,8 +2334,8 @@
       <button onclick="rebeccaRunBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
         Bulk List
       </button>
-      <button onclick="setMode('current')" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-        View Contacts
+      <button onclick="window.open('https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI','_blank')" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+        📊 View Contacts
       </button>
     </div>
 
@@ -4331,11 +4330,6 @@ Turner Construction, turnerconstruction.com"
             const actionData = await actionResp.json();
             console.log('Rebecca action result:', JSON.stringify(actionData));
 
-            // Show action result in chat
-            if (actionData.result) {
-              rbActionStatus(actionData.result);
-            }
-
             // Handle special UI actions
             if (actionData.action === 'show_bulk_panel') {
               document.getElementById('rb-bulk-modal').style.display = 'block';
@@ -5119,8 +5113,7 @@ Turner Construction, turnerconstruction.com"
     const badge = document.getElementById('user-badge');
     if (badge) badge.textContent = window._currentUser.name;
     if (typeof loadStats === 'function') loadStats();
-    if (typeof loadDashboard === 'function') loadDashboard();
-    setMode('rebecca');
+    if (typeof setMode === 'function') setMode('rebecca');
   }
 })();
 </script>
