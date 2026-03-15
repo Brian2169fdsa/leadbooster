@@ -5,20 +5,21 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
   const { tool_name, parameters, conversation_id } = req.body || {};
-  const N8N = 'https://manageai2026.app.n8n.cloud/webhook';
+  const N8N_BASE = 'https://manageai2026.app.n8n.cloud/webhook';
   const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA';
   console.log('[rebecca-action] tool:', tool_name, JSON.stringify(parameters));
   // ── run_territory_search ──────────────────────────────────
   if (tool_name === 'run_territory_search') {
     const { city, state, vertical } = parameters || {};
+
     if (!city || !state) {
       return res.status(200).json({
         success: false,
         result: 'I need a city and state to search, Boss.'
       });
     }
-    // Supabase dedup — check last 30 seconds
+    // Supabase dedup check
     const dedupKey = `${city}_${state}_${vertical}`.toLowerCase().replace(/\s/g,'_');
     try {
       const check = await fetch(
@@ -29,34 +30,53 @@ export default async function handler(req, res) {
       if (rows?.length > 0) {
         const age = Date.now() - new Date(rows[0].created_at).getTime();
         if (age < 30000) {
-          console.log('[rebecca-action] Dedup blocked territory:', dedupKey);
           return res.status(200).json({
             success: true,
-            result: `Already searching ${city}, ${state} Boss — hang tight, results are coming.`
+            result: `Already searching ${city}, ${state} Boss — results are coming.`
           });
         }
       }
       // Write dedup record
       await fetch(`${SB_URL}/rest/v1/lb_territory_searches`, {
         method: 'POST',
-        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ dedup_key: dedupKey, city, state, vertical, source: 'rebecca_video', created_at: new Date().toISOString() })
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': `Bearer ${SB_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          dedup_key: dedupKey,
+          city, state, vertical,
+          source: 'rebecca_video',
+          created_at: new Date().toISOString()
+        })
       });
     } catch(e) {
-      console.error('[rebecca-action] Dedup check error:', e.message);
+      console.error('[rebecca-action] Dedup error:', e.message);
     }
-    // Fire n8n AFTER responding — fire and forget, never await
-    res.status(200).json({
+    // Fire n8n FIRST before responding
+    try {
+      const n8nResp = await fetch(`${N8N_BASE}/lb-territory-v2`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city, state, vertical,
+          source: 'rebecca_video',
+          submitter_name: 'Rebbecca',
+          submitter_email: 'tony@manageai.io'
+        }),
+        signal: AbortSignal.timeout(8000)
+      });
+      console.log('[rebecca-action] n8n territory response:', n8nResp.status);
+    } catch(e) {
+      console.error('[rebecca-action] n8n fire error:', e.message);
+    }
+    // NOW send response to frontend
+    return res.status(200).json({
       success: true,
       result: `On it Boss. Searching ${city}, ${state} for ${(vertical||'').replace(/_/g,' ')} companies now.`
     });
-    // This runs AFTER the response is sent
-    fetch(`${N8N}/lb-territory-v2`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ city, state, vertical, source: 'rebecca_video', submitter_name: 'Rebbecca', submitter_email: 'tony@manageai.io' })
-    }).catch(e => console.error('[rebecca-action] Territory fire error:', e.message));
-    return;
   }
   // ── run_lead_booster ──────────────────────────────────────
   if (tool_name === 'run_lead_booster') {
@@ -64,16 +84,30 @@ export default async function handler(req, res) {
     if (!company_name) {
       return res.status(200).json({ success: false, result: 'I need a company name, Boss.' });
     }
-    res.status(200).json({
+    // Fire n8n FIRST before responding
+    try {
+      const n8nResp = await fetch(`${N8N_BASE}/lb-discovery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name,
+          domain: domain || '',
+          vertical: vertical || 'construction',
+          source: 'rebecca_video',
+          submitter_name: 'Rebbecca',
+          submitter_email: 'tony@manageai.io'
+        }),
+        signal: AbortSignal.timeout(8000)
+      });
+      console.log('[rebecca-action] n8n discovery response:', n8nResp.status);
+    } catch(e) {
+      console.error('[rebecca-action] n8n fire error:', e.message);
+    }
+    // NOW send response to frontend
+    return res.status(200).json({
       success: true,
       result: `On it Boss. Looking up ${company_name} now.`
     });
-    fetch(`${N8N}/lb-discovery`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ company_name, domain: domain || '', vertical: vertical || 'construction', source: 'rebecca_video', submitter_name: 'Rebbecca', submitter_email: 'tony@manageai.io' })
-    }).catch(e => console.error('[rebecca-action] Discovery fire error:', e.message));
-    return;
   }
   // ── run_bulk_companies ────────────────────────────────────
   if (tool_name === 'run_bulk_companies') {
@@ -87,7 +121,7 @@ export default async function handler(req, res) {
     });
     (async () => {
       for (let i = 0; i < companies.length; i++) {
-        fetch(`${N8N}/lb-discovery`, {
+        fetch(`${N8N_BASE}/lb-discovery`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ company_name: companies[i], domain: '', vertical: vertical || 'construction', source: 'rebecca_video_bulk', submitter_name: 'Rebbecca', submitter_email: 'tony@manageai.io' })

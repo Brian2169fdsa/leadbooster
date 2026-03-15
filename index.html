@@ -1311,6 +1311,46 @@
         font-size: 13px !important;
       }
     }
+
+    /* ===== PIPELINE STATUS CARD ===== */
+    .plc-card {
+      position: fixed; top: 24px; right: 24px; width: 320px;
+      background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      font-family: 'Montserrat', sans-serif;
+      z-index: 9998; padding: 18px 20px 16px;
+      opacity: 0; transform: translateX(20px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+    .plc-card.plc-visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
+    .plc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .plc-dot { width: 8px; height: 8px; border-radius: 50%; background: #4A8FD6; flex-shrink: 0; animation: plcPulse 1.6s infinite; }
+    @keyframes plcPulse { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.5);opacity:1} }
+    .plc-dot.plc-done { animation: none; background: #16A34A; }
+    .plc-title { font-size: 14px; font-weight: 700; color: #1E293B; flex: 1; }
+    .plc-close { background: none; border: none; font-size: 18px; color: #94A3B8; cursor: pointer; padding: 0 2px; line-height: 1; }
+    .plc-close:hover { color: #475569; }
+    .plc-company { font-size: 12px; color: #475569; font-weight: 600; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .plc-stage { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
+    .plc-stage-icon { font-size: 18px; flex-shrink: 0; line-height: 1.2; }
+    .plc-stage-text { flex: 1; }
+    .plc-stage-label { font-size: 12px; font-weight: 700; color: #1E293B; margin-bottom: 2px; }
+    .plc-stage-detail { font-size: 11px; color: #64748B; line-height: 1.4; }
+    .plc-bar-track { height: 4px; background: #F5F6F8; border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+    .plc-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #4A8FD6, #16A34A); transition: width 0.6s ease; width: 0%; }
+    .plc-counter { font-size: 11px; color: #64748B; font-weight: 500; margin-bottom: 4px; }
+    .plc-btn-sheet {
+      display: inline-block; width: 100%; text-align: center; margin-top: 10px;
+      background: linear-gradient(135deg, #1a5fb4, #4a90d9); border-radius: 10px;
+      padding: 12px 20px; font-size: 13px; font-weight: 700; color: #fff;
+      border: none; cursor: pointer; text-decoration: none;
+      box-shadow: 0 4px 16px rgba(74,144,217,0.35); transition: transform 0.15s;
+    }
+    .plc-btn-sheet:hover { transform: translateY(-1px); }
+    @media (max-width: 767px) {
+      .plc-card { top: auto; bottom: 80px; left: 12px; right: 12px; width: auto; }
+    }
   </style>
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
 </head>
@@ -2763,6 +2803,7 @@ Turner Construction, turnerconstruction.com"
     const notes = document.getElementById('s-notes').value.trim();
     const submitterName = document.getElementById('s-submitter-name').value.trim();
     const submitterEmail = document.getElementById('s-submitter-email').value.trim();
+    showPipelineCard(company, domain, vertical, 'single');
     runLeads([{ company, domain, vertical, notes }], 'single', submitterName, submitterEmail);
   }
 
@@ -2778,6 +2819,7 @@ Turner Construction, turnerconstruction.com"
       return { company: parts[0], domain: (parts[1] || '').replace(/^https?:\/\//,'').replace(/\/$/,''), vertical, notes: '' };
     }).filter(l => l.company && l.domain);
     if (!leads.length) { alert('No valid entries found. Format: Company Name, domain.com'); return; }
+    showPipelineCard(leads[0].company, leads[0].domain, vertical, 'bulk');
     runLeads(leads, 'bulk', submitterName, submitterEmail);
   }
 
@@ -2922,6 +2964,9 @@ Turner Construction, turnerconstruction.com"
       vertical: co.vertical || getActiveChip('t-chips'),
       notes: 'Territory search: ' + document.getElementById('t-city').value + ', ' + document.getElementById('t-state').value
     })).filter(l => l.company);
+    var _tCity = document.getElementById('t-city') ? document.getElementById('t-city').value.trim() : '';
+    var _tState = document.getElementById('t-state') ? document.getElementById('t-state').value.trim() : '';
+    showPipelineCard(leads[0]?.company || (_tCity + ' Territory'), leads[0]?.domain || '', getActiveChip('t-chips'), 'territory', { city: _tCity, state: _tState });
     runLeads(leads, 'territory', window._currentUser?.name || 'Brian', window._currentUser?.email || 'brian@manageai.io');
   }
 
@@ -4143,6 +4188,16 @@ Turner Construction, turnerconstruction.com"
           const fnArgs = msg.properties?.parameters || msg.properties || msg.arguments || msg.parameters || {};
           console.log('[Rebecca] Tool call:', fnName, JSON.stringify(fnArgs));
           tavusResetIdleTimer();
+          // Show pipeline card for video call tool triggers
+          if (fnArgs.company_name || fnArgs.domain || fnArgs.city) {
+            showPipelineCard(
+              fnArgs.company_name || fnArgs.company || fnArgs.city || 'Video Call Lead',
+              fnArgs.domain || '',
+              fnArgs.vertical || '',
+              fnArgs.city ? 'territory' : 'video_call',
+              { city: fnArgs.city || '', state: fnArgs.state || '' }
+            );
+          }
 
           // STEP 1 — Send tool_call_result back to Tavus IMMEDIATELY
           // This stops Tavus from retrying the tool call
@@ -4365,6 +4420,8 @@ Turner Construction, turnerconstruction.com"
       };
     }).filter(l => l.company_name);
 
+    if (leads.length > 0) showPipelineCard(leads[0].company_name, leads[0].domain, vertical, 'bulk');
+
     for (let i = 0; i < leads.length; i++) {
       const lead = leads[i];
       try {
@@ -4398,6 +4455,7 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-single-modal').style.display = 'none';
+    showPipelineCard(company, domain, vertical, 'single');
     await fireWebhook(company, domain, vertical, '', window._currentUser?.name || 'Tony', window._currentUser?.email || 'tony@manageai.io');
   }
 
@@ -4428,6 +4486,7 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-territory-modal').style.display = 'none';
+    showPipelineCard(city + ' ' + vertical + ' Territory', '', vertical, 'territory', { city: city, state: state });
 
     try {
       await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
@@ -5083,6 +5142,269 @@ Turner Construction, turnerconstruction.com"
     </div>
   </div>
 </div>
+
+<!-- Pipeline Status Cards Container -->
+<div id="plc-container"></div>
+
+<script>
+// ==================== PIPELINE STATUS CARD ====================
+(function() {
+  const PLC_MAX = 3;
+  const PLC_SHEET = 'https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=1687677868#gid=1687677868';
+  const PLC_STAGES = {
+    territory_search: { icon: '\uD83D\uDDFA\uFE0F', label: 'Searching Territory', pct: 10 },
+    discovery:        { icon: '\uD83D\uDD0D', label: 'Company Discovery', pct: 25 },
+    scraping:         { icon: '\uD83D\uDD77\uFE0F', label: 'Scraping Website', pct: 40 },
+    enriching:        { icon: '\uD83D\uDCA7', label: 'Enriching Contacts', pct: 65 },
+    scoring:          { icon: '\uD83C\uDFAF', label: 'ICP Scoring', pct: 85 },
+    complete:         { icon: '\u2705', label: 'Complete', pct: 100 },
+    news_trigger:     { icon: '\uD83D\uDCF0', label: 'News Trigger', pct: 50 }
+  };
+
+  let plcCards = [];
+
+  function plcDetailForStage(stage, ctx) {
+    switch (stage) {
+      case 'territory_search':
+        return 'Google Places \u2014 finding ' + (ctx.vertical || 'companies') + ' in ' + (ctx.city || '') + ', ' + (ctx.state || '');
+      case 'discovery':
+        return 'Google Search \u2014 finding team and leadership pages';
+      case 'scraping':
+        return 'TinyFish + HTTP \u2014 extracting contacts from website';
+      case 'enriching':
+        return 'Hunter \u2192 Apollo \u2192 PDL waterfall';
+      case 'scoring':
+        return 'Claude \u2014 scoring contacts against ICP criteria';
+      case 'complete':
+        return (ctx.contactsFound || 0) + ' contacts enriched and scored';
+      case 'news_trigger':
+        return 'WF-09 detected: ' + (ctx.triggerType || 'event') + ' at ' + (ctx.company || '');
+      default:
+        return '';
+    }
+  }
+
+  function plcCreateCard(id) {
+    const el = document.createElement('div');
+    el.className = 'plc-card';
+    el.id = 'plc-' + id;
+    el.innerHTML =
+      '<div class="plc-header">' +
+        '<div class="plc-dot" data-plc="dot"></div>' +
+        '<div class="plc-title">Lead Booster Running</div>' +
+        '<button class="plc-close" data-plc="close">\u00D7</button>' +
+      '</div>' +
+      '<div class="plc-company" data-plc="company"></div>' +
+      '<div class="plc-stage">' +
+        '<div class="plc-stage-icon" data-plc="icon">\uD83D\uDD0D</div>' +
+        '<div class="plc-stage-text">' +
+          '<div class="plc-stage-label" data-plc="label">Starting...</div>' +
+          '<div class="plc-stage-detail" data-plc="detail"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="plc-bar-track"><div class="plc-bar-fill" data-plc="bar"></div></div>' +
+      '<div class="plc-counter" data-plc="counter"></div>' +
+      '<div data-plc="btn-wrap" style="display:none;"></div>';
+    return el;
+  }
+
+  function plcReposition() {
+    const container = document.getElementById('plc-container');
+    if (!container) return;
+    const isMobile = window.innerWidth < 768;
+    let offset = 0;
+    plcCards.forEach(function(c) {
+      const el = c.el;
+      if (isMobile) {
+        el.style.top = 'auto';
+        el.style.right = '12px';
+        el.style.left = '12px';
+        el.style.width = 'auto';
+        el.style.bottom = (80 + offset) + 'px';
+      } else {
+        el.style.top = (24 + offset) + 'px';
+        el.style.right = '24px';
+        el.style.left = '';
+        el.style.bottom = '';
+        el.style.width = '320px';
+      }
+      offset += el.offsetHeight + 12;
+    });
+  }
+
+  function plcUpdate(card, stage) {
+    const s = PLC_STAGES[stage] || PLC_STAGES.discovery;
+    const q = function(sel) { return card.el.querySelector('[data-plc="' + sel + '"]'); };
+    q('icon').textContent = s.icon;
+    q('label').textContent = s.label;
+    q('detail').textContent = plcDetailForStage(stage, card.ctx);
+    q('bar').style.width = s.pct + '%';
+    card.stage = stage;
+
+    if (stage === 'complete') {
+      q('dot').classList.add('plc-done');
+      card.el.querySelector('.plc-title').textContent = 'Lead Booster Complete';
+      var wrap = q('btn-wrap');
+      wrap.style.display = 'block';
+      wrap.innerHTML = '<a class="plc-btn-sheet" href="' + PLC_SHEET + '" target="_blank">\uD83D\uDCCA View ' + (card.ctx.contactsFound || 0) + ' Leads in Sheet</a>';
+      // Auto-dismiss after 60s
+      card.dismissTimer = setTimeout(function() { plcDismiss(card); }, 60000);
+    }
+
+    if (stage === 'enriching' && card._enrichSub < 3) {
+      var subs = [
+        'Hunter \u2014 finding emails...',
+        'Apollo \u2014 finding phones + LinkedIn...',
+        'PDL \u2014 filling remaining gaps...'
+      ];
+      var idx = card._enrichSub || 0;
+      q('detail').textContent = subs[idx];
+      card._enrichSubTimer = setTimeout(function() {
+        if (card.stage !== 'enriching') return;
+        card._enrichSub = (card._enrichSub || 0) + 1;
+        if (card._enrichSub < 3) plcUpdate(card, 'enriching');
+      }, 6000);
+    }
+  }
+
+  function plcDismiss(card) {
+    card.el.classList.remove('plc-visible');
+    if (card.pollTimer) clearInterval(card.pollTimer);
+    if (card.contactTimer) clearInterval(card.contactTimer);
+    if (card.dismissTimer) clearTimeout(card.dismissTimer);
+    if (card._enrichSubTimer) clearTimeout(card._enrichSubTimer);
+    setTimeout(function() {
+      if (card.el.parentNode) card.el.parentNode.removeChild(card.el);
+      plcCards = plcCards.filter(function(c) { return c !== card; });
+      plcReposition();
+    }, 400);
+  }
+
+  function plcMapStatus(status) {
+    if (!status) return 'discovery';
+    var s = status.toLowerCase();
+    if (s === 'pending' || s === 'discovery') return 'discovery';
+    if (s === 'scraping') return 'scraping';
+    if (s === 'enriching') return 'enriching';
+    if (s === 'scoring') return 'scoring';
+    if (s === 'complete') return 'complete';
+    return 'discovery';
+  }
+
+  function plcStartPolling(card) {
+    var startTime = Date.now();
+    var maxPoll = 15 * 60 * 1000; // 15 min
+
+    // Main status poll
+    card.pollTimer = setInterval(async function() {
+      if (Date.now() - startTime > maxPoll || card.stage === 'complete') {
+        clearInterval(card.pollTimer);
+        return;
+      }
+      try {
+        var url, resp, data;
+        if (card.ctx.isTerritory) {
+          url = SB_URL + '/rest/v1/lb_territory_searches?city=eq.' + encodeURIComponent(card.ctx.city) +
+            '&state=eq.' + encodeURIComponent(card.ctx.state) + '&order=created_at.desc&limit=1';
+        } else {
+          url = SB_URL + '/rest/v1/lb_queue?domain=eq.' + encodeURIComponent(card.ctx.domain) +
+            '&order=created_at.desc&limit=1&select=status,contacts_found';
+        }
+        resp = await fetch(url, {
+          headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
+        });
+        if (!resp.ok) return;
+        data = await resp.json();
+        if (data && data.length > 0) {
+          var row = data[0];
+          var newStage = plcMapStatus(row.status);
+          if (row.contacts_found != null) card.ctx.contactsFound = row.contacts_found;
+          if (newStage !== card.stage) {
+            card._enrichSub = 0;
+            plcUpdate(card, newStage);
+          }
+        }
+      } catch(e) { /* silent */ }
+    }, 5000);
+
+    // Contact counter poll (every 8s)
+    card.contactTimer = setInterval(async function() {
+      if (Date.now() - startTime > maxPoll || card.stage === 'complete') {
+        clearInterval(card.contactTimer);
+        return;
+      }
+      if (!card.ctx.domain) return;
+      try {
+        var resp = await fetch(SB_URL + '/rest/v1/lb_contacts?domain=eq.' + encodeURIComponent(card.ctx.domain) + '&select=id', {
+          headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
+        });
+        if (!resp.ok) return;
+        var rows = await resp.json();
+        card.ctx.contactsFound = rows.length;
+        var counter = card.el.querySelector('[data-plc="counter"]');
+        if (counter) counter.textContent = rows.length + ' contacts found so far';
+      } catch(e) { /* silent */ }
+    }, 8000);
+  }
+
+  // Global entry point
+  window.showPipelineCard = function(company, domain, vertical, triggerType, extra) {
+    extra = extra || {};
+    // Enforce max cards
+    while (plcCards.length >= PLC_MAX) {
+      plcDismiss(plcCards[0]);
+    }
+
+    var id = 'plc' + Date.now();
+    var el = plcCreateCard(id);
+    var container = document.getElementById('plc-container');
+    container.appendChild(el);
+
+    var card = {
+      id: id,
+      el: el,
+      stage: null,
+      _enrichSub: 0,
+      ctx: {
+        company: company || '',
+        domain: domain || '',
+        vertical: vertical || '',
+        triggerType: triggerType || '',
+        city: extra.city || '',
+        state: extra.state || '',
+        isTerritory: triggerType === 'territory',
+        contactsFound: 0
+      }
+    };
+
+    plcCards.push(card);
+
+    // Set company name
+    el.querySelector('[data-plc="company"]').textContent = company || domain || 'Processing...';
+
+    // Close button
+    el.querySelector('[data-plc="close"]').addEventListener('click', function() { plcDismiss(card); });
+
+    // Initial stage
+    var initialStage = triggerType === 'territory' ? 'territory_search' : 'discovery';
+    plcUpdate(card, initialStage);
+
+    // Show with animation
+    requestAnimationFrame(function() {
+      plcReposition();
+      requestAnimationFrame(function() { el.classList.add('plc-visible'); });
+    });
+
+    // Start polling
+    plcStartPolling(card);
+
+    return card;
+  };
+
+  // Reposition on resize
+  window.addEventListener('resize', plcReposition);
+})();
+</script>
 
 </body>
 </html>
