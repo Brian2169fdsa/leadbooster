@@ -14,6 +14,9 @@
     },
     "api/tavus-callback.js": {
       "maxDuration": 10
+    },
+    "api/tavus-persona-setup.js": {
+      "maxDuration": 30
     }
   }
 }

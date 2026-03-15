@@ -4007,6 +4007,46 @@ Turner Construction, turnerconstruction.com"
         startVideoOff: false
       });
 
+      // Listen for Tavus tool call events via Daily app-message
+      tavusCallObject.on('app-message', async (event) => {
+        console.log('Daily app-message:', JSON.stringify(event?.data || event).substring(0, 300));
+        const msg = event?.data || event;
+        const eventType = msg.event_type || msg.type || '';
+
+        if (eventType === 'conversation.tool_call') {
+          const fnName = msg.tool_name || msg.function_name || msg.properties?.tool_name || '';
+          const fnArgs = msg.properties || msg.arguments || msg.parameters || {};
+          console.log('Tavus tool_call:', fnName, JSON.stringify(fnArgs));
+          tavusResetIdleTimer();
+
+          try {
+            const actionResp = await fetch('/api/rebecca-action', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                tool_name: fnName,
+                parameters: fnArgs,
+                conversation_id: tavusConversationId
+              })
+            });
+            const actionData = await actionResp.json();
+            console.log('Rebecca action result:', JSON.stringify(actionData));
+
+            // Show action result in chat
+            if (actionData.result) {
+              rbActionStatus(actionData.result);
+            }
+
+            // Handle special UI actions
+            if (actionData.action === 'show_bulk_panel') {
+              document.getElementById('rb-bulk-modal').style.display = 'block';
+            }
+          } catch (toolErr) {
+            console.error('Tool call handler error:', toolErr);
+          }
+        }
+      });
+
       tavusCameraOn = true;
       tavusResetIdleTimer();
 
