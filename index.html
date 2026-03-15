@@ -1546,6 +1546,12 @@
           <option value="healthcare">Healthcare</option>
           <option value="home_services">Home Services</option>
         </select>
+        <select id="rb-territory-qty" style="flex:1;min-width:120px;max-width:140px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="10">10 companies</option>
+          <option value="20">20 companies</option>
+          <option value="30">30 companies</option>
+          <option value="50" selected>50 companies</option>
+        </select>
         <button id="btn-rb-territory-run" onclick="rebeccaFireTerritory()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
       </div>
@@ -2521,6 +2527,12 @@ Turner Construction, turnerconstruction.com"
           <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
           <option value="healthcare">Healthcare</option>
+        </select>
+        <select id="rb-territory-qty" style="flex:1; min-width:120px; max-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; background:#fff;">
+          <option value="10">10 companies</option>
+          <option value="20">20 companies</option>
+          <option value="30">30 companies</option>
+          <option value="50" selected>50 companies</option>
         </select>
         <button id="btn-rb-territory-run-2" onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
@@ -4496,6 +4508,7 @@ Turner Construction, turnerconstruction.com"
     const city = document.getElementById('rb-city-input').value.trim();
     const state = document.getElementById('rb-state-input').value.trim();
     const vertical = document.getElementById('rb-territory-vertical').value;
+    const qty = parseInt(document.getElementById('rb-territory-qty')?.value || '50');
 
     if (!city || !state) {
       alert('Please enter city and state.');
@@ -4504,7 +4517,7 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-territory-modal').style.display = 'none';
-    showPipelineCard(city + ' ' + vertical + ' Territory', '', vertical, 'territory', { city: city, state: state });
+    showPipelineCard(city + ' ' + state + ' (' + qty + ' co)', '', vertical, 'territory', { city: city, state: state });
 
     try {
       await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
@@ -4514,6 +4527,8 @@ Turner Construction, turnerconstruction.com"
           city: city,
           state: state,
           vertical: vertical,
+          max_results: qty,
+          quota_requested: qty,
           submitter_name: window._currentUser?.name || 'Tony',
           submitter_email: window._currentUser?.email || 'tony@manageai.io'
         })
