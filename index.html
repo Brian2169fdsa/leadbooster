@@ -1546,6 +1546,12 @@
           <option value="healthcare">Healthcare</option>
           <option value="home_services">Home Services</option>
         </select>
+        <select id="rb-territory-qty" style="flex:1;min-width:120px;max-width:140px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="10">10 companies</option>
+          <option value="20">20 companies</option>
+          <option value="30">30 companies</option>
+          <option value="50" selected>50 companies</option>
+        </select>
         <button id="btn-rb-territory-run" onclick="rebeccaFireTerritory()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
       </div>
@@ -2521,6 +2527,12 @@ Turner Construction, turnerconstruction.com"
           <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
           <option value="healthcare">Healthcare</option>
+        </select>
+        <select id="rb-territory-qty" style="flex:1; min-width:120px; max-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; background:#fff;">
+          <option value="10">10 companies</option>
+          <option value="20">20 companies</option>
+          <option value="30">30 companies</option>
+          <option value="50" selected>50 companies</option>
         </select>
         <button id="btn-rb-territory-run-2" onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
@@ -4496,6 +4508,7 @@ Turner Construction, turnerconstruction.com"
     const city = document.getElementById('rb-city-input').value.trim();
     const state = document.getElementById('rb-state-input').value.trim();
     const vertical = document.getElementById('rb-territory-vertical').value;
+    const qty = parseInt(document.getElementById('rb-territory-qty')?.value || '50');
 
     if (!city || !state) {
       alert('Please enter city and state.');
@@ -4504,7 +4517,7 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-territory-modal').style.display = 'none';
-    showPipelineCard(city + ' ' + vertical + ' Territory', '', vertical, 'territory', { city: city, state: state });
+    showPipelineCard(city + ' ' + state + ' (' + qty + ' co)', '', vertical, 'territory', { city: city, state: state });
 
     try {
       await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
@@ -4514,6 +4527,8 @@ Turner Construction, turnerconstruction.com"
           city: city,
           state: state,
           vertical: vertical,
+          max_results: qty,
+          quota_requested: qty,
           submitter_name: window._currentUser?.name || 'Tony',
           submitter_email: window._currentUser?.email || 'tony@manageai.io'
         })
@@ -5252,18 +5267,6 @@ const PSC_STAGES = {
   news_trigger:     { icon:'📰', label:'News Trigger', detail:'WF-09 detected company news event', progress:'10%' }
 };
 
-function getStageFromStatus(status) {
-  var s = (status || '').toLowerCase();
-  if (s === 'complete' || s === 'completed' || s === 'done' || s === 'enriched') return 'complete';
-  if (s === 'scoring' || s === 'scored' || s === 'icp') return 'scoring';
-  if (s === 'enriching' || s === 'enrich') return 'enriching';
-  if (s === 'scraping' || s === 'scraped' || s === 'extracting' || s === 'extracted') return 'scraping';
-  if (s === 'news' || s === 'news_trigger') return 'news_trigger';
-  if (s === 'discovery' || s === 'discovering' || s === 'discovery_started') return 'discovery';
-  if (s === 'pending' || s === 'queued' || s === 'submitted') return 'pending';
-  return 'discovery';
-}
-
 function showPipelineCard(company, domain, vertical, triggerType) {
   pscCurrentDomain = domain || '';
   pscCurrentVertical = vertical || '';
@@ -5345,35 +5348,15 @@ function updatePipelineCardStage(status, contactCount) {
 async function pollPipelineStatus(domain) {
   if (!domain) return;
   try {
-    const [resp, pingResp] = await Promise.all([
-      fetch(SB_URL + '/rest/v1/lb_queue?domain=eq.' +
-        encodeURIComponent(domain) +
-        '&order=created_at.desc&limit=1&select=status,contacts_found', {
-        headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
-      }),
-      fetch(SB_URL + '/rest/v1/lb_status_pings?domain=eq.' +
-        encodeURIComponent(domain) +
-        '&order=created_at.desc&limit=1&select=message,stage,created_at', {
-        headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
-      })
-    ]);
+    const resp = await fetch(SB_URL + '/rest/v1/lb_queue?domain=eq.' +
+      encodeURIComponent(domain) +
+      '&order=created_at.desc&limit=1&select=status,contacts_found', {
+      headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
+    });
     const rows = await resp.json();
-    const pings = await pingResp.json();
     if (!rows || !rows.length) return;
     const row = rows[0];
-    const contactCount = row.contacts_found || 0;
-    const mappedStage = getStageFromStatus(row.status);
-    updatePipelineCardStage(mappedStage, contactCount);
-
-    // Show Rebecca's actual words if ping is recent (< 2 min)
-    const latestPing = pings?.[0];
-    if (latestPing && latestPing.message) {
-      const pingAge = Date.now() - new Date(latestPing.created_at).getTime();
-      if (pingAge < 120000) {
-        const detailEl = document.getElementById('psc-detail');
-        if (detailEl) detailEl.textContent = latestPing.message;
-      }
-    }
+    updatePipelineCardStage(row.status || 'pending', row.contacts_found || 0);
   } catch(e) { console.error('Pipeline card poll error:', e); }
 }
 
@@ -5410,29 +5393,15 @@ async function loadAnalysisTab() {
 
     auditAllRuns = runs;
 
-    // Fetch ping counts per domain for narration badges
-    var pingCounts = {};
-    try {
-      var domains = [...new Set(runs.map(function(r) { return r.domain; }).filter(Boolean))];
-      var pingPromises = domains.map(function(d) {
-        return fetch(SB_URL + '/rest/v1/lb_status_pings?domain=eq.' + encodeURIComponent(d) + '&select=id', {
-          headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
-        }).then(function(r) { return r.json(); }).then(function(rows) { pingCounts[d] = rows.length; }).catch(function() { pingCounts[d] = 0; });
-      });
-      await Promise.all(pingPromises);
-    } catch(e) { /* non-fatal */ }
-
     el.innerHTML = runs.map(function(r, i) {
       var label = r.company_name || (r.city ? r.city + ', ' + r.state : '') || r.domain || 'Unknown';
-      var pc = pingCounts[r.domain] || 0;
-      var pingBadge = pc > 0 ? ' · <span style="color:var(--green);">🔊 ' + pc + ' narrations</span>' : '';
       return '<div style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;">' +
         '<div style="width:44px;height:44px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' +
           (r.city ? '🗺️' : '🏢') +
         '</div>' +
         '<div style="flex:1;">' +
           '<div style="font-size:13px;font-weight:700;color:var(--text);">' + label + '</div>' +
-          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + (r.vertical || '') + ' · ' + (r.total_contacts || 0) + ' contacts · ICP avg ' + (r.avg_icp_score || 0) + ' · ' + new Date(r.created_at).toLocaleDateString() + pingBadge + '</div>' +
+          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + (r.vertical || '') + ' · ' + (r.total_contacts || 0) + ' contacts · ICP avg ' + (r.avg_icp_score || 0) + ' · ' + new Date(r.created_at).toLocaleDateString() + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:8px;">' +
           '<a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=1687677868#gid=1687677868" target="_blank" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;">📊 Sheet</a>' +
@@ -5465,7 +5434,7 @@ async function openAuditModal(domain, vertical) {
       body: JSON.stringify({ domain, vertical })
     });
     const data = await resp.json();
-    renderAuditReport(data, domain);
+    renderAuditReport(data);
   } catch(e) {
     document.getElementById('audit-modal-report').innerHTML =
       '<div style="color:var(--red);padding:20px;">Analysis failed: ' + e.message + '</div>';
@@ -5495,14 +5464,14 @@ async function openAuditModalById(auditId, index) {
       body: JSON.stringify({ audit_id: auditId, domain: run.domain, vertical: run.vertical })
     });
     const data = await resp.json();
-    renderAuditReport(data, run.domain);
+    renderAuditReport(data);
   } catch(e) {
     document.getElementById('audit-modal-report').innerHTML =
       '<div style="color:var(--red);padding:20px;">Failed to load: ' + e.message + '</div>';
   }
 }
 
-async function renderAuditReport(data, domain) {
+function renderAuditReport(data) {
   const reportEl = document.getElementById('audit-modal-report');
   const metricsEl = document.getElementById('audit-modal-metrics');
 
@@ -5531,34 +5500,6 @@ async function renderAuditReport(data, domain) {
       .replace(/\n- /g, '<br>• ')
       .replace(/\n/g, '<br>');
     reportEl.innerHTML = html;
-  }
-
-  // Fetch and render status pings (Pipeline Narration)
-  var runDomain = domain || (data.metrics && data.metrics.domain) || '';
-  if (runDomain) {
-    try {
-      var pingsResp = await fetch(
-        SB_URL + '/rest/v1/lb_status_pings?domain=eq.' +
-        encodeURIComponent(runDomain) +
-        '&order=created_at.asc&limit=20',
-        { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
-      );
-      var pings = await pingsResp.json();
-      if (pings && pings.length > 0) {
-        var pingsHtml = '<h3 style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);">Pipeline Narration</h3>' +
-          '<div style="background:var(--surface);border-radius:10px;padding:16px;">' +
-          pings.map(function(p) {
-            return '<div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">' +
-              '<div style="font-size:11px;color:var(--text-dim);white-space:nowrap;padding-top:2px;">' +
-              new Date(p.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div>' +
-              '<div style="font-size:13px;color:var(--text);">' + (p.message || '') + '</div>' +
-              (p.spoken ? '<div style="font-size:10px;color:var(--green);margin-left:auto;flex-shrink:0;">🔊 Spoken</div>' : '') +
-            '</div>';
-          }).join('') +
-          '</div>';
-        reportEl.innerHTML += pingsHtml;
-      }
-    } catch(e) { console.error('Status pings fetch error:', e); }
   }
 }
 
