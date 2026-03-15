@@ -11,6 +11,9 @@
     },
     "api/rebecca-action.js": {
       "maxDuration": 30
+    },
+    "api/tavus-callback.js": {
+      "maxDuration": 10
     }
   }
 }
