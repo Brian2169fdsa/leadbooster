@@ -1503,7 +1503,7 @@
           <option value="healthcare">Healthcare</option>
           <option value="home_services">Home Services</option>
         </select>
-        <button onclick="rebeccaFireTerritory()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
+        <button id="btn-rb-territory-run" onclick="rebeccaFireTerritory()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
       </div>
     </div>
@@ -2465,7 +2465,7 @@ Turner Construction, turnerconstruction.com"
           <option value="medical_transport">Medical Transport</option>
           <option value="healthcare">Healthcare</option>
         </select>
-        <button onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
+        <button id="btn-rb-territory-run-2" onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
       </div>
     </div>
@@ -4414,12 +4414,28 @@ Turner Construction, turnerconstruction.com"
   }
 
   async function rebeccaFireTerritory() {
+    // Guard — prevent multiple fires within 15 seconds
+    const now = Date.now();
+    if (window._territoryLastFired && (now - window._territoryLastFired) < 15000) {
+      console.warn('[Territory] Debounced — fired too recently');
+      return;
+    }
+    window._territoryLastFired = now;
+
+    const runBtn = document.getElementById('btn-rb-territory-run');
+    if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Running…'; }
+    // Re-enable after 15 seconds
+    setTimeout(() => {
+      if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run It'; }
+    }, 15000);
+
     const city = document.getElementById('rb-city-input').value.trim();
     const state = document.getElementById('rb-state-input').value.trim();
     const vertical = document.getElementById('rb-territory-vertical').value;
 
     if (!city || !state) {
       alert('Please enter city and state.');
+      if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run It'; }
       return;
     }
 
