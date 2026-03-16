@@ -1511,6 +1511,9 @@
       <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
         Access Sheet
       </a>
+      <button onclick="setRebeccaMode('precall')" id="rb-precall-btn" style="background:#1a1a2e;color:white;border:none;border-radius:12px;padding:14px 24px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;font-family:inherit;" onmouseover="this.style.background='#16213e'" onmouseout="this.style.background='#1a1a2e'">
+        📋 Pre-Call Brief
+      </button>
       <div class="mode-tabs" style="margin-bottom:0;">
         <button class="rb-action-tab active" onclick="toggleRebeccaForm('territory')" id="rb-tab-territory">Territory Search</button>
         <button class="rb-action-tab" onclick="toggleRebeccaForm('single')" id="rb-tab-single">Single Company</button>
@@ -1564,6 +1567,23 @@
         </select>
         <button id="btn-rb-territory-run" onclick="rebeccaFireTerritory()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Pre-Call Brief Modal -->
+    <div id="rb-precall-modal" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:15px;font-weight:700;color:#1a1a2e;white-space:nowrap;">Pre-Call Brief</span>
+        <input id="rb-precall-company" type="text" placeholder="Company name" style="flex:2;min-width:180px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
+        <input id="rb-precall-domain" type="text" placeholder="domain.com" style="flex:1;min-width:140px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
+        <select id="rb-precall-vertical" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="construction">Construction</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="home_services">Home Services</option>
+        </select>
+        <button onclick="runPreCallBrief()" style="background:#1a1a2e;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Generate Brief</button>
+        <button onclick="document.getElementById('rb-precall-modal').style.display='none'" style="background:transparent;color:#666;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;font-family:inherit;">Cancel</button>
       </div>
     </div>
 
@@ -1641,6 +1661,24 @@
       </div>
       <!-- RIGHT: Chat Interface -->
       <div class="rb-right">
+        <!-- Pre-Call Brief Card -->
+        <div id="precall-brief-card" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px;max-height:500px;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div>
+              <div id="precall-card-title" style="font-size:16px;font-weight:700;color:#1a1a2e;">Pre-Call Brief</div>
+              <div id="precall-card-sub" style="font-size:12px;color:#888;margin-top:2px;">Generating...</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <a id="precall-calendly-btn" href="https://calendly.com/tony-manageai" target="_blank" style="background:#1a1a2e;color:white;text-decoration:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+                📅 Book Call
+              </a>
+              <button onclick="document.getElementById('precall-brief-card').style.display='none'" style="background:transparent;border:none;color:#999;cursor:pointer;font-size:20px;line-height:1;">×</button>
+            </div>
+          </div>
+          <div id="precall-card-content" style="font-size:13px;color:#444;line-height:1.7;">
+            <div style="color:#888;">Generating brief — this takes about 30 seconds...</div>
+          </div>
+        </div>
         <div class="rb-card" style="padding:0;display:flex;flex-direction:column;flex:1;">
           <div class="rb-chat-header">
             <div class="rb-chat-header-left">
@@ -4594,6 +4632,129 @@ Turner Construction, turnerconstruction.com"
     document.querySelectorAll('.rb-action-tab').forEach(t => t.classList.remove('active'));
     const tab = document.getElementById('rb-tab-' + type);
     if (tab) tab.classList.add('active');
+  }
+
+  function setRebeccaMode(mode) {
+    const precallModal = document.getElementById('rb-precall-modal');
+    const territoryModal = document.getElementById('rb-territory-modal');
+    const singleModal = document.getElementById('rb-single-modal');
+
+    // Hide all forms
+    if (territoryModal) territoryModal.style.display = 'none';
+    if (singleModal) singleModal.style.display = 'none';
+
+    if (mode === 'precall') {
+      const isVisible = precallModal && precallModal.style.display !== 'none';
+      if (precallModal) precallModal.style.display = isVisible ? 'none' : 'block';
+    }
+  }
+
+  async function runPreCallBrief() {
+    const company = document.getElementById('rb-precall-company')?.value?.trim();
+    const domain = document.getElementById('rb-precall-domain')?.value?.trim();
+    const vertical = document.getElementById('rb-precall-vertical')?.value || 'construction';
+
+    if (!company || !domain) {
+      alert('Please enter company name and domain');
+      return;
+    }
+
+    // Show loading card immediately
+    showPreCallCard(company, domain, null);
+
+    // Hide the form
+    const modal = document.getElementById('rb-precall-modal');
+    if (modal) modal.style.display = 'none';
+
+    // Fire n8n webhook
+    try {
+      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-precall-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_name: company, domain, vertical })
+      });
+      console.log('[PreCall] Brief requested for:', company, domain);
+    } catch(e) {
+      console.error('[PreCall] Error:', e);
+    }
+
+    // Poll Supabase for brief result
+    pollPreCallBrief(domain, company);
+  }
+
+  let preCallPollInterval = null;
+
+  async function pollPreCallBrief(domain, company) {
+    const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA';
+
+    let attempts = 0;
+    const maxAttempts = 20; // 60 seconds
+
+    if (preCallPollInterval) clearInterval(preCallPollInterval);
+
+    preCallPollInterval = setInterval(async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        clearInterval(preCallPollInterval);
+        updatePreCallCard(company, 'Brief generation timed out. Try again.', null);
+        return;
+      }
+
+      try {
+        const since = new Date(Date.now() - 300000).toISOString();
+        const resp = await fetch(
+          SB_URL + '/rest/v1/lb_precall_briefs?domain=eq.' +
+          encodeURIComponent(domain) +
+          '&order=created_at.desc&limit=1&created_at=gte.' + since,
+          { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+        );
+        const rows = await resp.json();
+        if (rows && rows[0] && rows[0].brief_text) {
+          clearInterval(preCallPollInterval);
+          updatePreCallCard(company, null, rows[0].brief_text);
+        }
+      } catch(e) {
+        console.error('[PreCall] Poll error:', e);
+      }
+    }, 3000);
+  }
+
+  function showPreCallCard(company, domain, brief) {
+    const card = document.getElementById('precall-brief-card');
+    const title = document.getElementById('precall-card-title');
+    const sub = document.getElementById('precall-card-sub');
+    const content = document.getElementById('precall-card-content');
+
+    if (!card) return;
+    card.style.display = 'block';
+    if (title) title.textContent = company + ' — Pre-Call Brief';
+    if (sub) sub.textContent = domain + ' · Generating...';
+    if (content) content.innerHTML = '<div style="color:#888;font-style:italic;">Pulling Apollo data, recent news, and existing contacts... ~30 seconds</div>';
+  }
+
+  function updatePreCallCard(company, error, briefText) {
+    const sub = document.getElementById('precall-card-sub');
+    const content = document.getElementById('precall-card-content');
+
+    if (error) {
+      if (content) content.innerHTML = '<div style="color:#e53e3e;">' + error + '</div>';
+      return;
+    }
+
+    if (sub) sub.textContent = 'Ready · ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+
+    if (content && briefText) {
+      // Convert markdown sections to styled HTML
+      const html = briefText
+        .replace(/## (.+)/g, '<h3 style="font-size:13px;font-weight:700;color:#1a1a2e;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #f0f0f0;">$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/^- (.+)/gm, '<div style="padding:3px 0 3px 12px;border-left:2px solid #e2e8f0;margin:4px 0;color:#555;">$1</div>')
+        .replace(/^\d+\. (.+)/gm, '<div style="padding:4px 0;color:#555;">$1</div>')
+        .replace(/\n\n/g, '<br>')
+        .replace(/\n/g, '<br>');
+      content.innerHTML = html;
+    }
   }
 
   function rebeccaRunSingle() {
