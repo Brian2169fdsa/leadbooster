@@ -4228,8 +4228,7 @@ Turner Construction, turnerconstruction.com"
             const role = msg?.properties?.role || '';
             const speech = msg?.properties?.speech || '';
 
-            // Only process user speech, not Rebecca's
-            if (role !== 'user' || !speech || speech.length < 5) return;
+            if (role !== 'user' || !speech || speech.length < 3) return;
 
             console.log('[Rebecca] User said:', speech);
             tavusResetIdleTimer();
@@ -4248,130 +4247,93 @@ Turner Construction, turnerconstruction.com"
       // Broad keyword detection — no API call needed
       async function detectAndFireFromSpeech(speech) {
         const s = speech.toLowerCase();
-
-        // Already fired recently? Debounce 10 seconds
         const now = Date.now();
-        if (window._lastFireTime && now - window._lastFireTime < 10000) {
-          console.log('[Rebecca] Debounce — too soon since last fire');
-          return;
-        }
+        if (window._lastFireTime && now - window._lastFireTime < 15000) return;
 
-        // Extract state from speech — handles both full names and abbreviations
-        const stateMap = {
-          'arizona': 'AZ', 'az': 'AZ',
-          'california': 'CA', 'ca': 'CA',
-          'texas': 'TX', 'tx': 'TX',
-          'nevada': 'NV', 'nv': 'NV',
-          'utah': 'UT', 'ut': 'UT',
-          'colorado': 'CO', 'co': 'CO',
-          'florida': 'FL', 'fl': 'FL',
-          'new york': 'NY', 'ny': 'NY',
-          'georgia': 'GA', 'ga': 'GA',
-          'ohio': 'OH', 'oh': 'OH',
-          'illinois': 'IL', 'il': 'IL',
-          'washington': 'WA', 'wa': 'WA',
-          'oregon': 'OR', 'or': 'OR',
-          'michigan': 'MI', 'mi': 'MI',
-          'north carolina': 'NC', 'nc': 'NC',
-          'tennessee': 'TN', 'tn': 'TN',
-          'missouri': 'MO', 'mo': 'MO',
-          'indiana': 'IN', 'in': 'IN',
-          'wisconsin': 'WI', 'wi': 'WI',
-          'minnesota': 'MN', 'mn': 'MN',
-          'maryland': 'MD', 'md': 'MD',
-          'virginia': 'VA', 'va': 'VA',
-          'pennsylvania': 'PA', 'pa': 'PA',
-          'new mexico': 'NM', 'nm': 'NM',
-          'idaho': 'ID', 'id': 'ID',
-          'montana': 'MT', 'mt': 'MT',
-          'kansas': 'KS', 'ks': 'KS',
-          'oklahoma': 'OK', 'ok': 'OK',
-          'arkansas': 'AR', 'ar': 'AR',
-          'mississippi': 'MS', 'ms': 'MS',
-          'alabama': 'AL', 'al': 'AL'
-        };
+        // TERRITORY — detect any mention of city + state + industry
+        const stateAbbrs = ['az','ca','tx','nv','ut','co','fl','ny','ga','oh',
+          'il','wa','or','mi','nc','tn','mo','wi','mn','md','va','pa','nm'];
+        const stateNames = {'arizona':'AZ','california':'CA','texas':'TX','nevada':'NV',
+          'utah':'UT','colorado':'CO','florida':'FL','new york':'NY','georgia':'GA',
+          'ohio':'OH','illinois':'IL','washington':'WA','oregon':'OR','michigan':'MI',
+          'north carolina':'NC','tennessee':'TN','missouri':'MO',
+          'wisconsin':'WI','minnesota':'MN','maryland':'MD','virginia':'VA',
+          'pennsylvania':'PA','new mexico':'NM','idaho':'ID','montana':'MT',
+          'kansas':'KS','oklahoma':'OK','arkansas':'AR','mississippi':'MS','alabama':'AL'};
+        const verticals = ['construction','behavioral health','behavioral_health',
+          'medical transport','medical_transport','home services','home_services',
+          'healthcare','real estate'];
 
-        // TERRITORY SEARCH — broad detection
-        // Triggers on ANY of these keywords near a city/state
-        const isTerritoryIntent =
-          s.includes('territory search') ||
-          s.includes('territory') ||
-          (s.includes('search') && (s.includes('for') || s.includes('companies'))) ||
-          (s.includes('find') && s.includes('companies')) ||
-          (s.includes('run') && s.includes('search')) ||
-          (s.includes('look') && s.includes('companies'));
+        // Check if speech has territory intent
+        const hasTerritoryIntent =
+          s.includes('search') || s.includes('territory') ||
+          s.includes('find compan') || s.includes('look for compan') ||
+          s.includes('run a search') || s.includes('companies in') ||
+          s.includes('companies for') || s.includes('pull up') ||
+          (s.includes('run') && s.includes('compan'));
 
-        if (isTerritoryIntent) {
-          // Find state in speech
+        if (hasTerritoryIntent) {
           let foundState = null;
-          let foundStateName = '';
-          let foundStatePos = -1;
-
-          for (const [name, abbr] of Object.entries(stateMap)) {
-            const idx = s.indexOf(name);
-            if (idx !== -1) {
-              // Prefer longer matches (e.g. "new mexico" over "me")
-              if (!foundState || name.length > foundStateName.length) {
-                foundState = abbr;
-                foundStateName = name;
-                foundStatePos = idx;
-              }
+          // Check abbreviations
+          for (const abbr of stateAbbrs) {
+            if (s.includes(' ' + abbr + ' ') || s.includes(' ' + abbr + ',') || s.endsWith(' ' + abbr)) {
+              foundState = abbr.toUpperCase();
+              break;
+            }
+          }
+          // Check full state names
+          if (!foundState) {
+            for (const [name, abbr] of Object.entries(stateNames)) {
+              if (s.includes(name)) { foundState = abbr; break; }
             }
           }
 
+          let foundVertical = 'construction';
+          for (const v of verticals) {
+            if (s.includes(v)) { foundVertical = v.replace(' ','_'); break; }
+          }
+
           if (foundState) {
-            // Extract city — look for a word before the state that sounds like a city name
-            const beforeState = s.substring(0, foundStatePos).trim();
+            // Find city — words before state that aren't skip words
+            const skipWords = new Set(['search','find','run','look','territory','in',
+              'for','a','the','companies','company','i','need','to','want','please',
+              'can','you','do','let','boss','me','us','some','pull','up','get']);
 
-            // Common words to skip when finding city
-            const skipWords = ['search', 'find', 'run', 'look', 'territory',
-              'in', 'for', 'a', 'the', 'companies', 'company',
-              'i', 'need', 'to', 'want', 'please', 'can', 'you',
-              'run', 'do', 'let', 'boss'];
-
+            const statePos = s.indexOf(foundState.toLowerCase());
+            const beforeState = s.substring(0, statePos);
             const words = beforeState.split(/[\s,]+/).filter(w =>
-              w.length > 2 && !skipWords.includes(w)
+              w.length > 2 && !skipWords.has(w.toLowerCase())
             );
 
-            // Last meaningful word(s) before state = city
-            let city = '';
-            if (words.length >= 2) {
-              city = words.slice(-2).join(' ');
-            } else if (words.length === 1) {
-              city = words[0];
-            }
-
-            // Capitalize city
+            let city = words.slice(-2).join(' ').trim();
             city = city.replace(/\b\w/g, l => l.toUpperCase());
 
-            if (city && city.length > 2) {
-              const vertical = normalizeVertical(s);
-              const qtyMatch = s.match(/(\d+)\s*(?:companies|co\b)/i);
-              const maxResults = qtyMatch ? Math.min(parseInt(qtyMatch[1]), 50) : 20;
+            if (!city || city.length < 2) city = 'Phoenix'; // fallback
 
-              console.log('[Rebecca] Territory detected:', city, foundState, vertical, maxResults);
-              window._lastFireTime = Date.now();
-              await fireRebeccaFromTool('run_territory_search', {
-                city, state: foundState, vertical, max_results: maxResults
-              });
-              return;
-            }
+            const qtyMatch = s.match(/(\d+)\s*(?:compan|co\b)/i);
+            const maxResults = qtyMatch ? Math.min(parseInt(qtyMatch[1]), 50) : 20;
+
+            console.log('[Rebecca] TERRITORY FIRING:', city, foundState, foundVertical, maxResults);
+            window._lastFireTime = now;
+            await fireRebeccaFromTool('run_territory_search', {
+              city, state: foundState, vertical: foundVertical, max_results: maxResults
+            });
+            return;
           }
         }
 
         // SINGLE COMPANY — broad detection
         const isSingleIntent =
-          (s.includes('run') && !isTerritoryIntent) ||
+          (s.includes('run') && !hasTerritoryIntent) ||
           s.includes('lead booster on') ||
           s.includes('find leads for') ||
           s.includes('run on') ||
-          s.includes('add') && s.includes('pipeline');
+          (s.includes('add') && s.includes('pipeline'));
 
         if (isSingleIntent) {
           const domainMatch = s.match(/([\w-]+\.(com|io|net|org|co))/i);
           const domain = domainMatch ? domainMatch[1] : '';
 
-          // Try to extract company name
           const companyPatterns = [
             /run\s+(.+?)\s+(?:at|for|on|dot|\.)/i,
             /lead booster on\s+(.+?)(?:\s+at|\s+for|$)/i,
@@ -4387,7 +4349,7 @@ Turner Construction, turnerconstruction.com"
           if (company || domain) {
             const vertical = normalizeVertical(s);
             console.log('[Rebecca] Single company detected:', company, domain);
-            window._lastFireTime = Date.now();
+            window._lastFireTime = now;
             await fireRebeccaFromTool('run_lead_booster', {
               company_name: company || domain,
               domain,
@@ -4400,7 +4362,7 @@ Turner Construction, turnerconstruction.com"
         // BRIEFING detection
         if (s.match(/briefing|what.s going on|pipeline|top leads|my deals/i)) {
           console.log('[Rebecca] Briefing detected');
-          window._lastFireTime = Date.now();
+          window._lastFireTime = now;
           await fireRebeccaFromTool('get_pipeline_briefing', { confirmed: true });
           return;
         }
