@@ -1603,7 +1603,7 @@
           <img src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp" alt="Rebbecca Mathews" class="rb-photo">
           <div class="rb-name">Rebbecca Mathews</div>
           <div class="rb-title">Executive Sales Assistant</div>
-          <div class="rb-reports">Supporting Tony Robbins — ManageAI</div>
+          <div class="rb-reports">Supporting Tony Hanak — ManageAI</div>
           <div class="rb-divider"></div>
           <div class="rb-status"><span class="rb-status-dot"></span> Online and Ready</div>
           <div class="rb-divider"></div>
@@ -2548,7 +2548,7 @@ Turner Construction, turnerconstruction.com"
           <img src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp" alt="Rebbecca Mathews" class="rb-photo">
           <div class="rb-name">Rebbecca Mathews</div>
           <div class="rb-title">Executive Sales Assistant</div>
-          <div class="rb-reports">Supporting Tony Robbins — ManageAI</div>
+          <div class="rb-reports">Supporting Tony Hanak — ManageAI</div>
           <div class="rb-divider"></div>
           <div class="rb-status"><span class="rb-status-dot"></span> Online and Ready</div>
           <div class="rb-divider"></div>
@@ -4211,46 +4211,79 @@ Turner Construction, turnerconstruction.com"
 
       // Listen for Tavus tool call events via Daily app-message
       tavusCallObject.on('app-message', async (event) => {
-        console.log('Daily app-message:', JSON.stringify(event?.data || event).substring(0, 300));
-        const msg = event?.data || event;
-        const eventType = msg.event_type || msg.type || '';
+        try {
+          const msg = event?.data || event;
+          const eventType = msg?.event_type || msg?.type || '';
 
-        if (eventType === 'conversation.tool_call') {
-          // Extract tool call details
-          const fnName = msg.properties?.name || msg.tool_name || msg.function_name || msg.properties?.tool_name || '';
-          const toolCallId = msg.tool_call_id || msg.id || msg.properties?.tool_call_id || '';
-          const fnArgs = msg.properties?.parameters || msg.properties || msg.arguments || msg.parameters || {};
-          console.log('[Rebecca] Tool call:', fnName, JSON.stringify(fnArgs));
-          tavusResetIdleTimer();
-          // Show pipeline card for video call tool triggers
-          if (fnArgs.company_name || fnArgs.domain || fnArgs.city) {
-            showPipelineCard(
-              fnArgs.company_name || fnArgs.company || fnArgs.city || 'Video Call Lead',
-              fnArgs.domain || '',
-              fnArgs.vertical || '',
-              fnArgs.city ? 'territory' : 'video_call',
-              { city: fnArgs.city || '', state: fnArgs.state || '' }
-            );
+          console.log('[Rebecca] app-message:', eventType,
+            JSON.stringify(msg).substring(0, 200));
+
+          if (eventType !== 'conversation.tool_call') return;
+
+          // Parse tool name
+          const fnName = msg?.properties?.name ||
+                         msg?.tool_name ||
+                         msg?.function?.name || '';
+
+          // Parse arguments — Tavus sends as JSON STRING
+          let fnArgs = {};
+          try {
+            const rawArgs = msg?.properties?.arguments ||
+                            msg?.properties?.parameters ||
+                            msg?.arguments || '{}';
+            fnArgs = typeof rawArgs === 'string'
+              ? JSON.parse(rawArgs)
+              : (rawArgs || {});
+          } catch(e) {
+            console.error('[Rebecca] Failed to parse args:', e);
           }
 
-          // STEP 1 — Send tool_call_result back to Tavus IMMEDIATELY
-          // This stops Tavus from retrying the tool call
-          // Must happen before any async work
+          console.log('[Rebecca] Tool call:', fnName,
+            JSON.stringify(fnArgs));
+
+          tavusResetIdleTimer();
+
+          // IMMEDIATELY send conversation.echo to stop Tavus retrying
+          const ackMap = {
+            'run_territory_search': `On it Boss. Searching ${fnArgs.city || ''}, ${fnArgs.state || ''} for ${(fnArgs.vertical||'').replace(/_/g,' ')} companies now.`,
+            'run_lead_booster': `On it Boss. Running Lead Booster on ${fnArgs.company_name || 'that company'} now.`,
+            'run_bulk_companies': `On it Boss. Firing Lead Booster on all ${(fnArgs.companies||[]).length} companies now.`,
+            'get_pipeline_briefing': `Give me one second Boss. Pulling up your pipeline now.`
+          };
+          const ack = ackMap[fnName] || 'On it Boss.';
+
           try {
             if (tavusCallObject?.sendAppMessage) {
               tavusCallObject.sendAppMessage({
-                type: 'tool_call_result',
-                tool_call_id: toolCallId,
-                result: 'Got it Boss, on it now.'
-              });
-              console.log('[Rebecca] tool_call_result sent immediately, id:', toolCallId);
+                message_type: 'conversation',
+                event_type: 'conversation.echo',
+                conversation_id: msg?.conversation_id || tavusConversationId,
+                properties: { text: ack }
+              }, '*');
+              console.log('[Rebecca] Echo sent:', ack);
             }
           } catch(e) {
-            console.error('[Rebecca] sendAppMessage error:', e);
+            console.error('[Rebecca] Echo error:', e);
           }
 
-          // STEP 2 — Now fire the actual action asynchronously
-          // Rebecca speaks the real result when n8n pings back
+          // Show pipeline card immediately
+          if (fnName === 'run_territory_search') {
+            showPipelineCard(
+              (fnArgs.city||'') + ' ' + (fnArgs.state||''),
+              (fnArgs.city||'').toLowerCase(),
+              fnArgs.vertical || 'construction',
+              'territory'
+            );
+          } else if (fnName === 'run_lead_booster') {
+            showPipelineCard(
+              fnArgs.company_name || 'Company',
+              fnArgs.domain || '',
+              fnArgs.vertical || 'construction',
+              'single'
+            );
+          }
+
+          // Fire n8n action — NEVER await this
           fetch('/api/rebecca-action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -4260,12 +4293,14 @@ Turner Construction, turnerconstruction.com"
               conversation_id: tavusConversationId
             })
           }).then(async r => {
-            const data = await r.json();
-            console.log('[Rebecca] Action result:', JSON.stringify(data));
-            if (data.action === 'show_bulk_panel') {
-              document.getElementById('rb-bulk-modal').style.display = 'block';
-            }
-          }).catch(e => console.error('[Rebecca] Action fetch error:', e));
+            const d = await r.json();
+            console.log('[Rebecca] Action result:', JSON.stringify(d));
+          }).catch(e => {
+            console.error('[Rebecca] Action error:', e);
+          });
+
+        } catch(e) {
+          console.error('[Rebecca] app-message handler error:', e);
         }
       });
 
