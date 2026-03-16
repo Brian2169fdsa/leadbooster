@@ -5424,11 +5424,6 @@ function updatePipelineCardStage(status, contactCount) {
 
 async function pollPipelineStatus(domain) {
   try {
-    // For territory searches, track by run start time
-    // For single company, track by domain
-    // Either way — just grab the latest status ping
-    // from the last 30 minutes and show it
-
     const since = new Date(Date.now() - 1800000).toISOString();
 
     // Query lb_status_pings for latest ping
@@ -5445,43 +5440,65 @@ async function pollPipelineStatus(domain) {
     const pings = await pingResp.json();
     const latest = pings?.[0];
 
-    if (!latest) return;
+    // Check ping age — only use if under 5 min old
+    if (latest) {
+      const pingAge = Date.now() - new Date(latest.created_at).getTime();
+      if (pingAge <= 300000) {
+        // Map stage to card state
+        const msg = (latest.message || '').toLowerCase();
+        let stage = latest.stage || 'discovery';
 
-    // Check if this ping is for our current run
-    // For territory: any ping works (we own the run)
-    // For single: check domain matches
-    const pingAge = Date.now() - new Date(latest.created_at).getTime();
-    if (pingAge > 300000) return; // Ignore pings older than 5 min
+        // Auto-detect stage from message content if stage not set
+        if (!latest.stage) {
+          if (msg.includes('searching') && msg.includes('for')) stage = 'territory_search';
+          else if (msg.includes('found') && msg.includes('compan')) stage = 'territory_search';
+          else if (msg.includes('looking up') || msg.includes('discovery')) stage = 'discovery';
+          else if (msg.includes('scanning') || msg.includes('scraping') || msg.includes('site')) stage = 'scraping';
+          else if (msg.includes('enrichment') || msg.includes('hunter') || msg.includes('apollo')) stage = 'enriching';
+          else if (msg.includes('scoring') || msg.includes('icp')) stage = 'scoring';
+          else if (msg.includes('done') || msg.includes('complete') || msg.includes('contact')) stage = 'complete';
+        }
 
-    // Map stage to card state
-    const msg = (latest.message || '').toLowerCase();
-    let stage = latest.stage || 'discovery';
+        // Get contact count for complete stage
+        let contactCount = 0;
+        if (stage === 'complete') {
+          const match = latest.message.match(/(\d+)\s+contact/i);
+          if (match) contactCount = parseInt(match[1]);
+        }
 
-    // Auto-detect stage from message content if stage not set
-    if (!latest.stage) {
-      if (msg.includes('searching') && msg.includes('for')) stage = 'territory_search';
-      else if (msg.includes('found') && msg.includes('compan')) stage = 'territory_search';
-      else if (msg.includes('looking up') || msg.includes('discovery')) stage = 'discovery';
-      else if (msg.includes('scanning') || msg.includes('scraping') || msg.includes('site')) stage = 'scraping';
-      else if (msg.includes('enrichment') || msg.includes('hunter') || msg.includes('apollo')) stage = 'enriching';
-      else if (msg.includes('scoring') || msg.includes('icp')) stage = 'scoring';
-      else if (msg.includes('done') || msg.includes('complete') || msg.includes('contact')) stage = 'complete';
+        // Update card detail with Rebecca's actual words
+        const detailEl = document.getElementById('psc-detail');
+        if (detailEl && latest.message) {
+          detailEl.textContent = latest.message;
+        }
+
+        updatePipelineCardStage(stage, contactCount);
+        return;
+      }
     }
 
-    // Get contact count for complete stage
-    let contactCount = 0;
-    if (stage === 'complete') {
-      const match = latest.message.match(/(\d+)\s+contact/i);
-      if (match) contactCount = parseInt(match[1]);
+    // Fallback — no recent ping, check lb_queue instead
+    const qResp = await fetch(
+      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=1&select=status,contacts_found,created_at' +
+      '&created_at=gte.' + since,
+      { headers: {
+        'apikey': SB_SERVICE_KEY,
+        'Authorization': 'Bearer ' + SB_SERVICE_KEY
+      }}
+    );
+    const qRows = await qResp.json();
+    const qLatest = qRows?.[0];
+    if (qLatest) {
+      const qStatus = (qLatest.status || '').toLowerCase();
+      let qStage = 'discovery';
+      if (qStatus === 'pending' || qStatus === 'queued') qStage = 'discovery';
+      else if (qStatus === 'scraping' || qStatus === 'scanning') qStage = 'scraping';
+      else if (qStatus === 'enriching' || qStatus === 'enrichment') qStage = 'enriching';
+      else if (qStatus === 'scoring') qStage = 'scoring';
+      else if (qStatus === 'complete' || qStatus === 'done') qStage = 'complete';
+      else qStage = qStatus || 'discovery';
+      updatePipelineCardStage(qStage, qLatest.contacts_found || 0);
     }
-
-    // Update card detail with Rebecca's actual words
-    const detailEl = document.getElementById('psc-detail');
-    if (detailEl && latest.message) {
-      detailEl.textContent = latest.message;
-    }
-
-    updatePipelineCardStage(stage, contactCount);
 
   } catch(e) {
     console.error('Pipeline card poll error:', e);
