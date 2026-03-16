@@ -79,7 +79,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           city, state, vertical,
           source: 'rebecca_video',
-          submitter_name: 'Rebbecca',
+          submitter_name: 'Rebecca',
           submitter_email: 'tony@manageai.io',
           conversation_id
         }),
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           company_name, domain: domain || '', vertical: vertical || 'construction',
           source: 'rebecca_video',
-          submitter_name: 'Rebbecca',
+          submitter_name: 'Rebecca',
           submitter_email: 'tony@manageai.io',
           conversation_id
         }),
@@ -122,7 +122,7 @@ export default async function handler(req, res) {
             company_name: name, domain,
             vertical: vertical || 'construction',
             source: 'rebecca_bulk_video',
-            submitter_name: 'Rebbecca',
+            submitter_name: 'Rebecca',
             submitter_email: 'tony@manageai.io'
           }),
           signal: AbortSignal.timeout(10000)
