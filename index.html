@@ -5914,6 +5914,11 @@ function closeAuditModal() {
   // Global entry point
   window.showPipelineCard = function(company, domain, vertical, triggerType, extra) {
     extra = extra || {};
+
+    // Guard — old card element removed, just drive the ticker
+    var container = document.getElementById('plc-container');
+    if (!container) return;
+
     // Enforce max cards
     while (plcCards.length >= PLC_MAX) {
       plcDismiss(plcCards[0]);
@@ -5921,7 +5926,7 @@ function closeAuditModal() {
 
     var id = 'plc' + Date.now();
     var el = plcCreateCard(id);
-    var container = document.getElementById('plc-container');
+    if (!el) return;
     container.appendChild(el);
 
     var card = {
@@ -5944,10 +5949,12 @@ function closeAuditModal() {
     plcCards.push(card);
 
     // Set company name
-    el.querySelector('[data-plc="company"]').textContent = company || domain || 'Processing...';
+    var companyEl = el.querySelector('[data-plc="company"]');
+    if (companyEl) companyEl.textContent = company || domain || 'Processing...';
 
     // Close button
-    el.querySelector('[data-plc="close"]').addEventListener('click', function() { plcDismiss(card); });
+    var closeEl = el.querySelector('[data-plc="close"]');
+    if (closeEl) closeEl.addEventListener('click', function() { plcDismiss(card); });
 
     // Initial stage
     var initialStage = triggerType === 'territory' ? 'territory_search' : 'discovery';
