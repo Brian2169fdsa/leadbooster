@@ -33,6 +33,29 @@ export default async function handler(req, res) {
         body.persona_id = PERSONA_ID;
       }
 
+      // Re-patch tool_call_info webhook on persona before every conversation
+      try {
+        const patchResp = await fetch('https://tavusapi.com/v2/personas/p07dbe243a07', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.TAVUS_API_KEY || '111f845e282a47039e401fb80a1ae1ab'
+          },
+          body: JSON.stringify([
+            {
+              "op": "replace",
+              "path": "/layers/llm/tool_call_info",
+              "value": {
+                "tool_call_webhook_url": "https://leadbooster-nine.vercel.app/api/rebecca-action"
+              }
+            }
+          ])
+        });
+        console.log('[tavus-session] tool_call_info patched:', patchResp.status);
+      } catch(e) {
+        console.error('[tavus-session] patch failed:', e.message);
+      }
+
       try {
         console.log('Tavus create request:', JSON.stringify(body));
 
