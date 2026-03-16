@@ -1813,71 +1813,6 @@
       </div>
     </div>
 
-    <!-- Contacts Viewer -->
-    <div class="card" style="margin-top:20px;padding:22px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div class="dash-section-title" style="margin-bottom:0;">Contacts Viewer</div>
-        <button onclick="exportContactsCSV()" style="padding:7px 16px;border-radius:6px;border:1px solid #E2E6EC;background:#fff;font-size:12px;font-weight:700;color:#1E293B;cursor:pointer;font-family:var(--font);">Export CSV</button>
-      </div>
-      <!-- Vertical tabs -->
-      <div style="display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid #E2E6EC;">
-        <button class="cv-tab active" data-vertical="" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid var(--accent);background:none;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font);">All Leads</button>
-        <button class="cv-tab" data-vertical="construction" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">construction</button>
-        <button class="cv-tab" data-vertical="behavioral_health" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">behavioral_health</button>
-        <button class="cv-tab" data-vertical="medical_transport" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">medical_transport</button>
-        <button class="cv-tab" data-vertical="b2b_professional_services" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">b2b_professional_services</button>
-        <button class="cv-tab" data-vertical="health_wellness" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">health_wellness</button>
-        <button class="cv-tab" data-vertical="home_services" onclick="selectCvTab(this)" style="padding:8px 16px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:#64748B;cursor:pointer;font-family:var(--font);">home_services</button>
-      </div>
-      <!-- Filter bar -->
-      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-        <input type="text" id="cv-search" placeholder="Search name, company, title..." oninput="applyContactFilters()" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:var(--font);outline:none;" />
-        <select id="cv-vertical" onchange="applyContactFilters()" style="display:none;">
-          <option value="">All Verticals</option>
-          <option value="construction">Construction</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="medical_transport">Medical Transport</option>
-          <option value="home_services">Home Services</option>
-        </select>
-        <select id="cv-icp" onchange="applyContactFilters()" style="padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:var(--font);color:#1E293B;outline:none;">
-          <option value="">All Scores</option>
-          <option value="90">90+ Priority</option>
-          <option value="70">70+ Qualified</option>
-          <option value="50">50+ Developing</option>
-          <option value="low">Under 50</option>
-        </select>
-      </div>
-      <!-- Table -->
-      <div style="overflow-x:auto;">
-        <table id="cv-table" style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead>
-            <tr style="background:#F8FAFC;">
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('rank')">#</th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('name')">Name <span id="cv-sort-name"></span></th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('title')">Title <span id="cv-sort-title"></span></th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('company')">Company <span id="cv-sort-company"></span></th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('vertical')">Vertical <span id="cv-sort-vertical"></span></th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('icp_score')">ICP <span id="cv-sort-icp_score"></span></th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('completeness')">Complete <span id="cv-sort-completeness"></span></th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Email</th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">LinkedIn</th>
-              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;cursor:pointer;white-space:nowrap;" onclick="sortContacts('created_at')">Added <span id="cv-sort-created_at"></span></th>
-            </tr>
-          </thead>
-          <tbody id="cv-tbody">
-            <tr><td colspan="10" style="padding:30px;text-align:center;color:#94A3B8;font-weight:600;">Loading contacts...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <!-- Pagination -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-        <span id="cv-showing" style="font-size:12px;color:#94A3B8;font-weight:600;">Showing 0 of 0</span>
-        <div style="display:flex;gap:6px;">
-          <button onclick="cvPrevPage()" id="cv-prev" style="padding:6px 14px;border:1px solid #E2E6EC;border-radius:6px;font-size:12px;font-weight:600;background:#fff;cursor:pointer;font-family:var(--font);color:#475569;" disabled>&larr; Previous</button>
-          <button onclick="cvNextPage()" id="cv-next" style="padding:6px 14px;border:1px solid #E2E6EC;border-radius:6px;font-size:12px;font-weight:600;background:#fff;cursor:pointer;font-family:var(--font);color:#475569;">Next &rarr;</button>
-        </div>
-      </div>
-    </div>
 
     <!-- Spreadsheet Info -->
     <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit" target="_blank" class="sheet-link" style="margin-top:20px;">
@@ -5231,6 +5166,27 @@ Turner Construction, turnerconstruction.com"
     </div>
     <!-- Metrics bar -->
     <div id="audit-modal-metrics" style="display:flex;gap:0;border-bottom:1px solid var(--border);"></div>
+    <!-- Contacts table -->
+    <div id="audit-modal-contacts" style="padding:24px 32px;border-bottom:1px solid var(--border);display:none;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">All Contacts for this Company</div>
+      <div style="overflow-x:auto;max-height:360px;overflow-y:auto;">
+        <table id="audit-contacts-table" style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#F8FAFC;position:sticky;top:0;">
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Name</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Title</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">ICP</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Email Source</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Email</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Phone</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">LinkedIn</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748B;letter-spacing:0.05em;">Complete</th>
+            </tr>
+          </thead>
+          <tbody id="audit-contacts-tbody"></tbody>
+        </table>
+      </div>
+    </div>
     <!-- Report content -->
     <div id="audit-modal-report" style="padding:32px;min-height:400px;font-size:14px;line-height:1.8;color:var(--text);">
       <div class="dash-loading"><div class="dash-loading-ring"></div> Generating analysis...</div>
@@ -5581,6 +5537,8 @@ function buildDataSourceSummary(metrics) {
 function renderAuditReport(data) {
   const reportEl = document.getElementById('audit-modal-report');
   const metricsEl = document.getElementById('audit-modal-metrics');
+  const contactsEl = document.getElementById('audit-modal-contacts');
+  const contactsTbody = document.getElementById('audit-contacts-tbody');
 
   if (data.metrics) {
     const m = data.metrics;
@@ -5597,6 +5555,32 @@ function renderAuditReport(data) {
         '<div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">' + pair[0] + '</div>' +
       '</div>';
     }).join('');
+  }
+
+  // Render contacts table
+  if (data.contacts && data.contacts.length > 0 && contactsEl && contactsTbody) {
+    contactsEl.style.display = 'block';
+    var sourceColors = { hunter: '#F59E0B', apollo: '#8B5CF6', website: '#10B981', pdl: '#3B82F6', pattern: '#94A3B8' };
+    contactsTbody.innerHTML = data.contacts.map(function(c) {
+      var name = ((c.first_name || '') + ' ' + (c.last_name || '')).trim() || 'Unknown';
+      var src = c.email_source || 'unknown';
+      var srcColor = sourceColors[src] || '#94A3B8';
+      var srcLabel = src.charAt(0).toUpperCase() + src.slice(1);
+      var comp = c.final_completeness_score || 0;
+      var compColor = comp >= 80 ? '#16A34A' : comp >= 50 ? '#F59E0B' : '#DC2626';
+      return '<tr style="border-bottom:1px solid #F1F5F9;">' +
+        '<td style="padding:8px 10px;font-weight:600;color:var(--text);">' + name + '</td>' +
+        '<td style="padding:8px 10px;color:var(--text-mid);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (c.title || '—') + '</td>' +
+        '<td style="padding:8px 10px;"><span style="font-weight:700;color:var(--accent);">' + (c.icp_score || 0) + '</span></td>' +
+        '<td style="padding:8px 10px;"><span style="background:' + srcColor + '20;color:' + srcColor + ';padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">' + srcLabel + '</span></td>' +
+        '<td style="padding:8px 10px;">' + (c.email ? '<span style="color:var(--text-dim);" title="' + c.email + '">&#9993;</span>' : '<span style="color:#DC2626;">—</span>') + '</td>' +
+        '<td style="padding:8px 10px;">' + (c.phone ? '<span style="color:var(--text-dim);" title="' + c.phone + '">&#9742;</span>' : '<span style="color:#DC2626;">—</span>') + '</td>' +
+        '<td style="padding:8px 10px;">' + (c.linkedin_url ? '<a href="' + c.linkedin_url + '" target="_blank" style="color:#0A66C2;font-weight:600;text-decoration:none;">in</a>' : '—') + '</td>' +
+        '<td style="padding:8px 10px;font-weight:700;color:' + compColor + ';">' + comp + '%</td>' +
+      '</tr>';
+    }).join('');
+  } else if (contactsEl) {
+    contactsEl.style.display = 'none';
   }
 
   reportEl.innerHTML = buildDataSourceSummary(data.metrics);
