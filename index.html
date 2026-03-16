@@ -4872,6 +4872,25 @@ Turner Construction, turnerconstruction.com"
     await fireWebhook(company, domain, vertical, '', window._currentUser?.name || 'Tony', window._currentUser?.email || 'tony@manageai.io');
   }
 
+  async function checkTerritoryDedup(city, state, vertical) {
+    const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA';
+    try {
+      const resp = await fetch(
+        SB_URL + '/rest/v1/lb_territory_searches' +
+        '?city=eq.' + encodeURIComponent(city) +
+        '&state=eq.' + encodeURIComponent(state) +
+        '&vertical=eq.' + encodeURIComponent(vertical) +
+        '&select=id,created_at&order=created_at.desc&limit=5',
+        { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+      );
+      const rows = await resp.json();
+      return rows || [];
+    } catch(e) {
+      return [];
+    }
+  }
+
   async function rebeccaFireTerritory() {
     // Guard — prevent multiple fires within 15 seconds
     const now = Date.now();
@@ -4897,6 +4916,21 @@ Turner Construction, turnerconstruction.com"
       alert('Please enter city and state.');
       if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run It'; }
       return;
+    }
+
+    // Dedup check — warn if this territory was already searched
+    const existing = await checkTerritoryDedup(city, state, vertical);
+    if (existing.length > 0) {
+      const lastRun = new Date(existing[0].created_at);
+      const daysAgo = Math.round((Date.now() - lastRun) / 86400000);
+      const msg = existing.length === 1
+        ? 'You ran ' + city + ' ' + state + ' ' + vertical + ' ' + daysAgo + ' day' + (daysAgo !== 1 ? 's' : '') + ' ago. Run again to get fresh companies?'
+        : 'You have run ' + city + ' ' + state + ' ' + vertical + ' ' + existing.length + ' times. Last run was ' + daysAgo + ' days ago. Run again for fresh companies?';
+      const confirmed = confirm(msg);
+      if (!confirmed) {
+        if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'Run It'; }
+        return;
+      }
     }
 
     document.getElementById('rb-territory-modal').style.display = 'none';
