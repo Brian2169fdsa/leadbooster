@@ -1511,9 +1511,12 @@
       <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
         Access Sheet
       </a>
+      <button onclick="setRebeccaMode('precall')" id="rb-precall-btn" style="background:#1a1a2e;color:white;border:none;border-radius:12px;padding:14px 24px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;font-family:inherit;" onmouseover="this.style.background='#16213e'" onmouseout="this.style.background='#1a1a2e'">
+        📋 Pre-Call Brief
+      </button>
       <div class="mode-tabs" style="margin-bottom:0;">
-        <button class="rb-action-tab active" onclick="setRbAction('territory')" id="rb-tab-territory">Territory Search</button>
-        <button class="rb-action-tab" onclick="setRbAction('single')" id="rb-tab-single">Single Company</button>
+        <button class="rb-action-tab active" onclick="toggleRebeccaForm('territory')" id="rb-tab-territory">Territory Search</button>
+        <button class="rb-action-tab" onclick="toggleRebeccaForm('single')" id="rb-tab-single">Single Company</button>
         <button class="rb-action-tab" onclick="setRbAction('bulk')" id="rb-tab-bulk">Bulk List</button>
       </div>
     </div>
@@ -1564,6 +1567,23 @@
         </select>
         <button id="btn-rb-territory-run" onclick="rebeccaFireTerritory()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Pre-Call Brief Modal -->
+    <div id="rb-precall-modal" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:15px;font-weight:700;color:#1a1a2e;white-space:nowrap;">Pre-Call Brief</span>
+        <input id="rb-precall-company" type="text" placeholder="Company name" style="flex:2;min-width:180px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
+        <input id="rb-precall-domain" type="text" placeholder="domain.com" style="flex:1;min-width:140px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
+        <select id="rb-precall-vertical" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="construction">Construction</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="home_services">Home Services</option>
+        </select>
+        <button onclick="runPreCallBrief()" style="background:#1a1a2e;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Generate Brief</button>
+        <button onclick="document.getElementById('rb-precall-modal').style.display='none'" style="background:transparent;color:#666;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;font-family:inherit;">Cancel</button>
       </div>
     </div>
 
@@ -1641,6 +1661,24 @@
       </div>
       <!-- RIGHT: Chat Interface -->
       <div class="rb-right">
+        <!-- Pre-Call Brief Card -->
+        <div id="precall-brief-card" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px;max-height:500px;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div>
+              <div id="precall-card-title" style="font-size:16px;font-weight:700;color:#1a1a2e;">Pre-Call Brief</div>
+              <div id="precall-card-sub" style="font-size:12px;color:#888;margin-top:2px;">Generating...</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <a id="precall-calendly-btn" href="https://calendly.com/tony-manageai" target="_blank" style="background:#1a1a2e;color:white;text-decoration:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+                📅 Book Call
+              </a>
+              <button onclick="document.getElementById('precall-brief-card').style.display='none'" style="background:transparent;border:none;color:#999;cursor:pointer;font-size:20px;line-height:1;">×</button>
+            </div>
+          </div>
+          <div id="precall-card-content" style="font-size:13px;color:#444;line-height:1.7;">
+            <div style="color:#888;">Generating brief — this takes about 30 seconds...</div>
+          </div>
+        </div>
         <div class="rb-card" style="padding:0;display:flex;flex-direction:column;flex:1;">
           <div class="rb-chat-header">
             <div class="rb-chat-header-left">
@@ -4205,7 +4243,7 @@ Turner Construction, turnerconstruction.com"
       });
 
       // ==================== UTTERANCE INTENT DETECTION ====================
-      // Simple keyword detection — no API call needed
+      // Broad keyword detection — no API call needed
       async function detectAndFireFromSpeech(speech) {
         const s = speech.toLowerCase();
 
@@ -4216,58 +4254,142 @@ Turner Construction, turnerconstruction.com"
           return;
         }
 
-        // TERRITORY SEARCH detection
-        const territoryPatterns = [
-          /search\s+(\w[\w\s]+?)\s+(arizona|az|california|ca|texas|tx|nevada|nv|utah|ut|colorado|co|florida|fl|new\s*york|ny|georgia|ga|ohio|oh|illinois|il|washington|wa|oregon|or|michigan|mi)\s+(?:for\s+)?(\w[\w\s]+?)(?:\s+companies)?$/i,
-          /find\s+(?:companies\s+in\s+)?(\w[\w\s]+?)\s+(arizona|az|california|ca|texas|tx|nevada|nv|utah|ut|colorado|co|florida|fl|new\s*york|ny)\s+(?:for\s+)?(\w[\w\s]+)$/i,
-          /run\s+(?:a\s+)?(?:territory\s+)?(?:search\s+(?:in\s+)?)?(\w[\w\s]+?)\s+(arizona|az|california|ca|texas|tx|nevada|nv|utah|ut|colorado|co|florida|fl|new\s*york|ny)\s+(?:for\s+)?(\w[\w\s]+)$/i
-        ];
-
+        // Extract state from speech — handles both full names and abbreviations
         const stateMap = {
-          'arizona': 'AZ', 'california': 'CA', 'texas': 'TX',
-          'nevada': 'NV', 'utah': 'UT', 'colorado': 'CO',
-          'florida': 'FL', 'new york': 'NY', 'georgia': 'GA',
-          'ohio': 'OH', 'illinois': 'IL', 'washington': 'WA',
-          'oregon': 'OR', 'michigan': 'MI'
+          'arizona': 'AZ', 'az': 'AZ',
+          'california': 'CA', 'ca': 'CA',
+          'texas': 'TX', 'tx': 'TX',
+          'nevada': 'NV', 'nv': 'NV',
+          'utah': 'UT', 'ut': 'UT',
+          'colorado': 'CO', 'co': 'CO',
+          'florida': 'FL', 'fl': 'FL',
+          'new york': 'NY', 'ny': 'NY',
+          'georgia': 'GA', 'ga': 'GA',
+          'ohio': 'OH', 'oh': 'OH',
+          'illinois': 'IL', 'il': 'IL',
+          'washington': 'WA', 'wa': 'WA',
+          'oregon': 'OR', 'or': 'OR',
+          'michigan': 'MI', 'mi': 'MI',
+          'north carolina': 'NC', 'nc': 'NC',
+          'tennessee': 'TN', 'tn': 'TN',
+          'missouri': 'MO', 'mo': 'MO',
+          'indiana': 'IN', 'in': 'IN',
+          'wisconsin': 'WI', 'wi': 'WI',
+          'minnesota': 'MN', 'mn': 'MN',
+          'maryland': 'MD', 'md': 'MD',
+          'virginia': 'VA', 'va': 'VA',
+          'pennsylvania': 'PA', 'pa': 'PA',
+          'new mexico': 'NM', 'nm': 'NM',
+          'idaho': 'ID', 'id': 'ID',
+          'montana': 'MT', 'mt': 'MT',
+          'kansas': 'KS', 'ks': 'KS',
+          'oklahoma': 'OK', 'ok': 'OK',
+          'arkansas': 'AR', 'ar': 'AR',
+          'mississippi': 'MS', 'ms': 'MS',
+          'alabama': 'AL', 'al': 'AL'
         };
 
-        for (const pattern of territoryPatterns) {
-          const match = s.match(pattern);
-          if (match) {
-            const city = match[1].trim();
-            const stateRaw = match[2].toLowerCase().trim();
-            const state = stateMap[stateRaw] || stateRaw.toUpperCase().substring(0,2);
-            const vertical = normalizeVertical(match[3].trim());
-            const qtyMatch = s.match(/(\d+)\s+(?:companies|co)/i);
-            const maxResults = qtyMatch ? Math.min(parseInt(qtyMatch[1]), 50) : 20;
+        // TERRITORY SEARCH — broad detection
+        // Triggers on ANY of these keywords near a city/state
+        const isTerritoryIntent =
+          s.includes('territory search') ||
+          s.includes('territory') ||
+          (s.includes('search') && (s.includes('for') || s.includes('companies'))) ||
+          (s.includes('find') && s.includes('companies')) ||
+          (s.includes('run') && s.includes('search')) ||
+          (s.includes('look') && s.includes('companies'));
 
-            console.log('[Rebecca] Territory detected:', city, state, vertical, maxResults);
-            window._lastFireTime = now;
-            await fireRebeccaFromTool('run_territory_search', {
-              city, state, vertical, max_results: maxResults
-            });
-            return;
+        if (isTerritoryIntent) {
+          // Find state in speech
+          let foundState = null;
+          let foundStateName = '';
+          let foundStatePos = -1;
+
+          for (const [name, abbr] of Object.entries(stateMap)) {
+            const idx = s.indexOf(name);
+            if (idx !== -1) {
+              // Prefer longer matches (e.g. "new mexico" over "me")
+              if (!foundState || name.length > foundStateName.length) {
+                foundState = abbr;
+                foundStateName = name;
+                foundStatePos = idx;
+              }
+            }
+          }
+
+          if (foundState) {
+            // Extract city — look for a word before the state that sounds like a city name
+            const beforeState = s.substring(0, foundStatePos).trim();
+
+            // Common words to skip when finding city
+            const skipWords = ['search', 'find', 'run', 'look', 'territory',
+              'in', 'for', 'a', 'the', 'companies', 'company',
+              'i', 'need', 'to', 'want', 'please', 'can', 'you',
+              'run', 'do', 'let', 'boss'];
+
+            const words = beforeState.split(/[\s,]+/).filter(w =>
+              w.length > 2 && !skipWords.includes(w)
+            );
+
+            // Last meaningful word(s) before state = city
+            let city = '';
+            if (words.length >= 2) {
+              city = words.slice(-2).join(' ');
+            } else if (words.length === 1) {
+              city = words[0];
+            }
+
+            // Capitalize city
+            city = city.replace(/\b\w/g, l => l.toUpperCase());
+
+            if (city && city.length > 2) {
+              const vertical = normalizeVertical(s);
+              const qtyMatch = s.match(/(\d+)\s*(?:companies|co\b)/i);
+              const maxResults = qtyMatch ? Math.min(parseInt(qtyMatch[1]), 50) : 20;
+
+              console.log('[Rebecca] Territory detected:', city, foundState, vertical, maxResults);
+              window._lastFireTime = Date.now();
+              await fireRebeccaFromTool('run_territory_search', {
+                city, state: foundState, vertical, max_results: maxResults
+              });
+              return;
+            }
           }
         }
 
-        // SINGLE COMPANY detection
-        const singlePatterns = [
-          /run\s+(.+?)\s+at\s+([\w.-]+\.\w+)/i,
-          /find\s+(?:leads?\s+for\s+)(.+?)\s+at\s+([\w.-]+\.\w+)/i,
-          /lead\s+booster\s+(?:on\s+)?(.+?)\s+(?:at\s+|domain\s+)?([\w.-]+\.\w+)?/i
-        ];
+        // SINGLE COMPANY — broad detection
+        const isSingleIntent =
+          (s.includes('run') && !isTerritoryIntent) ||
+          s.includes('lead booster on') ||
+          s.includes('find leads for') ||
+          s.includes('run on') ||
+          s.includes('add') && s.includes('pipeline');
 
-        for (const pattern of singlePatterns) {
-          const match = s.match(pattern);
-          if (match) {
-            const company = match[1].trim();
-            const domain = match[2]?.trim() || '';
-            const vertical = detectVertical(s);
+        if (isSingleIntent) {
+          const domainMatch = s.match(/([\w-]+\.(com|io|net|org|co))/i);
+          const domain = domainMatch ? domainMatch[1] : '';
 
+          // Try to extract company name
+          const companyPatterns = [
+            /run\s+(.+?)\s+(?:at|for|on|dot|\.)/i,
+            /lead booster on\s+(.+?)(?:\s+at|\s+for|$)/i,
+            /find leads for\s+(.+?)(?:\s+at|$)/i,
+          ];
+
+          let company = '';
+          for (const p of companyPatterns) {
+            const m = s.match(p);
+            if (m) { company = m[1].trim(); break; }
+          }
+
+          if (company || domain) {
+            const vertical = normalizeVertical(s);
             console.log('[Rebecca] Single company detected:', company, domain);
-            window._lastFireTime = now;
+            window._lastFireTime = Date.now();
             await fireRebeccaFromTool('run_lead_booster', {
-              company_name: company, domain, vertical
+              company_name: company || domain,
+              domain,
+              vertical
             });
             return;
           }
@@ -4276,7 +4398,7 @@ Turner Construction, turnerconstruction.com"
         // BRIEFING detection
         if (s.match(/briefing|what.s going on|pipeline|top leads|my deals/i)) {
           console.log('[Rebecca] Briefing detected');
-          window._lastFireTime = now;
+          window._lastFireTime = Date.now();
           await fireRebeccaFromTool('get_pipeline_briefing', { confirmed: true });
           return;
         }
@@ -4285,18 +4407,14 @@ Turner Construction, turnerconstruction.com"
       function normalizeVertical(v) {
         const vl = v.toLowerCase();
         if (vl.includes('construct')) return 'construction';
-        if (vl.includes('behavioral') || vl.includes('mental') || vl.includes('health')) return 'behavioral_health';
-        if (vl.includes('medical') || vl.includes('transport')) return 'medical_transport';
-        if (vl.includes('home') || vl.includes('service')) return 'home_services';
-        return vl.replace(/\s+/g,'_');
-      }
-
-      function detectVertical(speech) {
-        const s = speech.toLowerCase();
-        if (s.includes('construct')) return 'construction';
-        if (s.includes('behavioral') || s.includes('mental health')) return 'behavioral_health';
-        if (s.includes('medical transport')) return 'medical_transport';
-        return 'construction';
+        if (vl.includes('behavioral') || vl.includes('mental') ||
+            vl.includes('health') || vl.includes('rehab')) return 'behavioral_health';
+        if (vl.includes('medical') || vl.includes('transport') ||
+            vl.includes('ambulance')) return 'medical_transport';
+        if (vl.includes('home') || vl.includes('service') ||
+            vl.includes('hvac') || vl.includes('plumb')) return 'home_services';
+        if (vl.includes('real estate') || vl.includes('property')) return 'real_estate';
+        return 'construction'; // default
       }
 
       // ==================== FIRE FUNCTION ====================
@@ -4480,6 +4598,163 @@ Turner Construction, turnerconstruction.com"
       const el = document.getElementById(modals[k]);
       if (el) el.style.display = (k === action) ? 'block' : 'none';
     });
+  }
+
+  function toggleRebeccaForm(type) {
+    const territoryForm = document.getElementById('rb-territory-modal');
+    const singleForm = document.getElementById('rb-single-modal');
+
+    if (type === 'territory') {
+      const isVisible = territoryForm &&
+        territoryForm.style.display !== 'none' &&
+        territoryForm.style.display !== '';
+      // Hide both first
+      if (territoryForm) territoryForm.style.display = 'none';
+      if (singleForm) singleForm.style.display = 'none';
+      // Toggle territory
+      if (!isVisible && territoryForm) {
+        territoryForm.style.display = 'block';
+      }
+    } else if (type === 'single') {
+      const isVisible = singleForm &&
+        singleForm.style.display !== 'none' &&
+        singleForm.style.display !== '';
+      // Hide both first
+      if (territoryForm) territoryForm.style.display = 'none';
+      if (singleForm) singleForm.style.display = 'none';
+      // Toggle single
+      if (!isVisible && singleForm) {
+        singleForm.style.display = 'block';
+      }
+    }
+
+    // Update tab styling
+    document.querySelectorAll('.rb-action-tab').forEach(t => t.classList.remove('active'));
+    const tab = document.getElementById('rb-tab-' + type);
+    if (tab) tab.classList.add('active');
+  }
+
+  function setRebeccaMode(mode) {
+    const precallModal = document.getElementById('rb-precall-modal');
+    const territoryModal = document.getElementById('rb-territory-modal');
+    const singleModal = document.getElementById('rb-single-modal');
+
+    // Hide all forms
+    if (territoryModal) territoryModal.style.display = 'none';
+    if (singleModal) singleModal.style.display = 'none';
+
+    if (mode === 'precall') {
+      const isVisible = precallModal && precallModal.style.display !== 'none';
+      if (precallModal) precallModal.style.display = isVisible ? 'none' : 'block';
+    }
+  }
+
+  async function runPreCallBrief() {
+    const company = document.getElementById('rb-precall-company')?.value?.trim();
+    const domain = document.getElementById('rb-precall-domain')?.value?.trim();
+    const vertical = document.getElementById('rb-precall-vertical')?.value || 'construction';
+
+    if (!company || !domain) {
+      alert('Please enter company name and domain');
+      return;
+    }
+
+    // Show loading card immediately
+    showPreCallCard(company, domain, null);
+
+    // Hide the form
+    const modal = document.getElementById('rb-precall-modal');
+    if (modal) modal.style.display = 'none';
+
+    // Fire n8n webhook
+    try {
+      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-precall-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_name: company, domain, vertical })
+      });
+      console.log('[PreCall] Brief requested for:', company, domain);
+    } catch(e) {
+      console.error('[PreCall] Error:', e);
+    }
+
+    // Poll Supabase for brief result
+    pollPreCallBrief(domain, company);
+  }
+
+  let preCallPollInterval = null;
+
+  async function pollPreCallBrief(domain, company) {
+    const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA';
+
+    let attempts = 0;
+    const maxAttempts = 20; // 60 seconds
+
+    if (preCallPollInterval) clearInterval(preCallPollInterval);
+
+    preCallPollInterval = setInterval(async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        clearInterval(preCallPollInterval);
+        updatePreCallCard(company, 'Brief generation timed out. Try again.', null);
+        return;
+      }
+
+      try {
+        const since = new Date(Date.now() - 300000).toISOString();
+        const resp = await fetch(
+          SB_URL + '/rest/v1/lb_precall_briefs?domain=eq.' +
+          encodeURIComponent(domain) +
+          '&order=created_at.desc&limit=1&created_at=gte.' + since,
+          { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+        );
+        const rows = await resp.json();
+        if (rows && rows[0] && rows[0].brief_text) {
+          clearInterval(preCallPollInterval);
+          updatePreCallCard(company, null, rows[0].brief_text);
+        }
+      } catch(e) {
+        console.error('[PreCall] Poll error:', e);
+      }
+    }, 3000);
+  }
+
+  function showPreCallCard(company, domain, brief) {
+    const card = document.getElementById('precall-brief-card');
+    const title = document.getElementById('precall-card-title');
+    const sub = document.getElementById('precall-card-sub');
+    const content = document.getElementById('precall-card-content');
+
+    if (!card) return;
+    card.style.display = 'block';
+    if (title) title.textContent = company + ' — Pre-Call Brief';
+    if (sub) sub.textContent = domain + ' · Generating...';
+    if (content) content.innerHTML = '<div style="color:#888;font-style:italic;">Pulling Apollo data, recent news, and existing contacts... ~30 seconds</div>';
+  }
+
+  function updatePreCallCard(company, error, briefText) {
+    const sub = document.getElementById('precall-card-sub');
+    const content = document.getElementById('precall-card-content');
+
+    if (error) {
+      if (content) content.innerHTML = '<div style="color:#e53e3e;">' + error + '</div>';
+      return;
+    }
+
+    if (sub) sub.textContent = 'Ready · ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+
+    if (content && briefText) {
+      // Convert markdown sections to styled HTML
+      const html = briefText
+        .replace(/## (.+)/g, '<h3 style="font-size:13px;font-weight:700;color:#1a1a2e;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #f0f0f0;">$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/^- (.+)/gm, '<div style="padding:3px 0 3px 12px;border-left:2px solid #e2e8f0;margin:4px 0;color:#555;">$1</div>')
+        .replace(/^\d+\. (.+)/gm, '<div style="padding:4px 0;color:#555;">$1</div>')
+        .replace(/\n\n/g, '<br>')
+        .replace(/\n/g, '<br>');
+      content.innerHTML = html;
+    }
   }
 
   function rebeccaRunSingle() {
