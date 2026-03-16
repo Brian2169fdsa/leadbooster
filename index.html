@@ -4232,6 +4232,9 @@ Turner Construction, turnerconstruction.com"
 
           if (eventType !== 'conversation.tool_call') return;
 
+          // Parse tool call ID for echo acknowledgment
+          const toolCallId = msg?.properties?.tool_call_id || msg?.tool_call_id || '';
+
           // Parse tool name
           const fnName = msg?.properties?.name ||
                          msg?.tool_name ||
@@ -4266,13 +4269,15 @@ Turner Construction, turnerconstruction.com"
 
           try {
             if (tavusCallObject?.sendAppMessage) {
-              tavusCallObject.sendAppMessage({
+              const echoPayload = {
                 message_type: 'conversation',
                 event_type: 'conversation.echo',
                 conversation_id: msg?.conversation_id || tavusConversationId,
                 properties: { text: ack }
-              }, '*');
-              console.log('[Rebecca] Echo sent:', ack);
+              };
+              if (toolCallId) echoPayload.properties.tool_call_id = toolCallId;
+              tavusCallObject.sendAppMessage(echoPayload, '*');
+              console.log('[Rebecca] Echo sent (tool_call_id=' + toolCallId + '):', ack);
             }
           } catch(e) {
             console.error('[Rebecca] Echo error:', e);
@@ -5331,10 +5336,10 @@ async function tickerPoll(domain) {
   try {
     const since = new Date(Date.now() - 1800000).toISOString();
 
-    // Check status pings first
+    // Check pipeline status (WF-REBECCA-STATUS writes here)
     const pingResp = await fetch(
-      SB_URL + '/rest/v1/lb_status_pings?created_at=gte.' + since +
-      '&order=created_at.desc&limit=1&select=message,created_at',
+      SB_URL + '/rest/v1/lb_pipeline_status?order=created_at.desc&limit=1&select=message,stage,created_at' +
+      '&created_at=gte.' + since,
       { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
     );
     const pings = await pingResp.json();
