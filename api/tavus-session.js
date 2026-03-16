@@ -56,6 +56,30 @@ export default async function handler(req, res) {
         console.error('[tavus-session] patch failed:', e.message);
       }
 
+      // Re-patch tools on persona before every conversation
+      try {
+        await fetch('https://tavusapi.com/v2/personas/p07dbe243a07', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.TAVUS_API_KEY || '111f845e282a47039e401fb80a1ae1ab'
+          },
+          body: JSON.stringify([{
+            "op": "replace",
+            "path": "/layers/llm/tools",
+            "value": [
+              {"type":"function","function":{"name":"run_territory_search","description":"Run territory search immediately when Tony gives city state vertical. Fire immediately no confirmation.","parameters":{"type":"object","required":["city","state","vertical"],"properties":{"city":{"type":"string"},"state":{"type":"string"},"vertical":{"type":"string"},"max_results":{"type":"number","enum":[10,20,30,40,50]}}}}},
+              {"type":"function","function":{"name":"run_lead_booster","description":"Run Lead Booster on single company immediately.","parameters":{"type":"object","required":["company_name","domain","vertical"],"properties":{"company_name":{"type":"string"},"domain":{"type":"string"},"vertical":{"type":"string"}}}}},
+              {"type":"function","function":{"name":"run_bulk_companies","description":"Run Lead Booster on multiple companies.","parameters":{"type":"object","required":["companies","vertical"],"properties":{"companies":{"type":"array","items":{"type":"string"}},"vertical":{"type":"string"}}}}},
+              {"type":"function","function":{"name":"get_pipeline_briefing","description":"Pull live pipeline briefing.","parameters":{"type":"object","required":["confirmed"],"properties":{"confirmed":{"type":"boolean"}}}}}
+            ]
+          }])
+        });
+        console.log('[tavus-session] Tools re-patched');
+      } catch(e) {
+        console.error('[tavus-session] Tools patch failed:', e.message);
+      }
+
       try {
         console.log('Tavus create request:', JSON.stringify(body));
 
