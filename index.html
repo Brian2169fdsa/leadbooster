@@ -1512,8 +1512,8 @@
         Access Sheet
       </a>
       <div class="mode-tabs" style="margin-bottom:0;">
-        <button class="rb-action-tab active" onclick="setRbAction('territory')" id="rb-tab-territory">Territory Search</button>
-        <button class="rb-action-tab" onclick="setRbAction('single')" id="rb-tab-single">Single Company</button>
+        <button class="rb-action-tab active" onclick="toggleRebeccaForm('territory')" id="rb-tab-territory">Territory Search</button>
+        <button class="rb-action-tab" onclick="toggleRebeccaForm('single')" id="rb-tab-single">Single Company</button>
         <button class="rb-action-tab" onclick="setRbAction('bulk')" id="rb-tab-bulk">Bulk List</button>
       </div>
     </div>
@@ -4560,6 +4560,40 @@ Turner Construction, turnerconstruction.com"
       const el = document.getElementById(modals[k]);
       if (el) el.style.display = (k === action) ? 'block' : 'none';
     });
+  }
+
+  function toggleRebeccaForm(type) {
+    const territoryForm = document.getElementById('rb-territory-modal');
+    const singleForm = document.getElementById('rb-single-modal');
+
+    if (type === 'territory') {
+      const isVisible = territoryForm &&
+        territoryForm.style.display !== 'none' &&
+        territoryForm.style.display !== '';
+      // Hide both first
+      if (territoryForm) territoryForm.style.display = 'none';
+      if (singleForm) singleForm.style.display = 'none';
+      // Toggle territory
+      if (!isVisible && territoryForm) {
+        territoryForm.style.display = 'block';
+      }
+    } else if (type === 'single') {
+      const isVisible = singleForm &&
+        singleForm.style.display !== 'none' &&
+        singleForm.style.display !== '';
+      // Hide both first
+      if (territoryForm) territoryForm.style.display = 'none';
+      if (singleForm) singleForm.style.display = 'none';
+      // Toggle single
+      if (!isVisible && singleForm) {
+        singleForm.style.display = 'block';
+      }
+    }
+
+    // Update tab styling
+    document.querySelectorAll('.rb-action-tab').forEach(t => t.classList.remove('active'));
+    const tab = document.getElementById('rb-tab-' + type);
+    if (tab) tab.classList.add('active');
   }
 
   function rebeccaRunSingle() {
