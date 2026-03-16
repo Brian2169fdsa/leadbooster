@@ -1,7 +1,12 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  // Accept both POST and GET
+  if (req.method !== 'POST' && req.method !== 'GET') return res.status(405).end();
 
-  const { domain, vertical, audit_id } = req.body;
+  // Parse params from body (POST) or query (GET)
+  const domain = req.body?.domain || req.query?.domain || '';
+  const vertical = req.body?.vertical || req.query?.vertical || '';
+  const audit_id = req.body?.audit_id || req.query?.audit_id || '';
+  const force_regenerate = req.body?.force_regenerate || req.query?.force_regenerate === 'true';
 
   const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
   const SB_KEY = process.env.SUPABASE_SERVICE_KEY ||
@@ -17,11 +22,15 @@ export default async function handler(req, res) {
       const audits = await auditResp.json();
       const cachedAudit = audits[0];
 
-      // Always fetch live contacts for this domain (no time window)
+      // Always fetch live contacts for this domain
       const contactsDomain = cachedAudit?.domain || domain;
       const contacts = await fetchContacts(SB_URL, SB_KEY, contactsDomain);
 
-      if (cachedAudit?.audit_report) {
+      // Use cached report if it's real (not a placeholder) and not force-regenerating
+      if (!force_regenerate &&
+          cachedAudit?.audit_report &&
+          cachedAudit.audit_report !== 'Historical run — full analysis available on next run' &&
+          cachedAudit.audit_report.length > 100) {
         return res.status(200).json({
           report: cachedAudit.audit_report,
           metrics: cachedAudit,
@@ -29,138 +38,183 @@ export default async function handler(req, res) {
           cached: true
         });
       }
+
+      // Otherwise fall through to generate a new analysis
+      // Use the cached audit's domain if we don't have one
+      if (!domain && contactsDomain) {
+        return await generateAnalysis(res, SB_URL, SB_KEY, contactsDomain,
+          cachedAudit?.vertical || vertical, contacts, audit_id);
+      }
     }
 
-    // Fetch ALL contacts for this domain (no time window — get everything)
+    // Fetch ALL contacts for this domain
     const contacts = await fetchContacts(SB_URL, SB_KEY, domain);
+    return await generateAnalysis(res, SB_URL, SB_KEY, domain, vertical, contacts, audit_id);
 
-    if (!contacts.length) {
-      return res.status(200).json({
-        report: 'No contacts found for this domain yet. The pipeline may still be processing.',
-        metrics: null,
-        contacts: [],
-        cached: false
-      });
-    }
+  } catch (err) {
+    console.error('[run-analysis] error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+}
 
-    // Calculate metrics
-    const total = contacts.length;
-    const withEmail = contacts.filter(c => c.email).length;
-    const withPhone = contacts.filter(c => c.phone).length;
-    const withLinkedin = contacts.filter(c => c.linkedin_url).length;
-    const avgIcp = Math.round(contacts.reduce((s, c) => s + (c.icp_score || 0), 0) / total);
-    const avgComp = Math.round(contacts.reduce((s, c) => s + (c.final_completeness_score || 0), 0) / total);
-    const scores = contacts.map(c => c.icp_score || 0).filter(s => s > 0);
-    const scoreRange = scores.length ? Math.min(...scores) + '-' + Math.max(...scores) : 'N/A';
+async function generateAnalysis(res, SB_URL, SB_KEY, domain, vertical, contacts, audit_id) {
+  if (!contacts.length) {
+    return res.status(200).json({
+      report: 'No contacts found for this domain yet. The pipeline may still be processing.',
+      metrics: null,
+      contacts: [],
+      cached: false
+    });
+  }
 
-    const fromWebsite = contacts.filter(c => c.email_source === 'website').length;
-    const fromHunter = contacts.filter(c => c.email_source === 'hunter').length;
-    const fromApollo = contacts.filter(c => c.email_source === 'apollo').length;
-    const fromPdl = contacts.filter(c => (c.email_source || '').includes('pdl')).length;
-    const fromPattern = contacts.filter(c => (c.email_source || '').includes('pattern')).length;
-    // Contacts with no email_source set — data source unknown
-    const fromUnknown = contacts.filter(c => c.email && !c.email_source).length;
+  // Calculate metrics
+  const total = contacts.length;
+  const withEmail = contacts.filter(c => c.email).length;
+  const withPhone = contacts.filter(c => c.phone).length;
+  const withLinkedin = contacts.filter(c => c.linkedin_url).length;
+  const avgIcp = Math.round(contacts.reduce((s, c) => s + (c.icp_score || 0), 0) / total);
+  const avgComp = Math.round(contacts.reduce((s, c) => s + (c.final_completeness_score || 0), 0) / total);
+  const scores = contacts.map(c => c.icp_score || 0).filter(s => s > 0);
+  const scoreRange = scores.length ? Math.min(...scores) + '-' + Math.max(...scores) : 'N/A';
 
-    const top5 = contacts.slice(0, 5).map(c =>
-      (c.first_name || '') + ' ' + (c.last_name || '') + ' | ' + (c.title || 'Unknown') +
-      ' | ICP: ' + (c.icp_score || 0) + ' | ' + (c.icp_rationale || 'No rationale') +
-      ' | Email via: ' + (c.email_source || 'unknown')
-    ).join('\n');
+  // Email source breakdown
+  const fromWebsite = contacts.filter(c => c.email_source === 'website').length;
+  const fromHunter = contacts.filter(c => c.email_source === 'hunter').length;
+  const fromApollo = contacts.filter(c => c.email_source === 'apollo').length;
+  const fromPdl = contacts.filter(c => (c.email_source || '').includes('pdl')).length;
+  const fromPattern = contacts.filter(c => (c.email_source || '').includes('pattern')).length;
+  const fromUnknown = contacts.filter(c => c.email && !c.email_source).length;
 
-    const lowScorers = contacts.filter(c => (c.icp_score || 0) < 50).slice(0, 5).map(c =>
-      (c.first_name || '') + ' ' + (c.last_name || '') + ' | ' + (c.title || 'Unknown') +
-      ' | Score: ' + (c.icp_score || 0) + ' | ' + (c.icp_rationale || '')
-    ).join('\n');
+  // Phone source breakdown
+  const phoneWebsite = contacts.filter(c => c.phone_source === 'website').length;
+  const phoneApollo = contacts.filter(c => c.phone_source === 'apollo').length;
+  const phonePdl = contacts.filter(c => (c.phone_source || '').includes('pdl')).length;
+  const phoneUnknown = contacts.filter(c => c.phone && !c.phone_source).length;
 
-    // Build per-contact decision matrix for the prompt
-    const decisionMatrix = contacts.slice(0, 20).map(c => {
-      const sources = [];
-      if (c.email_source) sources.push('Email: ' + c.email_source);
-      if (c.phone_source) sources.push('Phone: ' + c.phone_source);
-      if (c.linkedin_url) sources.push('LinkedIn: constructed');
-      return (c.first_name || '') + ' ' + (c.last_name || '') +
-        ' | ' + (c.title || '?') +
-        ' | Sources: ' + (sources.join(', ') || 'none recorded') +
-        ' | Has email: ' + (c.email ? 'yes' : 'no') +
-        ' | Has phone: ' + (c.phone ? 'yes' : 'no') +
-        ' | ICP: ' + (c.icp_score || 0);
-    }).join('\n');
+  // LinkedIn breakdown
+  const linkedinConstructed = contacts.filter(c => c.linkedin_url && !c.linkedin_source).length;
+  const linkedinDirect = contacts.filter(c => c.linkedin_url && c.linkedin_source).length;
 
-    // Call Claude
-    const claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{
-          role: 'user',
-          content: `You are a lead generation analyst for ManageAI Lead Booster Pro.
-Analyze this pipeline run and explain every decision made. Be specific, direct, plain language.
+  const top5 = contacts.slice(0, 5).map(c =>
+    (c.first_name || '') + ' ' + (c.last_name || '') + ' — ' + (c.title || 'Unknown') +
+    ' — ICP: ' + (c.icp_score || 0) + ' — ' + (c.icp_rationale || 'No rationale') +
+    ' — Email via: ' + (c.email_source || 'unknown')
+  ).join('\n');
+
+  const lowScorers = contacts.filter(c => (c.icp_score || 0) < 50).slice(0, 5).map(c =>
+    (c.first_name || '') + ' ' + (c.last_name || '') + ' — ' + (c.title || 'Unknown') +
+    ' — Score: ' + (c.icp_score || 0) + ' — ' + (c.icp_rationale || '')
+  ).join('\n');
+
+  // Call Claude
+  const claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: `You are a lead generation analyst for ManageAI's Lead Booster Pro. Analyze this pipeline run and explain in plain language. Tony is a sales professional who wants actionable intel, not a data science lecture. Keep it direct and useful. No fluff.
+
 DOMAIN: ${domain}
 VERTICAL: ${vertical}
 TOTAL CONTACTS: ${total}
+
 EMAIL RATE: ${Math.round(withEmail / total * 100)}% (${withEmail}/${total})
+Email source breakdown:
+  Website scrape: ${fromWebsite} contacts
+  Hunter.io: ${fromHunter} contacts
+  Apollo: ${fromApollo} contacts
+  PDL: ${fromPdl} contacts
+  Pattern guess: ${fromPattern} contacts
+  Source not tagged: ${fromUnknown} contacts
+
 PHONE RATE: ${Math.round(withPhone / total * 100)}% (${withPhone}/${total})
+Phone source breakdown:
+  Website: ${phoneWebsite}
+  Apollo: ${phoneApollo}
+  PDL: ${phonePdl}
+  Source not tagged: ${phoneUnknown}
+
 LINKEDIN RATE: ${Math.round(withLinkedin / total * 100)}% (${withLinkedin}/${total})
+LinkedIn breakdown:
+  Constructed from name+domain: ${linkedinConstructed}
+  Direct from source: ${linkedinDirect}
+
+AVG ICP SCORE: ${avgIcp} (range: ${scoreRange})
 AVG COMPLETENESS: ${avgComp}%
-ICP SCORE RANGE: ${scoreRange} (avg ${avgIcp})
-DATA SOURCES:
-Website scrape: ${fromWebsite} contacts
-Hunter.io: ${fromHunter} contacts
-Apollo: ${fromApollo} contacts
-PDL: ${fromPdl} contacts
-Pattern guess: ${fromPattern} contacts
-Source unknown (not tagged): ${fromUnknown} contacts
-PER-CONTACT DECISION MATRIX (first 20):
-${decisionMatrix}
+
 TOP 5 CONTACTS BY ICP SCORE:
 ${top5}
+
 LOW SCORING CONTACTS (under 50):
 ${lowScorers || 'None'}
+
 Answer in this exact format:
-## DATA SOURCE DECISION MATRIX
-[For each enrichment source (Website, Hunter, Apollo, PDL, Pattern), explain what it was used for, how many contacts it found, and why it was chosen over alternatives. If a source found 0 contacts, explain why it may have failed.]
-## WHY THE TOP CONTACTS SCORED HIGH
-[Specific explanation mentioning their titles and signals]
-## WHY THE LOW SCORERS SCORED LOW
-[What was missing or wrong]
-## CONTACTS FOUND BUT NOT ENRICHED
-[Any contacts with no email — what happened and which source failed]
-## WHO TONY SHOULD CALL FIRST
-1. [Name] — [specific reason why]
-2. [Name] — [specific reason why]
-3. [Name] — [specific reason why]
-## ONE IMPROVEMENT FOR THIS RUN
+
+## WHY DID THE TOP CONTACTS SCORE HIGH?
+Be specific about their titles and the signals that made them high-value.
+
+## WHY DID LOWER-SCORING CONTACTS SCORE LOW?
+What was missing? Wrong title? No email? Incomplete data?
+
+## WHICH DATA SOURCE DID THE MOST WORK?
+Email came from: [breakdown]. Phone came from: [breakdown]. LinkedIn came from: [breakdown]. Explain why the waterfall ended up relying on these sources.
+
+## WHO SHOULD TONY CALL FIRST AND WHY?
+1. [Name] — [specific one-sentence reason]
+2. [Name] — [specific one-sentence reason]
+3. [Name] — [specific one-sentence reason]
+
+## ONE THING THAT WOULD IMPROVE THIS RUN'S DATA
 [Single most impactful change]`
-        }]
+      }]
+    })
+  });
+
+  const claudeData = await claudeResp.json();
+  const report = claudeData.content?.[0]?.text || 'Analysis unavailable — Claude API may not be configured.';
+
+  const metrics = {
+    total_contacts: total,
+    email_rate: Math.round(withEmail / total * 100),
+    phone_rate: Math.round(withPhone / total * 100),
+    linkedin_rate: Math.round(withLinkedin / total * 100),
+    avg_completeness: avgComp,
+    avg_icp_score: avgIcp,
+    icp_score_range: scoreRange,
+    contacts_from_website: fromWebsite,
+    contacts_from_hunter: fromHunter,
+    contacts_from_apollo: fromApollo,
+    contacts_from_pdl: fromPdl,
+    contacts_from_pattern: fromPattern,
+    contacts_from_unknown: fromUnknown
+  };
+
+  // Save or update lb_run_audits
+  if (audit_id) {
+    // Update existing record
+    await fetch(SB_URL + '/rest/v1/lb_run_audits?id=eq.' + audit_id, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        audit_report: report,
+        ...metrics,
+        run_completed_at: new Date().toISOString()
       })
     });
-
-    const claudeData = await claudeResp.json();
-    const report = claudeData.content?.[0]?.text || 'Analysis unavailable';
-
-    const metrics = {
-      total_contacts: total,
-      email_rate: Math.round(withEmail / total * 100),
-      phone_rate: Math.round(withPhone / total * 100),
-      linkedin_rate: Math.round(withLinkedin / total * 100),
-      avg_completeness: avgComp,
-      avg_icp_score: avgIcp,
-      icp_score_range: scoreRange,
-      contacts_from_website: fromWebsite,
-      contacts_from_hunter: fromHunter,
-      contacts_from_apollo: fromApollo,
-      contacts_from_pdl: fromPdl,
-      contacts_from_pattern: fromPattern,
-      contacts_from_unknown: fromUnknown
-    };
-
-    // Save to lb_run_audits
+  } else {
+    // Insert new record
     await fetch(SB_URL + '/rest/v1/lb_run_audits', {
       method: 'POST',
       headers: {
@@ -177,13 +231,9 @@ Answer in this exact format:
         run_completed_at: new Date().toISOString()
       })
     });
-
-    return res.status(200).json({ report, metrics, contacts, cached: false });
-
-  } catch (err) {
-    console.error('[run-analysis] error:', err.message);
-    return res.status(500).json({ error: err.message });
   }
+
+  return res.status(200).json({ report, metrics, contacts, cached: false });
 }
 
 async function fetchContacts(sbUrl, sbKey, domain) {
@@ -191,7 +241,7 @@ async function fetchContacts(sbUrl, sbKey, domain) {
   const resp = await fetch(
     sbUrl + '/rest/v1/lb_contacts?domain=eq.' +
     encodeURIComponent(domain) +
-    '&select=id,first_name,last_name,title,email,email_source,phone,phone_source,linkedin_url,icp_score,icp_rationale,final_completeness_score,created_at' +
+    '&select=id,first_name,last_name,title,email,email_source,phone,phone_source,linkedin_url,linkedin_source,icp_score,icp_rationale,final_completeness_score,created_at' +
     '&order=icp_score.desc&limit=200',
     { headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey } }
   );

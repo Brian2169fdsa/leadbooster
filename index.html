@@ -1489,7 +1489,7 @@
   <!-- Mode Tabs -->
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="setMode('rebecca')" id="tab-rebecca">Rebecca</button>
-    <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard">Dashboard</button>
+    <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard" style="display:none;">Dashboard</button>
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">Feedback</button>
     <!-- Hidden tabs — do not delete, just hidden -->
@@ -5476,6 +5476,18 @@ let auditCurrentIndex = 0;
 let auditTabPage = 0;
 const AUDIT_TAB_PER_PAGE = 8;
 
+function getVerticalIcon(vertical) {
+  const v = (vertical || '').toLowerCase();
+  if (v.includes('construct')) return '🏗️';
+  if (v.includes('behavioral') || v.includes('mental') || v.includes('health')) return '🏥';
+  if (v.includes('medical') || v.includes('transport')) return '🚑';
+  if (v.includes('home') || v.includes('service')) return '🏠';
+  if (v.includes('real') || v.includes('estate')) return '🏢';
+  if (v.includes('tech') || v.includes('software')) return '💻';
+  if (v.includes('finance') || v.includes('financial')) return '💰';
+  return '🏢';
+}
+
 async function loadAnalysisTab() {
   const el = document.getElementById('audit-run-list');
   if (!el) return;
@@ -5512,8 +5524,8 @@ function renderAuditTabPage() {
     var i = start + pi;
     var label = r.company_name || (r.city ? r.city + ', ' + r.state : '') || r.domain || 'Unknown';
     return '<div style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;">' +
-      '<div style="width:44px;height:44px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' +
-        '' +
+      '<div style="width:48px;height:48px;border-radius:10px;background:#F0F4FF;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">' +
+        getVerticalIcon(r.vertical) +
       '</div>' +
       '<div style="flex:1;">' +
         '<div style="font-size:13px;font-weight:700;color:var(--text);">' + label + '</div>' +
@@ -5574,19 +5586,32 @@ async function openAuditModalById(auditId, index) {
   document.getElementById('audit-modal-sub').textContent =
     (run.vertical || '') + ' · ' + new Date(run.created_at).toLocaleString();
   document.getElementById('audit-modal-report').innerHTML =
-    '<div class="dash-loading"><div class="dash-loading-ring"></div> Loading analysis...</div>';
+    '<div class="dash-loading"><div class="dash-loading-ring"></div> Generating analysis...</div>';
+  document.getElementById('audit-modal-metrics').innerHTML = '';
+  var contactsEl = document.getElementById('audit-modal-contacts');
+  if (contactsEl) contactsEl.style.display = 'none';
 
   try {
+    // Always call run-analysis — it will use cached report if good, or generate new
     const resp = await fetch('/api/run-analysis', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ audit_id: auditId, domain: run.domain, vertical: run.vertical })
+      body: JSON.stringify({
+        audit_id: auditId,
+        domain: run.domain,
+        vertical: run.vertical,
+        // Tell API to regenerate if cached report is a placeholder
+        force_regenerate: !run.audit_report ||
+          run.audit_report === 'Historical run — full analysis available on next run' ||
+          (run.audit_report || '').length < 100
+      })
     });
     const data = await resp.json();
     renderAuditReport(data);
   } catch(e) {
     document.getElementById('audit-modal-report').innerHTML =
-      '<div style="color:var(--red);padding:20px;">Failed to load: ' + e.message + '</div>';
+      '<div style="color:var(--text-dim);font-size:14px;padding:20px 0;">Could not load analysis. Check console for errors.</div>';
+    console.error('[Audit] Load error:', e);
   }
 }
 
@@ -5688,15 +5713,24 @@ function renderAuditReport(data) {
 
   reportEl.innerHTML = buildDataSourceSummary(data.metrics);
 
-  if (data.report) {
-    var html = data.report
-      .replace(/## (.*)/g, '<h3 style="font-size:14px;font-weight:700;color:var(--text);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);">$1</h3>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\n(\d+)\. /g, '<br><strong>$1.</strong> ')
-      .replace(/\n- /g, '<br>• ')
-      .replace(/\n/g, '<br>');
-    reportEl.innerHTML += html;
+  if (data.report &&
+      data.report !== 'Historical run — full analysis available on next run' &&
+      data.report.length > 50) {
+    renderAuditText(data.report, reportEl);
+  } else if (!data.report || data.report.length < 50) {
+    reportEl.innerHTML += '<div style="color:var(--text-dim);font-size:14px;padding:20px 0;">No analysis available for this run yet. Run the pipeline again to generate a full audit.</div>';
   }
+}
+
+function renderAuditText(text, el) {
+  if (!el || !text) return;
+  var html = text
+    .replace(/## (.*)/g, '<h3 style="font-size:14px;font-weight:700;color:var(--text);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);">$1</h3>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n(\d+)\. /g, '<br><strong>$1.</strong> ')
+    .replace(/\n- /g, '<br>• ')
+    .replace(/\n/g, '<br>');
+  el.innerHTML += '<div style="font-size:14px;line-height:1.8;color:var(--text);">' + html + '</div>';
 }
 
 function auditNavigate(direction) {
