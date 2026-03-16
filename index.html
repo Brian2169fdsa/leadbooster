@@ -4155,87 +4155,175 @@ Turner Construction, turnerconstruction.com"
         startVideoOff: false
       });
 
-      // Listen for Tavus tool call events via Daily app-message
+      // Listen for Tavus events via Daily app-message
       tavusCallObject.on('app-message', async (event) => {
         try {
           const msg = event?.data || event;
           const eventType = msg?.event_type || msg?.type || '';
 
+          // Log everything for debugging
           console.log('[Rebecca] app-message:', eventType,
-            JSON.stringify(msg).substring(0, 200));
+            JSON.stringify(msg).substring(0, 300));
 
-          if (eventType !== 'conversation.tool_call') return;
+          // APPROACH 1: Still try tool_call in case it works
+          if (eventType === 'conversation.tool_call') {
+            const fnName = msg?.properties?.name ||
+                           msg?.tool_name || '';
+            let fnArgs = {};
+            try {
+              const rawArgs = msg?.properties?.arguments ||
+                              msg?.arguments || '{}';
+              fnArgs = typeof rawArgs === 'string'
+                ? JSON.parse(rawArgs) : (rawArgs || {});
+            } catch(e) {}
 
-          // Parse tool call ID for echo acknowledgment
-          const toolCallId = msg?.properties?.tool_call_id || msg?.tool_call_id || '';
-
-          // Parse tool name
-          const fnName = msg?.properties?.name ||
-                         msg?.tool_name ||
-                         msg?.function?.name || '';
-
-          // Parse arguments — Tavus sends as JSON STRING
-          let fnArgs = {};
-          try {
-            const rawArgs = msg?.properties?.arguments ||
-                            msg?.properties?.parameters ||
-                            msg?.arguments || '{}';
-            fnArgs = typeof rawArgs === 'string'
-              ? JSON.parse(rawArgs)
-              : (rawArgs || {});
-          } catch(e) {
-            console.error('[Rebecca] Failed to parse args:', e);
+            console.log('[Rebecca] Tool call received:', fnName, fnArgs);
+            tavusResetIdleTimer();
+            await fireRebeccaFromTool(fnName, fnArgs);
+            return;
           }
 
-          console.log('[Rebecca] Tool call:', fnName,
-            JSON.stringify(fnArgs));
+          // APPROACH 2: Listen to user utterances and detect intent
+          if (eventType === 'conversation.utterance') {
+            const role = msg?.properties?.role || '';
+            const speech = msg?.properties?.speech || '';
 
-          tavusResetIdleTimer();
+            // Only process user speech, not Rebecca's
+            if (role !== 'user' || !speech || speech.length < 5) return;
 
-          // IMMEDIATELY send conversation.echo to stop Tavus retrying
-          const ackMap = {
-            'run_territory_search': `On it Boss. Searching ${fnArgs.city || ''}, ${fnArgs.state || ''} for ${(fnArgs.vertical||'').replace(/_/g,' ')} companies now.`,
-            'run_lead_booster': `On it Boss. Running Lead Booster on ${fnArgs.company_name || 'that company'} now.`,
-            'run_bulk_companies': `On it Boss. Firing Lead Booster on all ${(fnArgs.companies||[]).length} companies now.`,
-            'get_pipeline_briefing': `Give me one second Boss. Pulling up your pipeline now.`
-          };
-          const ack = ackMap[fnName] || 'On it Boss.';
+            console.log('[Rebecca] User said:', speech);
+            tavusResetIdleTimer();
 
-          try {
-            if (tavusCallObject?.sendAppMessage) {
-              const echoPayload = {
-                message_type: 'conversation',
-                event_type: 'conversation.echo',
-                conversation_id: msg?.conversation_id || tavusConversationId,
-                properties: { text: ack }
-              };
-              if (toolCallId) echoPayload.properties.tool_call_id = toolCallId;
-              tavusCallObject.sendAppMessage(echoPayload, '*');
-              console.log('[Rebecca] Echo sent (tool_call_id=' + toolCallId + '):', ack);
-            }
-          } catch(e) {
-            console.error('[Rebecca] Echo error:', e);
+            // Detect pipeline intent from speech
+            await detectAndFireFromSpeech(speech);
+            return;
           }
 
-          // Show pipeline card immediately
-          if (fnName === 'run_territory_search') {
-            showPipelineCard(
-              (fnArgs.city||'') + ' ' + (fnArgs.state||''),
-              (fnArgs.city||'').toLowerCase(),
-              fnArgs.vertical || 'construction',
-              'territory'
-            );
-          } else if (fnName === 'run_lead_booster') {
-            showPipelineCard(
-              fnArgs.company_name || 'Company',
-              fnArgs.domain || '',
-              fnArgs.vertical || 'construction',
-              'single'
-            );
-          }
+        } catch(e) {
+          console.error('[Rebecca] app-message error:', e);
+        }
+      });
 
-          // Fire n8n action — NEVER await this
-          fetch('/api/rebecca-action', {
+      // ==================== UTTERANCE INTENT DETECTION ====================
+      // Simple keyword detection — no API call needed
+      async function detectAndFireFromSpeech(speech) {
+        const s = speech.toLowerCase();
+
+        // Already fired recently? Debounce 10 seconds
+        const now = Date.now();
+        if (window._lastFireTime && now - window._lastFireTime < 10000) {
+          console.log('[Rebecca] Debounce — too soon since last fire');
+          return;
+        }
+
+        // TERRITORY SEARCH detection
+        const territoryPatterns = [
+          /search\s+(\w[\w\s]+?)\s+(arizona|az|california|ca|texas|tx|nevada|nv|utah|ut|colorado|co|florida|fl|new\s*york|ny|georgia|ga|ohio|oh|illinois|il|washington|wa|oregon|or|michigan|mi)\s+(?:for\s+)?(\w[\w\s]+?)(?:\s+companies)?$/i,
+          /find\s+(?:companies\s+in\s+)?(\w[\w\s]+?)\s+(arizona|az|california|ca|texas|tx|nevada|nv|utah|ut|colorado|co|florida|fl|new\s*york|ny)\s+(?:for\s+)?(\w[\w\s]+)$/i,
+          /run\s+(?:a\s+)?(?:territory\s+)?(?:search\s+(?:in\s+)?)?(\w[\w\s]+?)\s+(arizona|az|california|ca|texas|tx|nevada|nv|utah|ut|colorado|co|florida|fl|new\s*york|ny)\s+(?:for\s+)?(\w[\w\s]+)$/i
+        ];
+
+        const stateMap = {
+          'arizona': 'AZ', 'california': 'CA', 'texas': 'TX',
+          'nevada': 'NV', 'utah': 'UT', 'colorado': 'CO',
+          'florida': 'FL', 'new york': 'NY', 'georgia': 'GA',
+          'ohio': 'OH', 'illinois': 'IL', 'washington': 'WA',
+          'oregon': 'OR', 'michigan': 'MI'
+        };
+
+        for (const pattern of territoryPatterns) {
+          const match = s.match(pattern);
+          if (match) {
+            const city = match[1].trim();
+            const stateRaw = match[2].toLowerCase().trim();
+            const state = stateMap[stateRaw] || stateRaw.toUpperCase().substring(0,2);
+            const vertical = normalizeVertical(match[3].trim());
+            const qtyMatch = s.match(/(\d+)\s+(?:companies|co)/i);
+            const maxResults = qtyMatch ? Math.min(parseInt(qtyMatch[1]), 50) : 20;
+
+            console.log('[Rebecca] Territory detected:', city, state, vertical, maxResults);
+            window._lastFireTime = now;
+            await fireRebeccaFromTool('run_territory_search', {
+              city, state, vertical, max_results: maxResults
+            });
+            return;
+          }
+        }
+
+        // SINGLE COMPANY detection
+        const singlePatterns = [
+          /run\s+(.+?)\s+at\s+([\w.-]+\.\w+)/i,
+          /find\s+(?:leads?\s+for\s+)(.+?)\s+at\s+([\w.-]+\.\w+)/i,
+          /lead\s+booster\s+(?:on\s+)?(.+?)\s+(?:at\s+|domain\s+)?([\w.-]+\.\w+)?/i
+        ];
+
+        for (const pattern of singlePatterns) {
+          const match = s.match(pattern);
+          if (match) {
+            const company = match[1].trim();
+            const domain = match[2]?.trim() || '';
+            const vertical = detectVertical(s);
+
+            console.log('[Rebecca] Single company detected:', company, domain);
+            window._lastFireTime = now;
+            await fireRebeccaFromTool('run_lead_booster', {
+              company_name: company, domain, vertical
+            });
+            return;
+          }
+        }
+
+        // BRIEFING detection
+        if (s.match(/briefing|what.s going on|pipeline|top leads|my deals/i)) {
+          console.log('[Rebecca] Briefing detected');
+          window._lastFireTime = now;
+          await fireRebeccaFromTool('get_pipeline_briefing', { confirmed: true });
+          return;
+        }
+      }
+
+      function normalizeVertical(v) {
+        const vl = v.toLowerCase();
+        if (vl.includes('construct')) return 'construction';
+        if (vl.includes('behavioral') || vl.includes('mental') || vl.includes('health')) return 'behavioral_health';
+        if (vl.includes('medical') || vl.includes('transport')) return 'medical_transport';
+        if (vl.includes('home') || vl.includes('service')) return 'home_services';
+        return vl.replace(/\s+/g,'_');
+      }
+
+      function detectVertical(speech) {
+        const s = speech.toLowerCase();
+        if (s.includes('construct')) return 'construction';
+        if (s.includes('behavioral') || s.includes('mental health')) return 'behavioral_health';
+        if (s.includes('medical transport')) return 'medical_transport';
+        return 'construction';
+      }
+
+      // ==================== FIRE FUNCTION ====================
+      // Single function that fires n8n regardless of source (tool_call or utterance)
+      async function fireRebeccaFromTool(fnName, fnArgs) {
+        console.log('[Rebecca] Firing:', fnName, JSON.stringify(fnArgs));
+
+        // Show pipeline card
+        if (fnName === 'run_territory_search') {
+          showPipelineCard(
+            (fnArgs.city||'') + ' ' + (fnArgs.state||''),
+            fnArgs.city||'',
+            fnArgs.vertical||'construction',
+            'territory'
+          );
+        } else if (fnName === 'run_lead_booster') {
+          showPipelineCard(
+            fnArgs.company_name||'Company',
+            fnArgs.domain||'',
+            fnArgs.vertical||'construction',
+            'single'
+          );
+        }
+
+        // Fire n8n via rebecca-action
+        try {
+          const resp = await fetch('/api/rebecca-action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -4243,17 +4331,32 @@ Turner Construction, turnerconstruction.com"
               parameters: fnArgs,
               conversation_id: tavusConversationId
             })
-          }).then(async r => {
-            const d = await r.json();
-            console.log('[Rebecca] Action result:', JSON.stringify(d));
-          }).catch(e => {
-            console.error('[Rebecca] Action error:', e);
           });
+          const result = await resp.json();
+          console.log('[Rebecca] n8n fired:', JSON.stringify(result));
 
+          // Send echo so Rebecca speaks the confirmation
+          if (tavusCallObject?.sendAppMessage) {
+            const ackMap = {
+              'run_territory_search': `On it Boss. Firing Lead Booster for ${fnArgs.city}, ${fnArgs.state} now.`,
+              'run_lead_booster': `On it Boss. Running Lead Booster on ${fnArgs.company_name} now.`,
+              'run_bulk_companies': `On it Boss. Running all ${(fnArgs.companies||[]).length} companies now.`,
+              'get_pipeline_briefing': `Give me one second Boss. Pulling your pipeline now.`
+            };
+            const ack = ackMap[fnName] || 'On it Boss.';
+
+            tavusCallObject.sendAppMessage({
+              message_type: 'conversation',
+              event_type: 'conversation.echo',
+              conversation_id: tavusConversationId,
+              properties: { modality: 'text', text: ack }
+            }, '*');
+            console.log('[Rebecca] Echo sent:', ack);
+          }
         } catch(e) {
-          console.error('[Rebecca] app-message handler error:', e);
+          console.error('[Rebecca] Fire error:', e);
         }
-      });
+      }
 
       tavusCameraOn = true;
       tavusResetIdleTimer();
