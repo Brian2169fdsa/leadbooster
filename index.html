@@ -1446,6 +1446,10 @@
       <div class="h-dot"></div>
       <span id="system-status">System Online</span>
     </div>
+    <div id="pipeline-ticker" style="display:none;align-items:center;gap:6px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:20px;padding:4px 14px;margin-left:12px;">
+      <div id="ticker-dot" style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:pulseDot 1.5s infinite;flex-shrink:0;"></div>
+      <span id="ticker-text" style="font-size:11px;font-weight:700;color:#15803D;white-space:nowrap;">Running...</span>
+    </div>
     <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
       <div style="background:#EBF3FC;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:#4A8FD6;" id="user-badge">—</div>
       <button onclick="logout()" style="background:none;border:1.5px solid #E2E6EC;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;color:#475569;cursor:pointer;font-family:inherit;">Sign Out</button>
@@ -1503,10 +1507,10 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
         Video Call with Rebbecca
       </button>
-      <button onclick="window.open('https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028','_blank')" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;" onmouseover="this.style.background='#6D28D9'" onmouseout="this.style.background='#7C3AED'">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+      <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
         Contacts
-      </button>
+      </a>
       <button onclick="rebeccaRunSingle()" style="background:#1a2f4e;color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Single Company</button>
       <button onclick="rebeccaRunTerritory()" style="background:#1a2f4e;color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Territory Search</button>
       <button onclick="rebeccaRunBulk()" style="background:#1a2f4e;color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Bulk List</button>
@@ -2450,10 +2454,10 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
         Video Call with Rebbecca
       </button>
-      <button onclick="window.open('https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028','_blank')" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;" onmouseover="this.style.background='#6D28D9'" onmouseout="this.style.background='#7C3AED'">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+      <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
         Contacts
-      </button>
+      </a>
       <!-- Pipeline action buttons (inline) -->
       <button onclick="rebeccaRunSingle()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
         Single Company
@@ -5294,234 +5298,110 @@ Turner Construction, turnerconstruction.com"
   </div>
 </div>
 
-<!-- Pipeline Status Card -->
-<div id="pipeline-status-card" style="display:none;position:fixed;top:24px;right:24px;width:320px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.12);z-index:9998;overflow:hidden;font-family:var(--font);">
-  <!-- Card header -->
-  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);">
-    <div id="psc-dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulseDot 2s infinite;flex-shrink:0;"></div>
-    <div style="font-size:13px;font-weight:700;color:var(--text);flex:1;">Lead Booster Running</div>
-    <button onclick="closePipelineCard()" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:18px;line-height:1;padding:0;">×</button>
-  </div>
-  <!-- Company name -->
-  <div id="psc-company" style="padding:8px 16px 0;font-size:12px;font-weight:600;color:var(--text-mid);"></div>
-  <!-- Stage indicator -->
-  <div style="padding:12px 16px;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div id="psc-icon" style="font-size:20px;flex-shrink:0;">🔍</div>
-      <div style="flex:1;">
-        <div id="psc-stage" style="font-size:13px;font-weight:700;color:var(--text);">Discovering</div>
-        <div id="psc-detail" style="font-size:11px;color:var(--text-dim);margin-top:2px;"></div>
-      </div>
-    </div>
-    <!-- Progress bar -->
-    <div style="height:4px;background:var(--surface2);border-radius:2px;margin-top:10px;overflow:hidden;">
-      <div id="psc-progress" style="height:100%;background:linear-gradient(90deg,#4A8FD6,#16A34A);border-radius:2px;width:10%;transition:width 0.6s ease;"></div>
-    </div>
-    <!-- Contact counter -->
-    <div id="psc-count" style="font-size:11px;color:var(--text-dim);margin-top:8px;font-weight:600;"></div>
-  </div>
-  <!-- Complete state buttons (hidden until done) -->
-  <div id="psc-complete-actions" style="display:none;padding:12px 16px;border-top:1px solid var(--border);flex-direction:column;gap:8px;">
-    <a id="psc-sheet-btn" href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=1687677868#gid=1687677868" target="_blank" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(74,144,217,0.35);">
-      📊 View Leads in Sheet
-    </a>
-    <button onclick="openAuditFromCard()" style="background:var(--nav);color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
-      📋 Why These Leads?
-    </button>
-  </div>
-</div>
-
-<!-- Pipeline Status Cards Container (stacked cards) -->
-<div id="plc-container"></div>
-
 <script>
-// ==================== PIPELINE STATUS CARD (NEW) ====================
-let pscCurrentDomain = '';
-let pscCurrentVertical = '';
-let pscPollInterval = null;
-let pscAutoDismissTimer = null;
-
-const PSC_STAGES = {
-  territory_search: { icon:'🗺️', label:'Searching Territory', detail:'Google Places — finding companies', progress:'10%' },
-  pending:          { icon:'⏳', label:'Queued', detail:'Pipeline starting up...', progress:'15%' },
-  discovery:        { icon:'🔍', label:'Discovering Pages', detail:'Google Search — finding team and leadership pages', progress:'25%' },
-  scraping:         { icon:'🕷️', label:'Scraping Website', detail:'HTTP + Claude — extracting contacts from website', progress:'40%' },
-  enriching:        { icon:'💧', label:'Enriching Contacts', detail:'Hunter → Apollo → PDL waterfall', progress:'65%' },
-  scoring:          { icon:'🎯', label:'ICP Scoring', detail:'Claude — scoring contacts against ICP criteria', progress:'85%' },
-  complete:         { icon:'✅', label:'Complete', detail:'', progress:'100%' },
-  news_trigger:     { icon:'📰', label:'News Trigger', detail:'WF-09 detected company news event', progress:'10%' }
-};
-
+// ==================== PIPELINE TICKER ====================
+let tickerPollInterval = null;
+let tickerHideTimer = null;
+let tickerStartTime = null;
 function showPipelineCard(company, domain, vertical, triggerType) {
-  pscCurrentDomain = domain || '';
-  pscCurrentVertical = vertical || '';
-
-  const card = document.getElementById('pipeline-status-card');
-  const dot = document.getElementById('psc-dot');
-  const completeActions = document.getElementById('psc-complete-actions');
-
-  if (!card) return;
-
-  // Reset card state
-  card.style.display = 'block';
-  if (dot) { dot.style.background = 'var(--accent)'; dot.style.animation = 'pulseDot 2s infinite'; }
-  if (completeActions) completeActions.style.display = 'none';
-
-  // Mobile responsive
-  if (window.innerWidth < 768) {
-    card.style.top = 'auto';
-    card.style.bottom = '80px';
-    card.style.left = '12px';
-    card.style.right = '12px';
-    card.style.width = 'auto';
-  } else {
-    card.style.top = '24px';
-    card.style.right = '24px';
-    card.style.bottom = '';
-    card.style.left = '';
-    card.style.width = '320px';
-  }
-
-  // Set company name
-  const compEl = document.getElementById('psc-company');
-  if (compEl) compEl.textContent = company || domain || 'Running pipeline...';
-
-  // Set initial stage
-  const initStage = triggerType === 'territory' ? 'territory_search' : 'discovery';
-  updatePipelineCardStage(initStage, 0);
+  // This function is called by all the existing trigger hooks
+  // Now it drives the ticker instead of the card
+  tickerStartTime = Date.now();
+  const ticker = document.getElementById('pipeline-ticker');
+  const tickerText = document.getElementById('ticker-text');
+  if (!ticker) return;
+  ticker.style.display = 'flex';
+  if (tickerText) tickerText.textContent = (company || 'Running') + ' — Starting...';
 
   // Start polling
-  if (pscPollInterval) clearInterval(pscPollInterval);
-  pscPollInterval = setInterval(() => pollPipelineStatus(domain), 3000);
+  if (tickerPollInterval) clearInterval(tickerPollInterval);
+  tickerPollInterval = setInterval(() => tickerPoll(domain), 4000);
 
-  // Auto-dismiss after 15 min
-  if (pscAutoDismissTimer) clearTimeout(pscAutoDismissTimer);
-  pscAutoDismissTimer = setTimeout(closePipelineCard, 900000);
+  // Auto hide after 6 minutes
+  if (tickerHideTimer) clearTimeout(tickerHideTimer);
+  tickerHideTimer = setTimeout(hideTicker, 360000);
 }
-
-function updatePipelineCardStage(status, contactCount) {
-  const stage = PSC_STAGES[status] || PSC_STAGES.discovery;
-
-  const iconEl = document.getElementById('psc-icon');
-  const stageEl = document.getElementById('psc-stage');
-  const detailEl = document.getElementById('psc-detail');
-  const progressEl = document.getElementById('psc-progress');
-  const countEl = document.getElementById('psc-count');
-
-  if (iconEl) iconEl.textContent = stage.icon;
-  if (stageEl) stageEl.textContent = stage.label;
-  if (detailEl) detailEl.textContent = stage.detail;
-  if (progressEl) progressEl.style.width = stage.progress;
-  if (countEl && contactCount > 0) countEl.textContent = contactCount + ' contacts found so far';
-
-  if (status === 'complete') {
-    const dot = document.getElementById('psc-dot');
-    const completeActions = document.getElementById('psc-complete-actions');
-    if (dot) { dot.style.background = 'var(--green)'; dot.style.animation = 'none'; }
-    if (completeActions) { completeActions.style.display = 'flex'; completeActions.style.flexDirection = 'column'; }
-    if (countEl && contactCount > 0) {
-      const sheetBtn = document.getElementById('psc-sheet-btn');
-      if (sheetBtn) sheetBtn.textContent = '📊 View ' + contactCount + ' Leads in Sheet';
-    }
-    if (pscPollInterval) { clearInterval(pscPollInterval); pscPollInterval = null; }
-    // Auto-dismiss after 60 seconds
-    if (pscAutoDismissTimer) clearTimeout(pscAutoDismissTimer);
-    pscAutoDismissTimer = setTimeout(closePipelineCard, 60000);
-  }
+function hideTicker() {
+  const ticker = document.getElementById('pipeline-ticker');
+  if (ticker) ticker.style.display = 'none';
+  if (tickerPollInterval) { clearInterval(tickerPollInterval); tickerPollInterval = null; }
+  if (tickerHideTimer) { clearTimeout(tickerHideTimer); tickerHideTimer = null; }
 }
-
-async function pollPipelineStatus(domain) {
+async function tickerPoll(domain) {
   try {
     const since = new Date(Date.now() - 1800000).toISOString();
 
-    // Query lb_status_pings for latest ping
+    // Check status pings first
     const pingResp = await fetch(
-      SB_URL + '/rest/v1/lb_status_pings' +
-      '?created_at=gte.' + since +
-      '&order=created_at.desc&limit=1' +
-      '&select=message,stage,domain,created_at',
-      { headers: {
-        'apikey': SB_SERVICE_KEY,
-        'Authorization': 'Bearer ' + SB_SERVICE_KEY
-      }}
+      SB_URL + '/rest/v1/lb_status_pings?created_at=gte.' + since +
+      '&order=created_at.desc&limit=1&select=message,created_at',
+      { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
     );
     const pings = await pingResp.json();
-    const latest = pings?.[0];
+    const latestPing = pings?.[0];
 
-    // Check ping age — only use if under 5 min old
-    if (latest) {
-      const pingAge = Date.now() - new Date(latest.created_at).getTime();
-      if (pingAge <= 300000) {
-        // Map stage to card state
-        const msg = (latest.message || '').toLowerCase();
-        let stage = latest.stage || 'discovery';
-
-        // Auto-detect stage from message content if stage not set
-        if (!latest.stage) {
-          if (msg.includes('searching') && msg.includes('for')) stage = 'territory_search';
-          else if (msg.includes('found') && msg.includes('compan')) stage = 'territory_search';
-          else if (msg.includes('looking up') || msg.includes('discovery')) stage = 'discovery';
-          else if (msg.includes('scanning') || msg.includes('scraping') || msg.includes('site')) stage = 'scraping';
-          else if (msg.includes('enrichment') || msg.includes('hunter') || msg.includes('apollo')) stage = 'enriching';
-          else if (msg.includes('scoring') || msg.includes('icp')) stage = 'scoring';
-          else if (msg.includes('done') || msg.includes('complete') || msg.includes('contact')) stage = 'complete';
-        }
-
-        // Get contact count for complete stage
-        let contactCount = 0;
-        if (stage === 'complete') {
-          const match = latest.message.match(/(\d+)\s+contact/i);
-          if (match) contactCount = parseInt(match[1]);
-        }
-
-        // Update card detail with Rebecca's actual words
-        const detailEl = document.getElementById('psc-detail');
-        if (detailEl && latest.message) {
-          detailEl.textContent = latest.message;
-        }
-
-        updatePipelineCardStage(stage, contactCount);
-        return;
+    if (latestPing && (Date.now() - new Date(latestPing.created_at).getTime()) < 300000) {
+      updateTicker(latestPing.message);
+      if ((latestPing.message||'').toLowerCase().includes('done') ||
+          (latestPing.message||'').toLowerCase().includes('complete')) {
+        setTimeout(hideTicker, 10000);
       }
+      return;
     }
 
-    // Fallback — no recent ping, check lb_queue instead
+    // Fall back to lb_queue aggregate
     const qResp = await fetch(
-      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=1&select=status,contacts_found,created_at' +
+      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=50&select=status,contacts_found,created_at' +
       '&created_at=gte.' + since,
-      { headers: {
-        'apikey': SB_SERVICE_KEY,
-        'Authorization': 'Bearer ' + SB_SERVICE_KEY
-      }}
+      { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
     );
     const qRows = await qResp.json();
-    const qLatest = qRows?.[0];
-    if (qLatest) {
-      const qStatus = (qLatest.status || '').toLowerCase();
-      let qStage = 'discovery';
-      if (qStatus === 'pending' || qStatus === 'queued') qStage = 'discovery';
-      else if (qStatus === 'scraping' || qStatus === 'scanning') qStage = 'scraping';
-      else if (qStatus === 'enriching' || qStatus === 'enrichment') qStage = 'enriching';
-      else if (qStatus === 'scoring') qStage = 'scoring';
-      else if (qStatus === 'complete' || qStatus === 'done') qStage = 'complete';
-      else qStage = qStatus || 'discovery';
-      updatePipelineCardStage(qStage, qLatest.contacts_found || 0);
+    if (!qRows || !qRows.length) return;
+
+    const total = qRows.length;
+    const complete = qRows.filter(r => r.status === 'complete' || r.status === 'enriched').length;
+    const scoring = qRows.filter(r => r.status === 'scoring').length;
+    const enriching = qRows.filter(r => r.status === 'enriching').length;
+    const scraping = qRows.filter(r => r.status === 'scraping' || r.status === 'scraped').length;
+    const totalContacts = qRows.reduce((s,r) => s+(r.contacts_found||0), 0);
+
+    let stageLabel = 'Discovering';
+    if (complete === total) stageLabel = 'Done — ' + totalContacts + ' contacts';
+    else if (scoring > 0) stageLabel = 'Scoring (' + complete + '/' + total + ' done)';
+    else if (enriching > 0) stageLabel = 'Enriching (' + complete + '/' + total + ' done)';
+    else if (scraping > 0) stageLabel = 'Scraping (' + complete + '/' + total + ' done)';
+
+    updateTicker(stageLabel);
+
+    if (complete === total && total > 0) {
+      setTimeout(hideTicker, 10000);
     }
 
-  } catch(e) {
-    console.error('Pipeline card poll error:', e);
+  } catch(e) { console.error('Ticker poll error:', e); }
+}
+function updateTicker(message) {
+  const text = document.getElementById('ticker-text');
+  const dot = document.getElementById('ticker-dot');
+  if (!text) return;
+
+  const isDone = (message||'').toLowerCase().includes('done') ||
+                 (message||'').toLowerCase().includes('complete');
+
+  if (isDone) {
+    if (dot) { dot.style.background = '#16A34A'; dot.style.animation = 'none'; }
+    const ticker = document.getElementById('pipeline-ticker');
+    if (ticker) { ticker.style.background = '#F0FDF4'; ticker.style.borderColor = '#BBF7D0'; }
+    text.style.color = '#15803D';
+  } else {
+    if (dot) { dot.style.background = '#4A8FD6'; dot.style.animation = 'pulseDot 1.5s infinite'; }
+    const ticker = document.getElementById('pipeline-ticker');
+    if (ticker) { ticker.style.background = '#EFF6FF'; ticker.style.borderColor = '#BFDBFE'; }
+    text.style.color = '#1D4ED8';
   }
-}
 
-function closePipelineCard() {
-  const card = document.getElementById('pipeline-status-card');
-  if (card) card.style.display = 'none';
-  if (pscPollInterval) { clearInterval(pscPollInterval); pscPollInterval = null; }
-  if (pscAutoDismissTimer) { clearTimeout(pscAutoDismissTimer); pscAutoDismissTimer = null; }
-}
-
-function openAuditFromCard() {
-  if (pscCurrentDomain) openAuditModal(pscCurrentDomain, pscCurrentVertical);
+  // Truncate long messages for the ticker
+  const short = message.length > 45 ? message.substring(0, 45) + '...' : message;
+  text.textContent = short;
 }
 
 // ==================== AUDIT MODAL ====================
