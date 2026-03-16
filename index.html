@@ -5177,12 +5177,6 @@ Turner Construction, turnerconstruction.com"
     </div>
     <!-- Metrics bar -->
     <div id="audit-modal-metrics" style="display:flex;gap:0;border-bottom:1px solid var(--border);"></div>
-    <!-- Navigation arrows for past runs -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 32px;border-bottom:1px solid var(--border);background:var(--surface);">
-      <button id="audit-prev-btn" onclick="auditNavigate(-1)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text-mid);">← Previous Run</button>
-      <div id="audit-nav-label" style="font-size:12px;color:var(--text-dim);font-weight:600;">Run 1 of 1</div>
-      <button id="audit-next-btn" onclick="auditNavigate(1)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text-mid);">Next Run →</button>
-    </div>
     <!-- Report content -->
     <div id="audit-modal-report" style="padding:32px;min-height:400px;font-size:14px;line-height:1.8;color:var(--text);">
       <div class="dash-loading"><div class="dash-loading-ring"></div> Generating analysis...</div>
@@ -5473,6 +5467,8 @@ function openAuditFromCard() {
 // ==================== AUDIT MODAL ====================
 let auditAllRuns = [];
 let auditCurrentIndex = 0;
+let auditTabPage = 0;
+const AUDIT_TAB_PER_PAGE = 8;
 
 async function loadAnalysisTab() {
   const el = document.getElementById('audit-run-list');
@@ -5491,27 +5487,50 @@ async function loadAnalysisTab() {
     }
 
     auditAllRuns = runs;
-
-    el.innerHTML = runs.map(function(r, i) {
-      var label = r.company_name || (r.city ? r.city + ', ' + r.state : '') || r.domain || 'Unknown';
-      return '<div style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;">' +
-        '<div style="width:44px;height:44px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' +
-          (r.city ? '🗺️' : '🏢') +
-        '</div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:13px;font-weight:700;color:var(--text);">' + label + '</div>' +
-          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + (r.vertical || '') + ' · ' + (r.total_contacts || 0) + ' contacts · ICP avg ' + (r.avg_icp_score || 0) + ' · ' + new Date(r.created_at).toLocaleDateString() + '</div>' +
-        '</div>' +
-        '<div style="display:flex;gap:8px;">' +
-          '<a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=1687677868#gid=1687677868" target="_blank" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;">📊 Sheet</a>' +
-          '<button onclick="openAuditModalById(\'' + r.id + '\',' + i + ')" style="background:var(--nav);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;">📋 Why?</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+    auditTabPage = 0;
+    renderAuditTabPage();
 
   } catch(e) {
     el.innerHTML = '<div style="padding:20px;color:var(--red);font-size:12px;">Error loading runs</div>';
   }
+}
+
+function renderAuditTabPage() {
+  const el = document.getElementById('audit-run-list');
+  if (!el) return;
+  const start = auditTabPage * AUDIT_TAB_PER_PAGE;
+  const page = auditAllRuns.slice(start, start + AUDIT_TAB_PER_PAGE);
+  const totalPages = Math.ceil(auditAllRuns.length / AUDIT_TAB_PER_PAGE);
+
+  el.innerHTML = page.map(function(r, pi) {
+    var i = start + pi;
+    var label = r.company_name || (r.city ? r.city + ', ' + r.state : '') || r.domain || 'Unknown';
+    return '<div style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;">' +
+      '<div style="width:44px;height:44px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' +
+        (r.city ? '🗺️' : '🏢') +
+      '</div>' +
+      '<div style="flex:1;">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text);">' + label + '</div>' +
+        '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + (r.vertical || '') + ' · ' + (r.total_contacts || 0) + ' contacts · ICP avg ' + (r.avg_icp_score || 0) + ' · ' + new Date(r.created_at).toLocaleDateString() + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=1687677868#gid=1687677868" target="_blank" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;">📊 Sheet</a>' +
+        '<button onclick="openAuditModalById(\'' + r.id + '\',' + i + ')" style="background:var(--nav);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;">📋 Why?</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.innerHTML += '<div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:20px 0;margin-top:8px;">' +
+    '<button onclick="auditTabNavigate(-1)" id="audit-tab-prev" style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text-mid);"' + (auditTabPage === 0 ? ' disabled' : '') + '>← Previous</button>' +
+    '<span id="audit-tab-label" style="font-size:12px;color:var(--text-dim);font-weight:600;">Page ' + (auditTabPage + 1) + ' of ' + totalPages + '</span>' +
+    '<button onclick="auditTabNavigate(1)" id="audit-tab-next" style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text-mid);"' + (start + AUDIT_TAB_PER_PAGE >= auditAllRuns.length ? ' disabled' : '') + '>Next →</button>' +
+  '</div>';
+}
+
+function auditTabNavigate(direction) {
+  const maxPage = Math.ceil(auditAllRuns.length / AUDIT_TAB_PER_PAGE) - 1;
+  auditTabPage = Math.max(0, Math.min(auditTabPage + direction, maxPage));
+  renderAuditTabPage();
 }
 
 async function openAuditModal(domain, vertical) {
@@ -5522,9 +5541,6 @@ async function openAuditModal(domain, vertical) {
   document.getElementById('audit-modal-sub').textContent = (vertical || '') + ' pipeline run';
   document.getElementById('audit-modal-report').innerHTML = '<div class="dash-loading"><div class="dash-loading-ring"></div> Generating AI analysis...</div>';
   document.getElementById('audit-modal-metrics').innerHTML = '';
-  document.getElementById('audit-nav-label').textContent = 'Current Run';
-  document.getElementById('audit-prev-btn').disabled = true;
-  document.getElementById('audit-next-btn').disabled = true;
 
   try {
     const resp = await fetch('/api/run-analysis', {
@@ -5554,8 +5570,6 @@ async function openAuditModalById(auditId, index) {
   document.getElementById('audit-modal-report').innerHTML =
     '<div class="dash-loading"><div class="dash-loading-ring"></div> Loading analysis...</div>';
 
-  updateAuditNavigation();
-
   try {
     const resp = await fetch('/api/run-analysis', {
       method: 'POST',
@@ -5568,6 +5582,53 @@ async function openAuditModalById(auditId, index) {
     document.getElementById('audit-modal-report').innerHTML =
       '<div style="color:var(--red);padding:20px;">Failed to load: ' + e.message + '</div>';
   }
+}
+
+function buildDataSourceSummary(metrics) {
+  if (!metrics) return '';
+
+  const total = metrics.total_contacts || 0;
+  if (!total) return '';
+
+  const hunterPct = Math.round((metrics.contacts_from_hunter || 0) / total * 100);
+  const apolloPct = Math.round((metrics.contacts_from_apollo || 0) / total * 100);
+  const websitePct = Math.round((metrics.contacts_from_website || 0) / total * 100);
+  const pdlPct = Math.round((metrics.contacts_from_pdl || 0) / total * 100);
+  const patternPct = Math.round((metrics.contacts_from_pattern || 0) / total * 100);
+
+  var sourceDetail = '';
+  if (hunterPct >= 50) {
+    sourceDetail = 'Hunter.io was the primary source for ' + hunterPct + '% of emails on this run.';
+  } else if (websitePct >= 30) {
+    sourceDetail = 'Website scraping found ' + websitePct + '% of contacts directly from company pages.';
+  } else {
+    sourceDetail = 'Multiple sources contributed to this run.';
+  }
+
+  var sources = [];
+  if (metrics.contacts_from_website > 0) sources.push('Website (' + websitePct + '%)');
+  if (metrics.contacts_from_hunter > 0) sources.push('Hunter (' + hunterPct + '%)');
+  if (metrics.contacts_from_apollo > 0) sources.push('Apollo (' + apolloPct + '%)');
+  if (metrics.contacts_from_pdl > 0) sources.push('PDL (' + pdlPct + '%)');
+  if (metrics.contacts_from_pattern > 0) sources.push('Pattern guess (' + patternPct + '%)');
+
+  var linkedinNote = metrics.linkedin_rate > 80
+    ? 'LinkedIn URLs are ' + metrics.linkedin_rate + '% populated — most were constructed from name + domain since direct LinkedIn scraping is not yet enabled.'
+    : 'LinkedIn coverage is ' + (metrics.linkedin_rate || 0) + '%.';
+
+  var phoneNote = (metrics.phone_rate || 0) < 10
+    ? 'Phone numbers are sparse on this run (' + (metrics.phone_rate || 0) + '%) — Apollo and PDL have limited mobile data for this vertical. This will improve as we add more enrichment sources.'
+    : 'Phone coverage: ' + metrics.phone_rate + '%.';
+
+  return '<div style="background:#F8FAFC;border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;">' +
+    '<div style="font-size:12px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">📊 Data Source Breakdown</div>' +
+    '<div style="font-size:13px;color:var(--text);margin-bottom:8px;line-height:1.6;">' +
+      '<strong>Email sources:</strong> ' + (sources.join(' → ') || 'None') + '<br>' +
+      sourceDetail +
+    '</div>' +
+    '<div style="font-size:13px;color:var(--text-mid);margin-bottom:6px;line-height:1.6;">' + linkedinNote + '</div>' +
+    '<div style="font-size:13px;color:var(--text-mid);line-height:1.6;">' + phoneNote + '</div>' +
+  '</div>';
 }
 
 function renderAuditReport(data) {
@@ -5591,6 +5652,8 @@ function renderAuditReport(data) {
     }).join('');
   }
 
+  reportEl.innerHTML = buildDataSourceSummary(data.metrics);
+
   if (data.report) {
     var html = data.report
       .replace(/## (.*)/g, '<h3 style="font-size:14px;font-weight:700;color:var(--text);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);">$1</h3>')
@@ -5598,17 +5661,8 @@ function renderAuditReport(data) {
       .replace(/\n(\d+)\. /g, '<br><strong>$1.</strong> ')
       .replace(/\n- /g, '<br>• ')
       .replace(/\n/g, '<br>');
-    reportEl.innerHTML = html;
+    reportEl.innerHTML += html;
   }
-}
-
-function updateAuditNavigation() {
-  const label = document.getElementById('audit-nav-label');
-  const prevBtn = document.getElementById('audit-prev-btn');
-  const nextBtn = document.getElementById('audit-next-btn');
-  if (label) label.textContent = 'Run ' + (auditCurrentIndex + 1) + ' of ' + auditAllRuns.length;
-  if (prevBtn) prevBtn.disabled = auditCurrentIndex === 0;
-  if (nextBtn) nextBtn.disabled = auditCurrentIndex >= auditAllRuns.length - 1;
 }
 
 function auditNavigate(direction) {
