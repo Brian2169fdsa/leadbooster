@@ -5477,27 +5477,36 @@ async function pollPipelineStatus(domain) {
       }
     }
 
-    // Fallback — no recent ping, check lb_queue instead
+    // Fetch ALL recent queue entries (last 30 min)
     const qResp = await fetch(
-      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=1&select=status,contacts_found,created_at' +
-      '&created_at=gte.' + since,
-      { headers: {
-        'apikey': SB_SERVICE_KEY,
-        'Authorization': 'Bearer ' + SB_SERVICE_KEY
-      }}
+      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=50&select=status,contacts_found,created_at' +
+      '&created_at=gte.' + new Date(Date.now()-1800000).toISOString(),
+      { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
     );
     const qRows = await qResp.json();
-    const qLatest = qRows?.[0];
-    if (qLatest) {
-      const qStatus = (qLatest.status || '').toLowerCase();
-      let qStage = 'discovery';
-      if (qStatus === 'pending' || qStatus === 'queued') qStage = 'discovery';
-      else if (qStatus === 'scraping' || qStatus === 'scanning') qStage = 'scraping';
-      else if (qStatus === 'enriching' || qStatus === 'enrichment') qStage = 'enriching';
-      else if (qStatus === 'scoring') qStage = 'scoring';
-      else if (qStatus === 'complete' || qStatus === 'done') qStage = 'complete';
-      else qStage = qStatus || 'discovery';
-      updatePipelineCardStage(qStage, qLatest.contacts_found || 0);
+    if (qRows && qRows.length > 0) {
+      const total = qRows.length;
+      const complete = qRows.filter(r => r.status === 'complete' || r.status === 'enriched').length;
+      const scoring = qRows.filter(r => r.status === 'scoring' || r.status === 'scored').length;
+      const enriching = qRows.filter(r => r.status === 'enriching').length;
+      const scraping = qRows.filter(r => r.status === 'scraping' || r.status === 'scraped').length;
+      const totalContacts = qRows.reduce((s,r) => s+(r.contacts_found||0), 0);
+      // Show most ADVANCED stage across all companies
+      let stage = 'discovery';
+      if (complete === total) stage = 'complete';
+      else if (complete > 0 || scoring > 0) stage = 'scoring';
+      else if (enriching > 0) stage = 'enriching';
+      else if (scraping > 0) stage = 'scraping';
+      // Update detail text with progress
+      const detailEl = document.getElementById('psc-detail');
+      if (detailEl) {
+        if (stage === 'complete') {
+          detailEl.textContent = `Done — ${totalContacts} contacts enriched and scored`;
+        } else {
+          detailEl.textContent = `${complete}/${total} companies complete · ${totalContacts} contacts so far`;
+        }
+      }
+      updatePipelineCardStage(stage, totalContacts);
     }
 
   } catch(e) {
