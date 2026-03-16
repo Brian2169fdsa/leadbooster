@@ -1503,6 +1503,10 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
         Video Call with Rebbecca
       </button>
+      <button onclick="window.open('https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028','_blank')" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;" onmouseover="this.style.background='#6D28D9'" onmouseout="this.style.background='#7C3AED'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        Contacts
+      </button>
       <button onclick="rebeccaRunSingle()" style="background:#1a2f4e;color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Single Company</button>
       <button onclick="rebeccaRunTerritory()" style="background:#1a2f4e;color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Territory Search</button>
       <button onclick="rebeccaRunBulk()" style="background:#1a2f4e;color:white;border:none;border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Bulk List</button>
@@ -2445,6 +2449,10 @@
       <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="background:linear-gradient(135deg, #1a5fb4, #4a90d9); color:white; border:none; border-radius:12px; padding:14px 28px; font-size:15px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(74,144,217,0.35); transition:all 0.2s;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
         Video Call with Rebbecca
+      </button>
+      <button onclick="window.open('https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028','_blank')" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;" onmouseover="this.style.background='#6D28D9'" onmouseout="this.style.background='#7C3AED'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        Contacts
       </button>
       <!-- Pipeline action buttons (inline) -->
       <button onclick="rebeccaRunSingle()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
@@ -5477,36 +5485,27 @@ async function pollPipelineStatus(domain) {
       }
     }
 
-    // Fetch ALL recent queue entries (last 30 min)
+    // Fallback — no recent ping, check lb_queue instead
     const qResp = await fetch(
-      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=50&select=status,contacts_found,created_at' +
-      '&created_at=gte.' + new Date(Date.now()-1800000).toISOString(),
-      { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
+      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=1&select=status,contacts_found,created_at' +
+      '&created_at=gte.' + since,
+      { headers: {
+        'apikey': SB_SERVICE_KEY,
+        'Authorization': 'Bearer ' + SB_SERVICE_KEY
+      }}
     );
     const qRows = await qResp.json();
-    if (qRows && qRows.length > 0) {
-      const total = qRows.length;
-      const complete = qRows.filter(r => r.status === 'complete' || r.status === 'enriched').length;
-      const scoring = qRows.filter(r => r.status === 'scoring' || r.status === 'scored').length;
-      const enriching = qRows.filter(r => r.status === 'enriching').length;
-      const scraping = qRows.filter(r => r.status === 'scraping' || r.status === 'scraped').length;
-      const totalContacts = qRows.reduce((s,r) => s+(r.contacts_found||0), 0);
-      // Show most ADVANCED stage across all companies
-      let stage = 'discovery';
-      if (complete === total) stage = 'complete';
-      else if (complete > 0 || scoring > 0) stage = 'scoring';
-      else if (enriching > 0) stage = 'enriching';
-      else if (scraping > 0) stage = 'scraping';
-      // Update detail text with progress
-      const detailEl = document.getElementById('psc-detail');
-      if (detailEl) {
-        if (stage === 'complete') {
-          detailEl.textContent = `Done — ${totalContacts} contacts enriched and scored`;
-        } else {
-          detailEl.textContent = `${complete}/${total} companies complete · ${totalContacts} contacts so far`;
-        }
-      }
-      updatePipelineCardStage(stage, totalContacts);
+    const qLatest = qRows?.[0];
+    if (qLatest) {
+      const qStatus = (qLatest.status || '').toLowerCase();
+      let qStage = 'discovery';
+      if (qStatus === 'pending' || qStatus === 'queued') qStage = 'discovery';
+      else if (qStatus === 'scraping' || qStatus === 'scanning') qStage = 'scraping';
+      else if (qStatus === 'enriching' || qStatus === 'enrichment') qStage = 'enriching';
+      else if (qStatus === 'scoring') qStage = 'scoring';
+      else if (qStatus === 'complete' || qStatus === 'done') qStage = 'complete';
+      else qStage = qStatus || 'discovery';
+      updatePipelineCardStage(qStage, qLatest.contacts_found || 0);
     }
 
   } catch(e) {
