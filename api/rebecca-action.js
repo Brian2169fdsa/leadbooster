@@ -1,163 +1,153 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
-  const { tool_name, parameters, conversation_id } = req.body || {};
-  const N8N_BASE = 'https://manageai2026.app.n8n.cloud/webhook';
+
+  const N8N = 'https://manageai2026.app.n8n.cloud/webhook';
   const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA';
-  console.log('[rebecca-action] tool:', tool_name, JSON.stringify(parameters));
-  // ── run_territory_search ──────────────────────────────────
-  if (tool_name === 'run_territory_search') {
-    const { city, state, vertical } = parameters || {};
 
-    if (!city || !state) {
-      return res.status(200).json({
-        success: false,
-        result: 'I need a city and state to search, Boss.'
-      });
-    }
-    // Supabase dedup check
-    const dedupKey = `${city}_${state}_${vertical}`.toLowerCase().replace(/\s/g,'_');
+  // Normalize — handle both Tavus server-side and frontend calls
+  let tool_name = req.body.tool_name || req.body.tool || req.body.name || '';
+  let parameters = req.body.parameters || {};
+
+  // Handle Tavus arguments as JSON string
+  if (!parameters || Object.keys(parameters).length === 0) {
     try {
-      const check = await fetch(
-        `${SB_URL}/rest/v1/lb_territory_searches?dedup_key=eq.${encodeURIComponent(dedupKey)}&order=created_at.desc&limit=1&select=created_at`,
-        { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }
-      );
-      const rows = await check.json();
-      if (rows?.length > 0) {
-        const age = Date.now() - new Date(rows[0].created_at).getTime();
-        if (age < 30000) {
-          return res.status(200).json({
-            success: true,
-            result: `Already searching ${city}, ${state} Boss — results are coming.`
-          });
-        }
+      const raw = req.body.arguments || req.body.function_arguments || '{}';
+      parameters = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    } catch(e) {}
+  }
+
+  const conversation_id = req.body.conversation_id || '';
+
+  console.log('[rebecca-action] tool:', tool_name,
+    JSON.stringify(parameters));
+
+  // Respond immediately — never let Vercel timeout
+  res.status(200).json({
+    success: true,
+    tool: tool_name,
+    received: parameters
+  });
+
+  // Fire n8n after response — truly fire and forget
+  try {
+    if (tool_name === 'run_territory_search') {
+      const { city, state, vertical } = parameters;
+      if (!city || !state) {
+        console.error('[rebecca-action] Missing city/state');
+        return;
       }
-      // Write dedup record
-      await fetch(`${SB_URL}/rest/v1/lb_territory_searches`, {
-        method: 'POST',
-        headers: {
-          'apikey': SB_KEY,
-          'Authorization': `Bearer ${SB_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          dedup_key: dedupKey,
-          city, state, vertical,
-          source: 'rebecca_video',
-          created_at: new Date().toISOString()
-        })
-      });
-    } catch(e) {
-      console.error('[rebecca-action] Dedup error:', e.message);
-    }
-    // Fire n8n FIRST before responding
-    try {
-      const n8nResp = await fetch(`${N8N_BASE}/lb-territory-v2`, {
+
+      // Dedup check — prevent firing same search twice in 30s
+      const dedupKey = `${city}_${state}_${vertical}`.toLowerCase().replace(/\s/g,'_');
+      try {
+        const check = await fetch(
+          `${SB_URL}/rest/v1/lb_territory_searches?dedup_key=eq.${encodeURIComponent(dedupKey)}&order=created_at.desc&limit=1&select=created_at`,
+          { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }
+        );
+        const rows = await check.json();
+        if (rows?.length > 0) {
+          const age = Date.now() - new Date(rows[0].created_at).getTime();
+          if (age < 30000) {
+            console.log('[rebecca-action] Dedup blocked territory search');
+            return;
+          }
+        }
+        // Write dedup record
+        await fetch(`${SB_URL}/rest/v1/lb_territory_searches`, {
+          method: 'POST',
+          headers: {
+            'apikey': SB_KEY,
+            'Authorization': `Bearer ${SB_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            dedup_key: dedupKey, city, state, vertical,
+            source: 'rebecca_video',
+            created_at: new Date().toISOString()
+          })
+        });
+      } catch(e) {
+        console.error('[rebecca-action] Dedup error:', e.message);
+      }
+
+      console.log('[rebecca-action] Firing territory:', city, state, vertical);
+      const r = await fetch(`${N8N}/lb-territory-v2`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           city, state, vertical,
           source: 'rebecca_video',
           submitter_name: 'Rebbecca',
-          submitter_email: 'tony@manageai.io'
+          submitter_email: 'tony@manageai.io',
+          conversation_id
         }),
-        signal: AbortSignal.timeout(8000)
+        signal: AbortSignal.timeout(10000)
       });
-      console.log('[rebecca-action] n8n territory response:', n8nResp.status);
-    } catch(e) {
-      console.error('[rebecca-action] n8n fire error:', e.message);
+      console.log('[rebecca-action] Territory n8n status:', r.status);
     }
-    // NOW send response to frontend
-    return res.status(200).json({
-      success: true,
-      result: `On it Boss. Searching ${city}, ${state} for ${(vertical||'').replace(/_/g,' ')} companies now.`
-    });
-  }
-  // ── run_lead_booster ──────────────────────────────────────
-  if (tool_name === 'run_lead_booster') {
-    const { company_name, domain, vertical } = parameters || {};
-    if (!company_name) {
-      return res.status(200).json({ success: false, result: 'I need a company name, Boss.' });
-    }
-    // Fire n8n FIRST before responding
-    try {
-      const n8nResp = await fetch(`${N8N_BASE}/lb-discovery`, {
+
+    else if (tool_name === 'run_lead_booster') {
+      const { company_name, domain, vertical } = parameters;
+      if (!company_name) return;
+      console.log('[rebecca-action] Firing discovery:', company_name, domain);
+      const r = await fetch(`${N8N}/lb-discovery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          company_name,
-          domain: domain || '',
-          vertical: vertical || 'construction',
+          company_name, domain: domain || '', vertical: vertical || 'construction',
           source: 'rebecca_video',
           submitter_name: 'Rebbecca',
-          submitter_email: 'tony@manageai.io'
+          submitter_email: 'tony@manageai.io',
+          conversation_id
         }),
-        signal: AbortSignal.timeout(8000)
+        signal: AbortSignal.timeout(10000)
       });
-      console.log('[rebecca-action] n8n discovery response:', n8nResp.status);
-    } catch(e) {
-      console.error('[rebecca-action] n8n fire error:', e.message);
+      console.log('[rebecca-action] Discovery n8n status:', r.status);
     }
-    // NOW send response to frontend
-    return res.status(200).json({
-      success: true,
-      result: `On it Boss. Looking up ${company_name} now.`
-    });
-  }
-  // ── run_bulk_companies ────────────────────────────────────
-  if (tool_name === 'run_bulk_companies') {
-    const { companies, vertical } = parameters || {};
-    if (!companies?.length) {
-      return res.status(200).json({ success: false, result: 'I did not catch the company names, Boss. Say them again.' });
-    }
-    res.status(200).json({
-      success: true,
-      result: `On it Boss. Firing Lead Booster on all ${companies.length} companies now.`
-    });
-    (async () => {
+
+    else if (tool_name === 'run_bulk_companies') {
+      const { companies, vertical } = parameters;
+      if (!companies?.length) return;
+      console.log('[rebecca-action] Firing bulk:', companies.length, 'companies');
       for (let i = 0; i < companies.length; i++) {
-        fetch(`${N8N_BASE}/lb-discovery`, {
+        const co = companies[i];
+        const name = typeof co === 'string' ? co : co.name || co;
+        const domain = typeof co === 'object' ? (co.domain || '') : '';
+        await fetch(`${N8N}/lb-discovery`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ company_name: companies[i], domain: '', vertical: vertical || 'construction', source: 'rebecca_video_bulk', submitter_name: 'Rebbecca', submitter_email: 'tony@manageai.io' })
-        }).catch(e => console.error('[rebecca-action] Bulk fire error:', e.message));
-        if (i < companies.length - 1) await new Promise(r => setTimeout(r, 350));
+          body: JSON.stringify({
+            company_name: name, domain,
+            vertical: vertical || 'construction',
+            source: 'rebecca_bulk_video',
+            submitter_name: 'Rebbecca',
+            submitter_email: 'tony@manageai.io'
+          }),
+          signal: AbortSignal.timeout(10000)
+        });
+        if (i < companies.length - 1) {
+          await new Promise(r => setTimeout(r, 2000));
+        }
       }
-    })();
-    return;
-  }
-  // ── get_pipeline_briefing ─────────────────────────────────
-  if (tool_name === 'get_pipeline_briefing') {
-    try {
-      const [contactsResp, pdResp] = await Promise.all([
-        fetch(`${SB_URL}/rest/v1/lb_contacts?select=icp_score,vertical,created_at&limit=500`, {
-          headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-        }).then(r => r.json()).catch(() => []),
-        fetch(`https://api.pipedrive.com/v1/deals?status=open&limit=10&api_token=2fada79568e20083cf472cd5b307e9e12d171a1d`)
-          .then(r => r.json()).catch(() => ({ data: null }))
-      ]);
-      const contacts = Array.isArray(contactsResp) ? contactsResp : [];
-      const total = contacts.length;
-      const elite = contacts.filter(c => c.icp_score >= 90).length;
-      const strong = contacts.filter(c => c.icp_score >= 75 && c.icp_score < 90).length;
-      const scores = contacts.map(c => c.icp_score).filter(Boolean);
-      const avg = scores.length ? Math.round(scores.reduce((a,b) => a+b,0) / scores.length) : 0;
-      const pdDeals = pdResp?.data?.length || 0;
-      const topDeal = pdResp?.data?.[0]?.title || null;
-      const fiveDaysAgo = new Date(Date.now() - 5*86400000).toISOString();
-      const stale = contacts.filter(c => c.created_at < fiveDaysAgo).length;
-      let msg = `Here is where things stand Boss. ${total} contacts total — ${elite} Elite, ${strong} Strong, average ICP ${avg}. Pipedrive shows ${pdDeals} open deals${topDeal ? `, top one is ${topDeal}` : ''}. `;
-      if (stale > 0) msg += `${stale} contacts have been sitting untouched for over 5 days.`;
-      return res.status(200).json({ success: true, result: msg });
-    } catch(e) {
-      return res.status(200).json({ success: true, result: 'Had trouble pulling your pipeline data Boss. Try again in a second.' });
     }
+
+    else if (tool_name === 'get_pipeline_briefing') {
+      console.log('[rebecca-action] Firing pipeline briefing');
+      await fetch(`${N8N}/lb-rebecca`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'briefing',
+          conversation_id,
+          source: 'rebecca_video'
+        }),
+        signal: AbortSignal.timeout(10000)
+      });
+    }
+
+  } catch(e) {
+    console.error('[rebecca-action] n8n fire error:', e.message);
   }
-  // ── unknown tool ──────────────────────────────────────────
-  return res.status(200).json({ success: false, result: 'Not sure how to handle that one Boss.' });
 }
