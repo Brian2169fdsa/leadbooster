@@ -4250,65 +4250,96 @@ Turner Construction, turnerconstruction.com"
         const now = Date.now();
         if (window._lastFireTime && now - window._lastFireTime < 15000) return;
 
-        // TERRITORY — detect any mention of city + state + industry
-        const stateAbbrs = ['az','ca','tx','nv','ut','co','fl','ny','ga','oh',
-          'il','wa','or','mi','nc','tn','mo','wi','mn','md','va','pa','nm'];
-        const stateNames = {'arizona':'AZ','california':'CA','texas':'TX','nevada':'NV',
-          'utah':'UT','colorado':'CO','florida':'FL','new york':'NY','georgia':'GA',
-          'ohio':'OH','illinois':'IL','washington':'WA','oregon':'OR','michigan':'MI',
-          'north carolina':'NC','tennessee':'TN','missouri':'MO',
-          'wisconsin':'WI','minnesota':'MN','maryland':'MD','virginia':'VA',
-          'pennsylvania':'PA','new mexico':'NM','idaho':'ID','montana':'MT',
-          'kansas':'KS','oklahoma':'OK','arkansas':'AR','mississippi':'MS','alabama':'AL'};
-        const verticals = ['construction','behavioral health','behavioral_health',
-          'medical transport','medical_transport','home services','home_services',
-          'healthcare','real estate'];
+        const stateNames = {
+          'arizona':'AZ','california':'CA','texas':'TX','nevada':'NV',
+          'utah':'UT','colorado':'CO','florida':'FL','new york':'NY',
+          'georgia':'GA','ohio':'OH','illinois':'IL','washington':'WA',
+          'oregon':'OR','michigan':'MI','north carolina':'NC',
+          'tennessee':'TN','missouri':'MO','indiana':'IN','wisconsin':'WI',
+          'minnesota':'MN','maryland':'MD','virginia':'VA',
+          'pennsylvania':'PA','new mexico':'NM','idaho':'ID',
+          'montana':'MT','kansas':'KS','oklahoma':'OK'
+        };
+        const stateAbbrs = ['az','ca','tx','nv','ut','co','fl','ny','ga',
+          'oh','il','wa','or','mi','nc','tn','mo','in','wi','mn','md',
+          'va','pa','nm','id','mt','ks','ok'];
 
-        // Check if speech has territory intent
         const hasTerritoryIntent =
-          s.includes('search') || s.includes('territory') ||
-          s.includes('find compan') || s.includes('look for compan') ||
-          s.includes('run a search') || s.includes('companies in') ||
-          s.includes('companies for') || s.includes('pull up') ||
-          (s.includes('run') && s.includes('compan'));
+          s.includes('territory') || s.includes('territory search') ||
+          s.includes('search') || s.includes('find compan') ||
+          s.includes('companies in') || s.includes('companies for') ||
+          s.includes('run a search') || s.includes('pull up') ||
+          (s.includes('run') && s.includes('compan')) ||
+          (s.includes('look') && s.includes('compan'));
 
         if (hasTerritoryIntent) {
           let foundState = null;
-          // Check abbreviations
-          for (const abbr of stateAbbrs) {
-            if (s.includes(' ' + abbr + ' ') || s.includes(' ' + abbr + ',') || s.endsWith(' ' + abbr)) {
-              foundState = abbr.toUpperCase();
-              break;
-            }
+          // Check full state names first (more reliable)
+          for (const [name, abbr] of Object.entries(stateNames)) {
+            if (s.includes(name)) { foundState = abbr; break; }
           }
-          // Check full state names
+          // Then check abbreviations
           if (!foundState) {
-            for (const [name, abbr] of Object.entries(stateNames)) {
-              if (s.includes(name)) { foundState = abbr; break; }
+            for (const abbr of stateAbbrs) {
+              if (s.includes(' '+abbr+' ') || s.includes(' '+abbr+',') ||
+                  s.includes(','+abbr) || s.endsWith(' '+abbr)) {
+                foundState = abbr.toUpperCase(); break;
+              }
             }
           }
 
           let foundVertical = 'construction';
-          for (const v of verticals) {
-            if (s.includes(v)) { foundVertical = v.replace(' ','_'); break; }
+          const verticalMap = {
+            'construction':'construction',
+            'behavioral health':'behavioral_health',
+            'behavioral_health':'behavioral_health',
+            'mental health':'behavioral_health',
+            'medical transport':'medical_transport',
+            'medical_transport':'medical_transport',
+            'home services':'home_services',
+            'home_services':'home_services',
+            'healthcare':'healthcare',
+            'real estate':'real_estate'
+          };
+          for (const [keyword, vert] of Object.entries(verticalMap)) {
+            if (s.includes(keyword)) { foundVertical = vert; break; }
           }
 
           if (foundState) {
-            // Find city — words before state that aren't skip words
-            const skipWords = new Set(['search','find','run','look','territory','in',
-              'for','a','the','companies','company','i','need','to','want','please',
-              'can','you','do','let','boss','me','us','some','pull','up','get']);
+            const skipWords = new Set(['search','find','run','look','territory',
+              'in','for','a','the','companies','company','i','need','to','want',
+              'please','can','you','do','let','boss','me','us','some','pull',
+              'up','get','and','with','from']);
 
-            const statePos = s.indexOf(foundState.toLowerCase());
-            const beforeState = s.substring(0, statePos);
+            // Find position of matched state in speech
+            let statePos = -1;
+            for (const [name] of Object.entries(stateNames)) {
+              if (s.includes(name) && foundState === stateNames[name]) {
+                statePos = s.indexOf(name);
+                break;
+              }
+            }
+            if (statePos === -1) {
+              for (const abbr of stateAbbrs) {
+                if (foundState === abbr.toUpperCase()) {
+                  const patterns = [' '+abbr+' ',' '+abbr+',',' '+abbr];
+                  for (const p of patterns) {
+                    const idx = s.indexOf(p);
+                    if (idx !== -1) { statePos = idx; break; }
+                  }
+                  if (statePos !== -1) break;
+                }
+              }
+            }
+
+            const beforeState = statePos > 0 ? s.substring(0, statePos) : s;
             const words = beforeState.split(/[\s,]+/).filter(w =>
               w.length > 2 && !skipWords.has(w.toLowerCase())
             );
 
             let city = words.slice(-2).join(' ').trim();
             city = city.replace(/\b\w/g, l => l.toUpperCase());
-
-            if (!city || city.length < 2) city = 'Phoenix'; // fallback
+            if (!city || city.length < 2) city = 'Phoenix';
 
             const qtyMatch = s.match(/(\d+)\s*(?:compan|co\b)/i);
             const maxResults = qtyMatch ? Math.min(parseInt(qtyMatch[1]), 50) : 20;
@@ -4316,7 +4347,8 @@ Turner Construction, turnerconstruction.com"
             console.log('[Rebecca] TERRITORY FIRING:', city, foundState, foundVertical, maxResults);
             window._lastFireTime = now;
             await fireRebeccaFromTool('run_territory_search', {
-              city, state: foundState, vertical: foundVertical, max_results: maxResults
+              city, state: foundState, vertical: foundVertical,
+              max_results: maxResults
             });
             return;
           }
