@@ -72,12 +72,19 @@ export default async function handler(req, res) {
         console.error('[rebecca-action] Dedup error:', e.message);
       }
 
-      console.log('[rebecca-action] Firing territory:', city, state, vertical);
+      const max_results = Math.min(
+        parseInt(parameters.max_results || parameters.qty || 20),
+        50
+      );
+
+      console.log('[rebecca-action] Firing territory:', city, state, vertical, 'max:', max_results);
       const r = await fetch(`${N8N}/lb-territory-v2`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           city, state, vertical,
+          max_results: max_results,
+          quota_requested: max_results,
           source: 'rebecca_video',
           submitter_name: 'Rebecca',
           submitter_email: 'tony@manageai.io',
