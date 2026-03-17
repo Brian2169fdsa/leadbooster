@@ -1505,7 +1505,7 @@
   <div id="mode-rebecca" class="mode-content">
     <!-- Action buttons row -->
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px;">
-      <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(74,144,217,0.35);transition:all 0.2s;font-family:inherit;">
+      <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="display:none;background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(74,144,217,0.35);transition:all 0.2s;font-family:inherit;">
         Video Call with Rebecca
       </button>
       <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
@@ -1531,11 +1531,12 @@
         <input id="rb-company-input" placeholder="Company name" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <select id="rb-vertical-input" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="">Select Vertical</option>
           <option value="construction">Construction</option>
           <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
-          <option value="healthcare">Healthcare</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
         </select>
         <button onclick="rebeccaFireSingle()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
@@ -1553,10 +1554,12 @@
         <input id="rb-city-input" placeholder="City (e.g. Phoenix)" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1;min-width:100px;max-width:120px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <select id="rb-territory-vertical" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="">Select Vertical</option>
           <option value="construction">Construction</option>
           <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
-          <option value="healthcare">Healthcare</option>
+          <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
         </select>
         <select id="rb-territory-qty" style="flex:1;min-width:120px;max-width:140px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
@@ -1596,11 +1599,13 @@
         <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:20px;line-height:1;">×</button>
       </div>
       <select id="rb-bulk-vertical" style="width:100%;max-width:280px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:14px;font-family:inherit;background:#fff;outline:none;">
+        <option value="">Select Vertical</option>
         <option value="construction">Construction</option>
         <option value="behavioral_health">Behavioral Health</option>
         <option value="medical_transport">Medical Transport</option>
-        <option value="healthcare">Healthcare</option>
         <option value="b2b_professional_services">B2B Professional Services</option>
+        <option value="health_wellness">Health &amp; Wellness</option>
+        <option value="home_services">Home Services</option>
       </select>
       <div id="rb-drop-zone" style="border:2px dashed #e2e8f0;border-radius:8px;padding:24px;text-align:center;margin-bottom:14px;cursor:pointer;transition:border-color 0.2s;"
         ondragover="event.preventDefault();this.style.borderColor='#4a90d9';"
@@ -1968,8 +1973,9 @@
       <div class="field">
         <label>Default Vertical</label>
         <select id="b-vertical">
-          <option value="behavioral_health">Behavioral Health</option>
+          <option value="">Select Vertical</option>
           <option value="construction">Construction</option>
+          <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
           <option value="health_wellness">Health &amp; Wellness</option>
@@ -2015,10 +2021,10 @@
       <div class="field">
         <label>Vertical</label>
         <div class="chips" id="t-chips">
-          <button class="chip active" data-v="behavioral_health" onclick="selectChip(this,'t-chips')">Behavioral Health</button>
-          <button class="chip" data-v="construction" onclick="selectChip(this,'t-chips')">Construction</button>
+          <button class="chip active" data-v="construction" onclick="selectChip(this,'t-chips')">Construction</button>
+          <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'t-chips')">Behavioral Health</button>
           <button class="chip" data-v="medical_transport" onclick="selectChip(this,'t-chips')">Medical Transport</button>
-          <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'t-chips')">B2B Services</button>
+          <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'t-chips')">B2B Professional Services</button>
           <button class="chip" data-v="health_wellness" onclick="selectChip(this,'t-chips')">Health &amp; Wellness</button>
           <button class="chip" data-v="home_services" onclick="selectChip(this,'t-chips')">Home Services</button>
         </div>
@@ -2387,24 +2393,8 @@
         </div>
 
         <div class="field" style="margin-bottom:16px;">
-          <label>Rating</label>
-          <div id="fb-stars" style="display:flex;gap:8px;margin-top:6px;">
-            <span class="fb-star" data-val="1" onclick="setRating(1)" style="font-size:28px;cursor:pointer;opacity:0.3;transition:opacity 0.15s;">★</span>
-            <span class="fb-star" data-val="2" onclick="setRating(2)" style="font-size:28px;cursor:pointer;opacity:0.3;transition:opacity 0.15s;">★</span>
-            <span class="fb-star" data-val="3" onclick="setRating(3)" style="font-size:28px;cursor:pointer;opacity:0.3;transition:opacity 0.15s;">★</span>
-            <span class="fb-star" data-val="4" onclick="setRating(4)" style="font-size:28px;cursor:pointer;opacity:0.3;transition:opacity 0.15s;">★</span>
-            <span class="fb-star" data-val="5" onclick="setRating(5)" style="font-size:28px;cursor:pointer;opacity:0.3;transition:opacity 0.15s;">★</span>
-          </div>
-        </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>What happened? <span style="font-weight:400;text-transform:none;letter-spacing:0">(be specific — the more detail the better)</span></label>
+          <label>Describe Feedback <span style="font-weight:400;text-transform:none;letter-spacing:0">(be specific — e.g. what happened, when, steps leading up to it)</span></label>
           <textarea id="fb-message" rows="5" placeholder="Example: I searched Phoenix AZ behavioral health and the ICP scores for directors came back lower than expected. The phone numbers were mostly missing too." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;resize:vertical;line-height:1.6;"></textarea>
-        </div>
-
-        <div class="field" style="margin-bottom:20px;">
-          <label>Company or Run Reference <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-          <input type="text" id="fb-reference" placeholder="e.g. Adelante Healthcare, run from March 10" />
         </div>
 
         <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
@@ -2426,7 +2416,7 @@
 
     <!-- Video Call Button — triggers popover -->
     <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
-      <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="background:linear-gradient(135deg, #1a5fb4, #4a90d9); color:white; border:none; border-radius:12px; padding:14px 28px; font-size:15px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(74,144,217,0.35); transition:all 0.2s;">
+      <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="display:none;background:linear-gradient(135deg, #1a5fb4, #4a90d9); color:white; border:none; border-radius:12px; padding:14px 28px; font-size:15px; font-weight:600; cursor:pointer; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(74,144,217,0.35); transition:all 0.2s;">
         Video Call with Rebecca
       </button>
       <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
@@ -2454,11 +2444,13 @@
         <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:18px;">x</button>
       </div>
       <select id="rb-bulk-vertical" style="width:100%; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:12px; font-family:inherit;">
+        <option value="">Select Vertical</option>
         <option value="construction">Construction</option>
         <option value="behavioral_health">Behavioral Health</option>
         <option value="medical_transport">Medical Transport</option>
-        <option value="healthcare">Healthcare</option>
         <option value="b2b_professional_services">B2B Professional Services</option>
+        <option value="health_wellness">Health &amp; Wellness</option>
+        <option value="home_services">Home Services</option>
       </select>
       <div id="rb-drop-zone" style="border:2px dashed #e2e8f0; border-radius:8px; padding:20px; text-align:center; margin-bottom:12px; cursor:pointer; transition:border-color 0.2s;"
         ondragover="event.preventDefault(); this.style.borderColor='#4a90d9';"
@@ -2494,11 +2486,13 @@ Turner Construction, turnerconstruction.com"
         <input id="rb-company-input" placeholder="Company name" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
         <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
         <select id="rb-vertical-input" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
+          <option value="">Select Vertical</option>
           <option value="construction">Construction</option>
           <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
-          <option value="healthcare">Healthcare</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="health_wellness">Health &amp; Wellness</option>
+          <option value="home_services">Home Services</option>
         </select>
         <button onclick="rebeccaFireSingle()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
         <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
@@ -2511,10 +2505,13 @@ Turner Construction, turnerconstruction.com"
         <input id="rb-city-input" placeholder="City (e.g. Phoenix)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
         <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1; min-width:80px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
         <select id="rb-territory-vertical" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
+          <option value="">Select Vertical</option>
           <option value="construction">Construction</option>
           <option value="behavioral_health">Behavioral Health</option>
           <option value="medical_transport">Medical Transport</option>
-          <option value="healthcare">Healthcare</option>
+          <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="health_wellness">Health &amp; Wellness</option>
+          <option value="home_services">Home Services</option>
         </select>
         <select id="rb-territory-qty" style="flex:1; min-width:120px; max-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; background:#fff;">
           <option value="10">10 companies</option>
@@ -4057,21 +4054,10 @@ Turner Construction, turnerconstruction.com"
   }
 
   // ==================== FEEDBACK ====================
-  let fbRating = 0;
-
-  function setRating(val) {
-    fbRating = val;
-    document.querySelectorAll('.fb-star').forEach(s => {
-      s.style.opacity = parseInt(s.dataset.val) <= val ? '1' : '0.25';
-      s.style.color = parseInt(s.dataset.val) <= val ? '#F59E0B' : '#94A3B8';
-    });
-  }
-
   async function submitFeedback() {
     const name = document.getElementById('fb-name').value.trim() || ((window._currentUser||{}).name || 'Anonymous');
     const category = document.getElementById('fb-category').value;
     const message = document.getElementById('fb-message').value.trim();
-    const reference = document.getElementById('fb-reference').value.trim();
     const btn = document.getElementById('btn-feedback');
     const successEl = document.getElementById('fb-success');
     const errorEl = document.getElementById('fb-error');
@@ -4091,9 +4077,7 @@ Turner Construction, turnerconstruction.com"
           name,
           email: (window._currentUser||{}).email || 'unknown',
           category: category || 'general',
-          rating: fbRating,
           message,
-          reference,
           submitted_at: new Date().toISOString()
         })
       });
@@ -4101,9 +4085,7 @@ Turner Construction, turnerconstruction.com"
       if (resp.ok) {
         successEl.style.display = 'block';
         document.getElementById('fb-message').value = '';
-        document.getElementById('fb-reference').value = '';
         document.getElementById('fb-category').value = '';
-        setRating(0);
       } else {
         throw new Error('Failed to submit feedback');
       }
