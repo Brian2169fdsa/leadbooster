@@ -1572,6 +1572,12 @@
         <button onclick="rebeccaFireSingle()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px;">
+        <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">📋 List name:</span>
+        <input type="text" id="rb-single-list-name"
+          placeholder="e.g. Jeff's leads (optional)"
+          style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;" />
+      </div>
     </div>
 
     <!-- Territory Search Modal -->
@@ -1614,6 +1620,12 @@
         </select>
         <button id="btn-rb-territory-run" onclick="rebeccaFireTerritory()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px;">
+        <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">📋 List name:</span>
+        <input type="text" id="rb-territory-list-name"
+          placeholder="e.g. Jeff's leads (optional)"
+          style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;" />
       </div>
     </div>
 
@@ -1701,6 +1713,12 @@
           <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
           <button onclick="rebeccaFireBulk()" style="background:#1a2f4e;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Run It</button>
         </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px;">
+        <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">📋 List name:</span>
+        <input type="text" id="rb-bulk-list-name"
+          placeholder="e.g. Jeff's leads (optional)"
+          style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;" />
       </div>
     </div>
 
@@ -2016,9 +2034,17 @@
         </div>
       </div>
 
-      <div class="field">
-        <label>LIST NAME <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">(optional — names this batch of leads)</span></label>
-        <input type="text" id="s-list-name" placeholder="e.g. Jeff's Phoenix Leads, Q1 Construction Push" />
+      <div class="field" style="background:#EFF6FF;border:1.5px solid #4A8FD6;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <label style="color:#1D4ED8;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">
+          📋 NAME THIS LIST
+          <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#3B82F6;font-size:11px;"> — names this batch in Pipedrive (optional)</span>
+        </label>
+        <input type="text" id="s-list-name"
+          placeholder="e.g. Jeff's Phoenix Leads, Q1 Construction Push"
+          style="width:100%;padding:10px 13px;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-family:var(--font);background:#fff;outline:none;box-sizing:border-box;" />
+        <div style="font-size:11px;color:#3B82F6;margin-top:6px;font-weight:500;">
+          Will be tagged as: <span id="s-list-preview" style="font-weight:700;color:#1D4ED8;"></span>
+        </div>
       </div>
 
       <button class="btn-primary" id="btn-single" onclick="submitSingle()">
@@ -2099,9 +2125,17 @@
         </div>
       </div>
 
-      <div class="field">
-        <label>LIST NAME <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">(optional — names this batch of leads)</span></label>
-        <input type="text" id="b-list-name" placeholder="e.g. Jeff's Phoenix Leads, Q1 Construction Push" />
+      <div class="field" style="background:#EFF6FF;border:1.5px solid #4A8FD6;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <label style="color:#1D4ED8;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">
+          📋 NAME THIS LIST
+          <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#3B82F6;font-size:11px;"> — names this batch in Pipedrive (optional)</span>
+        </label>
+        <input type="text" id="b-list-name"
+          placeholder="e.g. Jeff's Phoenix Leads, Q1 Construction Push"
+          style="width:100%;padding:10px 13px;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-family:var(--font);background:#fff;outline:none;box-sizing:border-box;" />
+        <div style="font-size:11px;color:#3B82F6;margin-top:6px;font-weight:500;">
+          Will be tagged as: <span id="b-list-preview" style="font-weight:700;color:#1D4ED8;"></span>
+        </div>
       </div>
 
       <button class="btn-primary" id="btn-bulk" onclick="submitBulk()">
@@ -2181,9 +2215,17 @@
         </div>
       </div>
 
-      <div class="field">
-        <label>LIST NAME <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">(optional — names this batch of leads)</span></label>
-        <input type="text" id="t-list-name" placeholder="e.g. Jeff's Phoenix Leads, Q1 Construction Push" />
+      <div class="field" style="background:#EFF6FF;border:1.5px solid #4A8FD6;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <label style="color:#1D4ED8;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">
+          📋 NAME THIS LIST
+          <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#3B82F6;font-size:11px;"> — names this batch in Pipedrive (optional)</span>
+        </label>
+        <input type="text" id="t-list-name"
+          placeholder="e.g. Jeff's Phoenix Leads, Q1 Construction Push"
+          style="width:100%;padding:10px 13px;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-family:var(--font);background:#fff;outline:none;box-sizing:border-box;" />
+        <div style="font-size:11px;color:#3B82F6;margin-top:6px;font-weight:500;">
+          Will be tagged as: <span id="t-list-preview" style="font-weight:700;color:#1D4ED8;"></span>
+        </div>
       </div>
 
       <div style="display:flex;gap:10px;margin-bottom:16px;">
@@ -2836,9 +2878,12 @@ Turner Construction, turnerconstruction.com"
   }
 
   function buildListTag(inputId) {
-    const raw = document.getElementById(inputId)
-      ? document.getElementById(inputId).value.trim()
-      : '';
+    const el = document.getElementById(inputId);
+    const raw = el ? el.value.trim() : '';
+    return buildListTag_fromValue(raw, 'Lead Run');
+  }
+
+  function buildListTag_fromValue(customName, fallback) {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric'
@@ -2846,8 +2891,26 @@ Turner Construction, turnerconstruction.com"
     const timeStr = now.toLocaleTimeString('en-US', {
       hour: '2-digit', minute: '2-digit'
     });
-    const base = raw || 'Lead Run';
+    const base = customName || fallback || 'Lead Run';
     return base + ' \u2014 ManageAI LeadBooster \u2014 ' + dateStr + ' ' + timeStr;
+  }
+
+  function initListNamePreviews() {
+    const pairs = [
+      { input: 't-list-name', preview: 't-list-preview' },
+      { input: 's-list-name', preview: 's-list-preview' },
+      { input: 'b-list-name', preview: 'b-list-preview' }
+    ];
+    pairs.forEach(({ input, preview }) => {
+      const el = document.getElementById(input);
+      const pr = document.getElementById(preview);
+      if (!el || !pr) return;
+      function update() {
+        pr.textContent = buildListTag_fromValue(el.value.trim(), 'Lead Run');
+      }
+      el.addEventListener('input', update);
+      update();
+    });
   }
 
 
@@ -2870,6 +2933,11 @@ Turner Construction, turnerconstruction.com"
       el.className = 'limit-count ok';
       fill.className = 'limit-fill ok';
     }
+  }
+
+  function parseBulkLines() {
+    const raw = document.getElementById('b-list')?.value?.trim() || '';
+    return parseSmartBulk(raw);
   }
 
   function parseSmartBulk(rawText) {
@@ -2977,7 +3045,7 @@ Turner Construction, turnerconstruction.com"
         notes: notes || '',
         submitter_name: submitterName || '',
         submitter_email: submitterEmail || '',
-        list_tag: listTag || 'Lead Run \u2014 ManageAI LeadBooster',
+        list_tag: listTag || buildListTag_fromValue('', 'Lead Run'),
         source: source || 'lead_booster'
       })
     });
@@ -4303,15 +4371,20 @@ Turner Construction, turnerconstruction.com"
         'ICP Rationale: ' + (c.icp_rationale || 'N/A'),
         '',
         'CONTACT INFO',
+        'Title: ' + (c.title || 'N/A'),
         'LinkedIn: ' + (c.linkedin_url || 'N/A'),
         'Email Source: ' + (c.email_source || 'N/A'),
         'Phone Source: ' + (c.phone_source || 'N/A'),
         'Completeness: ' + (c.completeness || 0) + '%',
         '',
+        'COMPANY INTEL',
+        'Vertical: ' + (c.vertical || 'N/A'),
+        'Domain: ' + (c.domain || 'N/A'),
+        '',
         'LIST INFO',
         'List: ' + (c.list_tag || 'N/A'),
         'Source: ' + (c.source || 'N/A'),
-        'Vertical: ' + (c.vertical || 'N/A'),
+        'Submitted by: ' + (c.submitter_name || 'N/A'),
         'Enriched: ' + (c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'),
         '',
         '---',
@@ -5110,7 +5183,8 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-bulk-modal').style.display = 'none';
-    const listTag = 'Rebecca \u2014 Bulk Run \u2014 ManageAI LeadBooster \u2014 ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const listName = document.getElementById('rb-bulk-list-name')?.value?.trim() || '';
+    const listTag = buildListTag_fromValue(listName, 'Rebecca Bulk');
 
     const leads = parsed.map(p => ({
       company_name: p.company,
@@ -5154,7 +5228,8 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-single-modal').style.display = 'none';
-    const listTag = 'Rebecca \u2014 ' + company + ' \u2014 ManageAI LeadBooster \u2014 ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const listName = document.getElementById('rb-single-list-name')?.value?.trim() || '';
+    const listTag = buildListTag_fromValue(listName, 'Rebecca Single');
     showPipelineCard(company, domain, vertical, 'single', { list_tag: listTag });
     await fireWebhook(company, domain, vertical, '', window._currentUser?.name || 'Tony', window._currentUser?.email || 'tony@manageai.io', listTag, 'rebecca_single');
   }
@@ -5215,7 +5290,8 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-territory-modal').style.display = 'none';
-    const listTag = 'Rebecca \u2014 ' + city + ' ' + state + ' ' + vertical + ' \u2014 ManageAI LeadBooster \u2014 ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const listName = document.getElementById('rb-territory-list-name')?.value?.trim() || '';
+    const listTag = buildListTag_fromValue(listName, city + ' ' + state + ' Territory');
     showPipelineCard(city + ' ' + state + ' (' + qty + ' co)', '', vertical, 'territory', { city: city, state: state, qty: qty, list_tag: listTag });
 
     try {
@@ -5763,6 +5839,8 @@ Turner Construction, turnerconstruction.com"
 
     const clearBtn = document.getElementById('rb-clear-btn');
     if (clearBtn) clearBtn.addEventListener('click', clearRebeccaChat);
+
+    if (typeof initListNamePreviews === 'function') initListNamePreviews();
   });
 
 </script>
