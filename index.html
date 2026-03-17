@@ -2618,8 +2618,17 @@ Turner Construction, turnerconstruction.com"
   const SB_URL = "https://palcqjfgygpidzwjzikn.supabase.co";
   // NOTE: Replace with your anon key from Supabase dashboard > Settings > API
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODE1MzcsImV4cCI6MjA4ODM1NzUzN30.-8yi1QepliAdMhgARQhId93Ny-M0skqaDHgOevM3Zro";
-  const SB_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA";
   const SB_TABLE = "lb_requests";
+
+  // Proxy for Supabase service-role calls (key stays server-side)
+  async function sbProxy(table, method, query, body) {
+    const r = await fetch('/api/supabase-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table, method: method || 'GET', query: query || '', body: body || undefined })
+    });
+    return r.json();
+  }
 
   // ==================== MODE SWITCHING ====================
   let currentMode = 'rebecca';
@@ -3021,19 +3030,13 @@ Turner Construction, turnerconstruction.com"
     });
   }
 
-  // Admin-level Supabase request (uses service_role for dashboard reads)
+  // Admin-level Supabase request (proxied — service key stays server-side)
   async function sbAdmin(method, path) {
     try {
-      const resp = await fetch(SB_URL + '/rest/v1/' + path, {
-        method,
-        headers: {
-          'apikey': SB_SERVICE_KEY,
-          'Authorization': 'Bearer ' + SB_SERVICE_KEY,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!resp.ok) return null;
-      return await resp.json();
+      const qIdx = path.indexOf('?');
+      const table = qIdx > -1 ? path.substring(0, qIdx) : path;
+      const query = qIdx > -1 ? path.substring(qIdx + 1) : '';
+      return await sbProxy(table, method, query);
     } catch { return null; }
   }
 
@@ -4477,19 +4480,11 @@ Turner Construction, turnerconstruction.com"
 
       // Log session to Supabase
       try {
-        await fetch(SB_URL + '/rest/v1/lb_tavus_sessions', {
-          method: 'POST',
-          headers: {
-            'apikey': SB_SERVICE_KEY,
-            'Authorization': 'Bearer ' + SB_SERVICE_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            session_id: data.conversation_id,
-            conversation_id: data.conversation_id,
-            user_name: window._currentUser?.name || 'Tony',
-            status: 'active'
-          })
+        await sbProxy('lb_tavus_sessions', 'POST', '', {
+          session_id: data.conversation_id,
+          conversation_id: data.conversation_id,
+          user_name: window._currentUser?.name || 'Tony',
+          status: 'active'
         });
       } catch(e) { /* non-fatal */ }
 
@@ -4681,9 +4676,6 @@ Turner Construction, turnerconstruction.com"
   let preCallPollInterval = null;
 
   async function pollPreCallBrief(domain, company) {
-    const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA';
-
     let attempts = 0;
     const maxAttempts = 20; // 60 seconds
 
@@ -4699,13 +4691,9 @@ Turner Construction, turnerconstruction.com"
 
       try {
         const since = new Date(Date.now() - 300000).toISOString();
-        const resp = await fetch(
-          SB_URL + '/rest/v1/lb_precall_briefs?domain=eq.' +
-          encodeURIComponent(domain) +
-          '&order=created_at.desc&limit=1&created_at=gte.' + since,
-          { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
-        );
-        const rows = await resp.json();
+        const rows = await sbProxy('lb_precall_briefs', 'GET',
+          'domain=eq.' + encodeURIComponent(domain) +
+          '&order=created_at.desc&limit=1&created_at=gte.' + since);
         if (rows && rows[0] && rows[0].brief_text) {
           clearInterval(preCallPollInterval);
           updatePreCallCard(company, null, rows[0].brief_text);
@@ -4867,18 +4855,12 @@ Turner Construction, turnerconstruction.com"
   }
 
   async function checkTerritoryDedup(city, state, vertical) {
-    const SB_URL = 'https://palcqjfgygpidzwjzikn.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA';
     try {
-      const resp = await fetch(
-        SB_URL + '/rest/v1/lb_territory_searches' +
-        '?city=eq.' + encodeURIComponent(city) +
+      const rows = await sbProxy('lb_territory_searches', 'GET',
+        'city=eq.' + encodeURIComponent(city) +
         '&state=eq.' + encodeURIComponent(state) +
         '&vertical=eq.' + encodeURIComponent(vertical) +
-        '&select=id,created_at&order=created_at.desc&limit=5',
-        { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
-      );
-      const rows = await resp.json();
+        '&select=id,created_at&order=created_at.desc&limit=5');
       return rows || [];
     } catch(e) {
       return [];
@@ -5130,10 +5112,9 @@ Turner Construction, turnerconstruction.com"
   async function loadRebeccaStats() {
     rbRenderWelcome(null);
     try {
-      const headers = { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY, 'Content-Type': 'application/json' };
       const [contactsResp, queueResp, pdDealsResp, pdPersonsResp] = await Promise.all([
-        fetch(SB_URL + '/rest/v1/lb_contacts?select=icp_score,vertical,outcome,created_at&limit=500', { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(SB_URL + '/rest/v1/lb_queue?select=domain,status,meta,created_at&order=created_at.desc&limit=10', { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
+        sbProxy('lb_contacts', 'GET', 'select=icp_score,vertical,outcome,created_at&limit=500').catch(() => []),
+        sbProxy('lb_queue', 'GET', 'select=domain,status,meta,created_at&order=created_at.desc&limit=10').catch(() => []),
         fetch('https://api.pipedrive.com/v1/deals?status=open&limit=20&api_token=' + PIPEDRIVE_KEY).then(r => r.ok ? r.json() : { data: null }).catch(() => ({ data: null })),
         fetch('https://api.pipedrive.com/v1/persons?limit=50&api_token=' + PIPEDRIVE_KEY).then(r => r.ok ? r.json() : { data: null }).catch(() => ({ data: null }))
       ]);
@@ -5703,12 +5684,9 @@ async function tickerPoll(domain) {
     const since = new Date(Date.now() - 1800000).toISOString();
 
     // Check pipeline status (WF-REBECCA-STATUS writes here)
-    const pingResp = await fetch(
-      SB_URL + '/rest/v1/lb_pipeline_status?order=created_at.desc&limit=1&select=message,stage,created_at' +
-      '&created_at=gte.' + since,
-      { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
-    );
-    const pings = await pingResp.json();
+    const pings = await sbProxy('lb_pipeline_status', 'GET',
+      'order=created_at.desc&limit=1&select=message,stage,created_at' +
+      '&created_at=gte.' + since);
     const latestPing = pings?.[0];
 
     if (latestPing && (Date.now() - new Date(latestPing.created_at).getTime()) < 300000) {
@@ -5721,12 +5699,9 @@ async function tickerPoll(domain) {
     }
 
     // Fall back to lb_queue aggregate
-    const qResp = await fetch(
-      SB_URL + '/rest/v1/lb_queue?order=created_at.desc&limit=50&select=status,contacts_found,created_at' +
-      '&created_at=gte.' + since,
-      { headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY } }
-    );
-    const qRows = await qResp.json();
+    const qRows = await sbProxy('lb_queue', 'GET',
+      'order=created_at.desc&limit=50&select=status,contacts_found,created_at' +
+      '&created_at=gte.' + since);
     if (!qRows || !qRows.length) return;
 
     const total = qRows.length;
@@ -5798,11 +5773,8 @@ async function loadAnalysisTab() {
   if (!el) return;
 
   try {
-    const resp = await fetch(
-      SB_URL + '/rest/v1/lb_run_audits?order=created_at.desc&limit=20&select=*', {
-      headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
-    });
-    const runs = await resp.json();
+    const runs = await sbProxy('lb_run_audits', 'GET',
+      'order=created_at.desc&limit=20&select=*');
 
     if (!runs || !runs.length) {
       el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;font-weight:600;">No pipeline runs yet. Run a territory search or single company to generate your first analysis.</div>';
@@ -6205,19 +6177,16 @@ function closeAuditModal() {
         return;
       }
       try {
-        var url, resp, data;
+        var data;
         if (card.ctx.isTerritory) {
-          url = SB_URL + '/rest/v1/lb_territory_searches?city=eq.' + encodeURIComponent(card.ctx.city) +
-            '&state=eq.' + encodeURIComponent(card.ctx.state) + '&order=created_at.desc&limit=1';
+          data = await sbProxy('lb_territory_searches', 'GET',
+            'city=eq.' + encodeURIComponent(card.ctx.city) +
+            '&state=eq.' + encodeURIComponent(card.ctx.state) + '&order=created_at.desc&limit=1');
         } else {
-          url = SB_URL + '/rest/v1/lb_queue?domain=eq.' + encodeURIComponent(card.ctx.domain) +
-            '&order=created_at.desc&limit=1&select=status,contacts_found';
+          data = await sbProxy('lb_queue', 'GET',
+            'domain=eq.' + encodeURIComponent(card.ctx.domain) +
+            '&order=created_at.desc&limit=1&select=status,contacts_found');
         }
-        resp = await fetch(url, {
-          headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
-        });
-        if (!resp.ok) return;
-        data = await resp.json();
         if (data && data.length > 0) {
           var row = data[0];
           var newStage = plcMapStatus(row.status);
@@ -6238,11 +6207,9 @@ function closeAuditModal() {
       }
       if (!card.ctx.domain) return;
       try {
-        var resp = await fetch(SB_URL + '/rest/v1/lb_contacts?domain=eq.' + encodeURIComponent(card.ctx.domain) + '&select=id', {
-          headers: { 'apikey': SB_SERVICE_KEY, 'Authorization': 'Bearer ' + SB_SERVICE_KEY }
-        });
-        if (!resp.ok) return;
-        var rows = await resp.json();
+        var rows = await sbProxy('lb_contacts', 'GET',
+          'domain=eq.' + encodeURIComponent(card.ctx.domain) + '&select=id');
+        if (!rows || !Array.isArray(rows)) return;
         card.ctx.contactsFound = rows.length;
         var counter = card.el.querySelector('[data-plc="counter"]');
         if (counter) counter.textContent = rows.length + ' contacts found so far';

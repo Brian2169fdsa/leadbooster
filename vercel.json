@@ -20,6 +20,12 @@
     },
     "api/rebecca-status.js": {
       "maxDuration": 15
+    },
+    "api/run-analysis.js": {
+      "maxDuration": 60
+    },
+    "api/supabase-proxy.js": {
+      "maxDuration": 15
     }
   }
 }
