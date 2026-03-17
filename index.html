@@ -4901,7 +4901,7 @@ Turner Construction, turnerconstruction.com"
     const tab = document.getElementById('rb-tab-' + action);
     if (tab) tab.classList.add('active');
     // Show corresponding modal, hide others
-    const modals = { territory: 'rb-territory-modal', single: 'rb-single-modal', bulk: 'rb-bulk-modal' };
+    const modals = { territory: 'rb-territory-modal', single: 'rb-single-modal', bulk: 'rb-bulk-modal', precall: 'rb-precall-modal' };
     Object.keys(modals).forEach(k => {
       const el = document.getElementById(modals[k]);
       if (el) el.style.display = (k === action) ? 'block' : 'none';
@@ -4911,30 +4911,18 @@ Turner Construction, turnerconstruction.com"
   function toggleRebeccaForm(type) {
     const territoryForm = document.getElementById('rb-territory-modal');
     const singleForm = document.getElementById('rb-single-modal');
+    const bulkForm = document.getElementById('rb-bulk-modal');
+    const precallForm = document.getElementById('rb-precall-modal');
 
-    if (type === 'territory') {
-      const isVisible = territoryForm &&
-        territoryForm.style.display !== 'none' &&
-        territoryForm.style.display !== '';
-      // Hide both first
-      if (territoryForm) territoryForm.style.display = 'none';
-      if (singleForm) singleForm.style.display = 'none';
-      // Toggle territory
-      if (!isVisible && territoryForm) {
-        territoryForm.style.display = 'block';
-      }
-    } else if (type === 'single') {
-      const isVisible = singleForm &&
-        singleForm.style.display !== 'none' &&
-        singleForm.style.display !== '';
-      // Hide both first
-      if (territoryForm) territoryForm.style.display = 'none';
-      if (singleForm) singleForm.style.display = 'none';
-      // Toggle single
-      if (!isVisible && singleForm) {
-        singleForm.style.display = 'block';
-      }
-    }
+    // Hide all modals first
+    if (territoryForm) territoryForm.style.display = 'none';
+    if (singleForm) singleForm.style.display = 'none';
+    if (bulkForm) bulkForm.style.display = 'none';
+    if (precallForm) precallForm.style.display = 'none';
+
+    // Show the requested one
+    const target = document.getElementById('rb-' + type + '-modal');
+    if (target) target.style.display = 'block';
 
     // Update tab styling
     document.querySelectorAll('.rb-action-tab').forEach(t => t.classList.remove('active'));
@@ -4946,10 +4934,12 @@ Turner Construction, turnerconstruction.com"
     const precallModal = document.getElementById('rb-precall-modal');
     const territoryModal = document.getElementById('rb-territory-modal');
     const singleModal = document.getElementById('rb-single-modal');
+    const bulkModal = document.getElementById('rb-bulk-modal');
 
     // Hide all forms
     if (territoryModal) territoryModal.style.display = 'none';
     if (singleModal) singleModal.style.display = 'none';
+    if (bulkModal) bulkModal.style.display = 'none';
 
     if (mode === 'precall') {
       const isVisible = precallModal && precallModal.style.display !== 'none';
@@ -4994,7 +4984,7 @@ Turner Construction, turnerconstruction.com"
 
   async function pollPreCallBrief(domain, company) {
     let attempts = 0;
-    const maxAttempts = 20; // 60 seconds
+    const maxAttempts = 40; // 160 seconds
 
     if (preCallPollInterval) clearInterval(preCallPollInterval);
 
@@ -5002,12 +4992,12 @@ Turner Construction, turnerconstruction.com"
       attempts++;
       if (attempts > maxAttempts) {
         clearInterval(preCallPollInterval);
-        updatePreCallCard(company, 'Brief generation timed out. Try again.', null);
+        updatePreCallCard(company, 'Still generating \u2014 this one is taking longer than usual. Check back in 30 seconds or click Pre-Call Brief again to reload.', null);
         return;
       }
 
       try {
-        const since = new Date(Date.now() - 300000).toISOString();
+        const since = new Date(Date.now() - 600000).toISOString();
         const rows = await sbProxy('lb_precall_briefs', 'GET',
           'domain=eq.' + encodeURIComponent(domain) +
           '&order=created_at.desc&limit=1&created_at=gte.' + since);
@@ -5018,7 +5008,7 @@ Turner Construction, turnerconstruction.com"
       } catch(e) {
         console.error('[PreCall] Poll error:', e);
       }
-    }, 3000);
+    }, 4000);
   }
 
   function showPreCallCard(company, domain, brief) {
