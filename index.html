@@ -1322,44 +1322,60 @@
       }
     }
 
-    /* ===== PIPELINE STATUS CARD ===== */
-    .plc-card {
-      position: fixed; top: 24px; right: 24px; width: 320px;
-      background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      font-family: 'Montserrat', sans-serif;
-      z-index: 9998; padding: 18px 20px 16px;
-      opacity: 0; transform: translateX(20px);
-      transition: opacity 0.35s ease, transform 0.35s ease;
-      pointer-events: none;
+    /* ===== PIPELINE PROGRESS CARD (LBP) ===== */
+    #lbp-card {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 33vw;
+      min-width: 380px;
+      max-width: 480px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      z-index: 9990;
+      transform: translateY(110%);
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
     }
-    .plc-card.plc-visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    .plc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .plc-dot { width: 8px; height: 8px; border-radius: 50%; background: #4A8FD6; flex-shrink: 0; animation: plcPulse 1.6s infinite; }
-    @keyframes plcPulse { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.5);opacity:1} }
-    .plc-dot.plc-done { animation: none; background: #16A34A; }
-    .plc-title { font-size: 14px; font-weight: 700; color: #1E293B; flex: 1; }
-    .plc-close { background: none; border: none; font-size: 18px; color: #94A3B8; cursor: pointer; padding: 0 2px; line-height: 1; }
-    .plc-close:hover { color: #475569; }
-    .plc-company { font-size: 12px; color: #475569; font-weight: 600; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .plc-stage { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
-    .plc-stage-icon { font-size: 18px; flex-shrink: 0; line-height: 1.2; }
-    .plc-stage-text { flex: 1; }
-    .plc-stage-label { font-size: 12px; font-weight: 700; color: #1E293B; margin-bottom: 2px; }
-    .plc-stage-detail { font-size: 11px; color: #64748B; line-height: 1.4; }
-    .plc-bar-track { height: 4px; background: #F5F6F8; border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
-    .plc-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #4A8FD6, #16A34A); transition: width 0.6s ease; width: 0%; }
-    .plc-counter { font-size: 11px; color: #64748B; font-weight: 500; margin-bottom: 4px; }
-    .plc-btn-sheet {
-      display: inline-block; width: 100%; text-align: center; margin-top: 10px;
-      background: linear-gradient(135deg, #1a5fb4, #4a90d9); border-radius: 10px;
-      padding: 12px 20px; font-size: 13px; font-weight: 700; color: #fff;
-      border: none; cursor: pointer; text-decoration: none;
-      box-shadow: 0 4px 16px rgba(74,144,217,0.35); transition: transform 0.15s;
+    #lbp-card.lbp-visible {
+      transform: translateY(0);
     }
-    .plc-btn-sheet:hover { transform: translateY(-1px); }
-    @media (max-width: 767px) {
-      .plc-card { top: auto; bottom: 80px; left: 12px; right: 12px; width: auto; }
+    #lbp-card.lbp-hiding {
+      transform: translateY(110%);
+    }
+    .lbp-stage-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid #F8FAFC;
+    }
+    .lbp-stage-row:last-child { border-bottom: none; }
+    .lbp-stage-circle {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0; margin-top: 1px;
+    }
+    .lbp-stage-circle.pending  { background: #F1F5F9; }
+    .lbp-stage-circle.active   { background: #EFF6FF; animation: lbpPulse 1.5s infinite; }
+    .lbp-stage-circle.done     { background: #DCFCE7; font-size: 12px; }
+    .lbp-stage-label { font-size: 13px; font-weight: 600; color: #94A3B8; transition: color 0.3s; }
+    .lbp-stage-label.active { color: #1E293B; font-weight: 700; }
+    .lbp-stage-label.done   { color: #16A34A; }
+    .lbp-stage-detail { font-size: 11px; color: #7A8B9A; margin-top: 1px; display: none; }
+    .lbp-stage-detail.visible { display: block; }
+    @keyframes lbpPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(74,143,214,0.3); }
+      50%      { box-shadow: 0 0 0 6px rgba(74,143,214,0); }
+    }
+    @media (max-width: 768px) {
+      #lbp-card {
+        left: 12px;
+        right: 12px;
+        width: auto;
+        min-width: 0;
+        bottom: 80px;
+      }
     }
   </style>
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
@@ -2992,7 +3008,7 @@ Turner Construction, turnerconstruction.com"
     })).filter(l => l.company);
     var _tCity = document.getElementById('t-city') ? document.getElementById('t-city').value.trim() : '';
     var _tState = document.getElementById('t-state') ? document.getElementById('t-state').value.trim() : '';
-    showPipelineCard(leads[0]?.company || (_tCity + ' Territory'), leads[0]?.domain || '', getActiveChip('t-chips'), 'territory', { city: _tCity, state: _tState });
+    showPipelineCard(leads[0]?.company || (_tCity + ' Territory'), leads[0]?.domain || '', getActiveChip('t-chips'), 'territory', { city: _tCity, state: _tState, qty: leads.length });
     runLeads(leads, 'territory', window._currentUser?.name || 'Brian', window._currentUser?.email || 'brian@manageai.io');
   }
 
@@ -4409,7 +4425,8 @@ Turner Construction, turnerconstruction.com"
             (fnArgs.city||'') + ' ' + (fnArgs.state||''),
             fnArgs.city||'',
             fnArgs.vertical||'construction',
-            'territory'
+            'territory',
+            { qty: fnArgs.max_results || 20, city: fnArgs.city||'', state: fnArgs.state||'' }
           );
         } else if (fnName === 'run_lead_booster') {
           showPipelineCard(
@@ -4892,7 +4909,7 @@ Turner Construction, turnerconstruction.com"
     }
 
     document.getElementById('rb-territory-modal').style.display = 'none';
-    showPipelineCard(city + ' ' + state + ' (' + qty + ' co)', '', vertical, 'territory', { city: city, state: state });
+    showPipelineCard(city + ' ' + state + ' (' + qty + ' co)', '', vertical, 'territory', { city: city, state: state, qty: qty });
 
     try {
       await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
@@ -5637,24 +5654,8 @@ Turner Construction, turnerconstruction.com"
 let tickerPollInterval = null;
 let tickerHideTimer = null;
 let tickerStartTime = null;
-function showPipelineCard(company, domain, vertical, triggerType) {
-  // This function is called by all the existing trigger hooks
-  // Now it drives the ticker instead of the card
-  tickerStartTime = Date.now();
-  const ticker = document.getElementById('pipeline-ticker');
-  const tickerText = document.getElementById('ticker-text');
-  if (!ticker) return;
-  ticker.style.display = 'flex';
-  if (tickerText) tickerText.textContent = (company || 'Running') + ' — Starting...';
-
-  // Start polling
-  if (tickerPollInterval) clearInterval(tickerPollInterval);
-  tickerPollInterval = setInterval(() => tickerPoll(domain), 4000);
-
-  // Auto hide after 6 minutes
-  if (tickerHideTimer) clearTimeout(tickerHideTimer);
-  tickerHideTimer = setTimeout(hideTicker, 360000);
-}
+// showPipelineCard is defined at the bottom of the page (LBP card implementation)
+// This ticker section provides supporting poll/update functions
 function hideTicker() {
   const ticker = document.getElementById('pipeline-ticker');
   if (ticker) ticker.style.display = 'none';
@@ -6004,264 +6005,322 @@ function closeAuditModal() {
   if (modal) modal.style.display = 'none';
 }
 
-// ==================== PIPELINE STATUS CARD (STACKED / LEGACY) ====================
+// ==================== PIPELINE PROGRESS CARD (LBP) ====================
 (function() {
-  const PLC_MAX = 3;
-  const PLC_SHEET = 'https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=1687677868#gid=1687677868';
-  const PLC_STAGES = {
-    territory_search: { icon: '\uD83D\uDDFA\uFE0F', label: 'Searching Territory', pct: 10 },
-    discovery:        { icon: '\uD83D\uDD0D', label: 'Company Discovery', pct: 25 },
-    scraping:         { icon: '\uD83D\uDD77\uFE0F', label: 'Scraping Website', pct: 40 },
-    enriching:        { icon: '\uD83D\uDCA7', label: 'Enriching Contacts', pct: 65 },
-    scoring:          { icon: '\uD83C\uDFAF', label: 'ICP Scoring', pct: 85 },
-    complete:         { icon: '\u2705', label: 'Complete', pct: 100 },
-    news_trigger:     { icon: '\uD83D\uDCF0', label: 'News Trigger', pct: 50 }
+  var STAGES = [
+    { key: 'started',     icon: '\uD83D\uDE80', label: 'Lead Booster Started',            detail: 'Pipeline initializing...', pct: 8 },
+    { key: 'discovering', icon: '\uD83D\uDD0D', label: '',                                detail: '', pct: 22 },
+    { key: 'scraping',    icon: '\uD83D\uDD77\uFE0F', label: 'Scraping & Extracting Contacts', detail: 'Scanning website pages for decision-makers', pct: 44 },
+    { key: 'enriching',   icon: '\uD83D\uDCA7', label: 'Running Enrichment Waterfall',    detail: 'Hunter \u2192 Apollo \u2192 PDL \u2192 Snov.io', pct: 72 },
+    { key: 'scoring',     icon: '\uD83C\uDFAF', label: 'AI Scoring Contacts',             detail: 'Claude evaluating ICP fit for each contact', pct: 90 },
+    { key: 'complete',    icon: '\u2705',        label: 'Pipeline Complete',               detail: 'Contacts enriched and scored', pct: 100 }
+  ];
+
+  var VERT_ICONS = {
+    construction:             '\uD83C\uDFD7\uFE0F',
+    behavioral_health:        '\uD83C\uDFE5',
+    medical_transport:        '\uD83D\uDE91',
+    b2b_professional_services:'\uD83D\uDCBC',
+    health_wellness:          '\uD83D\uDC9A',
+    home_services:            '\uD83C\uDFE0'
   };
 
-  let plcCards = [];
-
-  function plcDetailForStage(stage, ctx) {
-    switch (stage) {
-      case 'territory_search':
-        return 'Google Places \u2014 finding ' + (ctx.vertical || 'companies') + ' in ' + (ctx.city || '') + ', ' + (ctx.state || '');
-      case 'discovery':
-        return 'Google Search \u2014 finding team and leadership pages';
-      case 'scraping':
-        return 'TinyFish + HTTP \u2014 extracting contacts from website';
-      case 'enriching':
-        return 'Hunter \u2192 Apollo \u2192 PDL waterfall';
-      case 'scoring':
-        return 'Claude \u2014 scoring contacts against ICP criteria';
-      case 'complete':
-        return (ctx.contactsFound || 0) + ' contacts enriched and scored';
-      case 'news_trigger':
-        return 'WF-09 detected: ' + (ctx.triggerType || 'event') + ' at ' + (ctx.company || '');
-      default:
-        return '';
+  function getTimings(n) {
+    var contacts = n * 5;
+    var enrichMs = contacts * 2000 * 1.25;
+    var scoreMs  = contacts * 6000 * 1.25;
+    if (n === 1) {
+      return { started: 2000, discovering: 12000, scraping: 22000, enriching: 35000, scoring: 30000, complete: 0 };
     }
+    var territorySearchMs = Math.min(n * 4000, 60000);
+    return {
+      started:     2000,
+      discovering: territorySearchMs,
+      scraping:    Math.round(n * 8000 * 1.25),
+      enriching:   Math.round(enrichMs),
+      scoring:     Math.round(scoreMs),
+      complete:    0
+    };
   }
 
-  function plcCreateCard(id) {
-    const el = document.createElement('div');
-    el.className = 'plc-card';
-    el.id = 'plc-' + id;
-    el.innerHTML =
-      '<div class="plc-header">' +
-        '<div class="plc-dot" data-plc="dot"></div>' +
-        '<div class="plc-title">Lead Booster Running</div>' +
-        '<button class="plc-close" data-plc="close">\u00D7</button>' +
-      '</div>' +
-      '<div class="plc-company" data-plc="company"></div>' +
-      '<div class="plc-stage">' +
-        '<div class="plc-stage-icon" data-plc="icon">\uD83D\uDD0D</div>' +
-        '<div class="plc-stage-text">' +
-          '<div class="plc-stage-label" data-plc="label">Starting...</div>' +
-          '<div class="plc-stage-detail" data-plc="detail"></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="plc-bar-track"><div class="plc-bar-fill" data-plc="bar"></div></div>' +
-      '<div class="plc-counter" data-plc="counter"></div>' +
-      '<div data-plc="btn-wrap" style="display:none;"></div>';
-    return el;
+  function formatEstimate(ms) {
+    var mins = Math.ceil(ms / 60000);
+    if (mins <= 0) return '';
+    if (mins >= 60) return '\u23F1 Est. ~1 hr remaining';
+    return '\u23F1 Est. ~' + mins + ' min remaining';
   }
 
-  function plcReposition() {
-    const container = document.getElementById('plc-container');
-    if (!container) return;
-    const isMobile = window.innerWidth < 768;
-    let offset = 0;
-    plcCards.forEach(function(c) {
-      const el = c.el;
-      if (isMobile) {
-        el.style.top = 'auto';
-        el.style.right = '12px';
-        el.style.left = '12px';
-        el.style.width = 'auto';
-        el.style.bottom = (80 + offset) + 'px';
+  var lbpTimers = [];
+  var lbpPollTimer = null;
+  var lbpDismissTimer = null;
+  var lbpCurrentStage = -1;
+  var lbpCompanyCount = 1;
+  var lbpTimings = {};
+  var lbpDomain = '';
+
+  function lbpClearAll() {
+    lbpTimers.forEach(function(t) { clearTimeout(t); });
+    lbpTimers = [];
+    if (lbpPollTimer) { clearInterval(lbpPollTimer); lbpPollTimer = null; }
+    if (lbpDismissTimer) { clearTimeout(lbpDismissTimer); lbpDismissTimer = null; }
+  }
+
+  function lbpSetStage(idx) {
+    if (idx <= lbpCurrentStage) return;
+    lbpCurrentStage = idx;
+    var stageRows = document.querySelectorAll('.lbp-stage-row');
+    stageRows.forEach(function(row, i) {
+      var circle = row.querySelector('.lbp-stage-circle');
+      var label  = row.querySelector('.lbp-stage-label');
+      var detail = row.querySelector('.lbp-stage-detail');
+      if (i < idx) {
+        circle.className = 'lbp-stage-circle done';
+        circle.textContent = '\u2713';
+        label.className = 'lbp-stage-label done';
+        if (detail) detail.className = 'lbp-stage-detail';
+      } else if (i === idx) {
+        circle.className = 'lbp-stage-circle active';
+        circle.textContent = STAGES[i].icon;
+        label.className = 'lbp-stage-label active';
+        if (detail) detail.className = 'lbp-stage-detail visible';
       } else {
-        el.style.top = (24 + offset) + 'px';
-        el.style.right = '24px';
-        el.style.left = '';
-        el.style.bottom = '';
-        el.style.width = '320px';
+        circle.className = 'lbp-stage-circle pending';
+        circle.textContent = STAGES[i].icon;
+        label.className = 'lbp-stage-label';
+        if (detail) detail.className = 'lbp-stage-detail';
       }
-      offset += el.offsetHeight + 12;
     });
+    // Progress bar
+    var fill = document.getElementById('lbp-progress-fill');
+    if (fill) fill.style.width = STAGES[idx].pct + '%';
+    // Estimate
+    lbpUpdateEstimate(idx);
   }
 
-  function plcUpdate(card, stage) {
-    const s = PLC_STAGES[stage] || PLC_STAGES.discovery;
-    const q = function(sel) { return card.el.querySelector('[data-plc="' + sel + '"]'); };
-    q('icon').textContent = s.icon;
-    q('label').textContent = s.label;
-    q('detail').textContent = plcDetailForStage(stage, card.ctx);
-    q('bar').style.width = s.pct + '%';
-    card.stage = stage;
+  function lbpUpdateEstimate(fromIdx) {
+    var el = document.getElementById('lbp-estimate');
+    if (!el) return;
+    if (fromIdx >= STAGES.length - 1) {
+      el.textContent = '\u2705 Done \u2014 results ready in Google Sheet';
+      return;
+    }
+    var remaining = 0;
+    for (var i = fromIdx; i < STAGES.length; i++) {
+      remaining += lbpTimings[STAGES[i].key] || 0;
+    }
+    el.textContent = formatEstimate(remaining);
+  }
 
-    if (stage === 'complete') {
-      q('dot').classList.add('plc-done');
-      card.el.querySelector('.plc-title').textContent = 'Lead Booster Complete';
-      var wrap = q('btn-wrap');
+  function lbpJumpToComplete(detailText) {
+    lbpClearAll();
+    // Mark all stages done
+    var stageRows = document.querySelectorAll('.lbp-stage-row');
+    stageRows.forEach(function(row, i) {
+      var circle = row.querySelector('.lbp-stage-circle');
+      var label  = row.querySelector('.lbp-stage-label');
+      var detail = row.querySelector('.lbp-stage-detail');
+      circle.className = 'lbp-stage-circle done';
+      circle.textContent = '\u2713';
+      label.className = 'lbp-stage-label done';
+      if (detail) detail.className = 'lbp-stage-detail';
+    });
+    // Update complete stage detail
+    var lastDetail = stageRows[stageRows.length - 1]?.querySelector('.lbp-stage-detail');
+    if (lastDetail && detailText) {
+      lastDetail.textContent = detailText;
+      lastDetail.className = 'lbp-stage-detail visible';
+    }
+    lbpCurrentStage = STAGES.length - 1;
+    var fill = document.getElementById('lbp-progress-fill');
+    if (fill) fill.style.width = '100%';
+    var est = document.getElementById('lbp-estimate');
+    if (est) est.textContent = '\u2705 Done \u2014 results ready in Google Sheet';
+    var headerLabel = document.getElementById('lbp-header-label');
+    if (headerLabel) headerLabel.textContent = 'Pipeline Complete';
+    // Show sheet button
+    var wrap = document.getElementById('lbp-btn-wrap');
+    if (wrap) {
       wrap.style.display = 'block';
-      wrap.innerHTML = '<a class="plc-btn-sheet" href="' + PLC_SHEET + '" target="_blank">\uD83D\uDCCA View ' + (card.ctx.contactsFound || 0) + ' Leads in Sheet</a>';
-      // Auto-dismiss after 60s
-      card.dismissTimer = setTimeout(function() { plcDismiss(card); }, 60000);
+      requestAnimationFrame(function() {
+        wrap.style.opacity = '1';
+        wrap.style.transform = 'translateY(0)';
+      });
     }
-
-    if (stage === 'enriching' && card._enrichSub < 3) {
-      var subs = [
-        'Hunter \u2014 finding emails...',
-        'Apollo \u2014 finding phones + LinkedIn...',
-        'PDL \u2014 filling remaining gaps...'
-      ];
-      var idx = card._enrichSub || 0;
-      q('detail').textContent = subs[idx];
-      card._enrichSubTimer = setTimeout(function() {
-        if (card.stage !== 'enriching') return;
-        card._enrichSub = (card._enrichSub || 0) + 1;
-        if (card._enrichSub < 3) plcUpdate(card, 'enriching');
-      }, 6000);
-    }
+    // Auto-dismiss after 90 seconds
+    lbpDismissTimer = setTimeout(lbpDismissCard, 90000);
   }
 
-  function plcDismiss(card) {
-    card.el.classList.remove('plc-visible');
-    if (card.pollTimer) clearInterval(card.pollTimer);
-    if (card.contactTimer) clearInterval(card.contactTimer);
-    if (card.dismissTimer) clearTimeout(card.dismissTimer);
-    if (card._enrichSubTimer) clearTimeout(card._enrichSubTimer);
+  function lbpDismissCard() {
+    lbpClearAll();
+    var card = document.getElementById('lbp-card');
+    if (!card) return;
+    card.classList.remove('lbp-visible');
+    card.classList.add('lbp-hiding');
     setTimeout(function() {
-      if (card.el.parentNode) card.el.parentNode.removeChild(card.el);
-      plcCards = plcCards.filter(function(c) { return c !== card; });
-      plcReposition();
+      if (card.parentNode) card.parentNode.removeChild(card);
     }, 400);
   }
 
-  function plcMapStatus(status) {
-    if (!status) return 'discovery';
-    var s = status.toLowerCase();
-    if (s === 'pending' || s === 'discovery') return 'discovery';
-    if (s === 'scraping') return 'scraping';
-    if (s === 'enriching') return 'enriching';
-    if (s === 'scoring') return 'scoring';
-    if (s === 'complete') return 'complete';
-    return 'discovery';
-  }
-
-  function plcStartPolling(card) {
-    var startTime = Date.now();
-    var maxPoll = 15 * 60 * 1000; // 15 min
-
-    // Main status poll
-    card.pollTimer = setInterval(async function() {
-      if (Date.now() - startTime > maxPoll || card.stage === 'complete') {
-        clearInterval(card.pollTimer);
-        return;
-      }
-      try {
-        var data;
-        if (card.ctx.isTerritory) {
-          data = await sbProxy('lb_territory_searches', 'GET',
-            'city=eq.' + encodeURIComponent(card.ctx.city) +
-            '&state=eq.' + encodeURIComponent(card.ctx.state) + '&order=created_at.desc&limit=1');
-        } else {
-          data = await sbProxy('lb_queue', 'GET',
-            'domain=eq.' + encodeURIComponent(card.ctx.domain) +
-            '&order=created_at.desc&limit=1&select=status,contacts_found');
-        }
-        if (data && data.length > 0) {
-          var row = data[0];
-          var newStage = plcMapStatus(row.status);
-          if (row.contacts_found != null) card.ctx.contactsFound = row.contacts_found;
-          if (newStage !== card.stage) {
-            card._enrichSub = 0;
-            plcUpdate(card, newStage);
+  async function lbpPoll() {
+    try {
+      var resp = await fetch(
+        'https://palcqjfgygpidzwjzikn.supabase.co/rest/v1/lb_queue?order=created_at.desc&limit=5&select=status,contacts_found,company_name',
+        {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA'
           }
         }
-      } catch(e) { /* silent */ }
-    }, 5000);
-
-    // Contact counter poll (every 8s)
-    card.contactTimer = setInterval(async function() {
-      if (Date.now() - startTime > maxPoll || card.stage === 'complete') {
-        clearInterval(card.contactTimer);
-        return;
+      );
+      var rows = await resp.json();
+      var done = (rows || []).find(function(r) { return r.status === 'complete' || r.status === 'enriched'; });
+      if (done) {
+        var count = done.contacts_found || '?';
+        lbpJumpToComplete(count + ' contacts enriched and scored');
+        return true;
       }
-      if (!card.ctx.domain) return;
-      try {
-        var rows = await sbProxy('lb_contacts', 'GET',
-          'domain=eq.' + encodeURIComponent(card.ctx.domain) + '&select=id');
-        if (!rows || !Array.isArray(rows)) return;
-        card.ctx.contactsFound = rows.length;
-        var counter = card.el.querySelector('[data-plc="counter"]');
-        if (counter) counter.textContent = rows.length + ' contacts found so far';
-      } catch(e) { /* silent */ }
-    }, 8000);
+      // Advance stages based on Supabase status
+      var latest = rows && rows[0];
+      if (latest) {
+        var s = (latest.status || '').toLowerCase();
+        if (s === 'scoring')   lbpSetStage(4);
+        else if (s === 'enriching') lbpSetStage(3);
+        else if (s === 'scraping' || s === 'scraped')  lbpSetStage(2);
+      }
+    } catch(e) { /* silent */ }
+    return false;
   }
 
-  // Global entry point
   window.showPipelineCard = function(company, domain, vertical, triggerType, extra) {
     extra = extra || {};
 
-    // Guard — old card element removed, just drive the ticker
-    var container = document.getElementById('plc-container');
-    if (!container) return;
+    // Remove existing card if any
+    var old = document.getElementById('lbp-card');
+    if (old) { old.parentNode.removeChild(old); }
+    lbpClearAll();
+    lbpCurrentStage = -1;
+    lbpDomain = domain || '';
 
-    // Enforce max cards
-    while (plcCards.length >= PLC_MAX) {
-      plcDismiss(plcCards[0]);
+    // Determine company count
+    if (triggerType === 'territory') {
+      lbpCompanyCount = (extra.qty) ? parseInt(extra.qty) : 20;
+    } else if (triggerType === 'bulk') {
+      lbpCompanyCount = (extra.leads) ? extra.leads.length : 10;
+    } else {
+      lbpCompanyCount = 1;
     }
 
-    var id = 'plc' + Date.now();
-    var el = plcCreateCard(id);
-    if (!el) return;
-    container.appendChild(el);
+    lbpTimings = getTimings(lbpCompanyCount);
 
-    var card = {
-      id: id,
-      el: el,
-      stage: null,
-      _enrichSub: 0,
-      ctx: {
-        company: company || '',
-        domain: domain || '',
-        vertical: vertical || '',
-        triggerType: triggerType || '',
-        city: extra.city || '',
-        state: extra.state || '',
-        isTerritory: triggerType === 'territory',
-        contactsFound: 0
-      }
-    };
+    // Set dynamic labels for discovering stage
+    STAGES[1].label = (triggerType === 'territory') ? 'Searching Territory' : 'Discovering Company';
+    STAGES[1].detail = (triggerType === 'territory')
+      ? 'Google Places \u2014 finding ' + (vertical || 'companies') + ' in ' + (extra.city || company || '')
+      : 'Google Search \u2014 finding team and leadership pages';
 
-    plcCards.push(card);
+    var vertIcon = VERT_ICONS[vertical] || '\uD83C\uDFE2';
 
-    // Set company name
-    var companyEl = el.querySelector('[data-plc="company"]');
-    if (companyEl) companyEl.textContent = company || domain || 'Processing...';
+    // Build card HTML
+    var card = document.createElement('div');
+    card.id = 'lbp-card';
 
-    // Close button
-    var closeEl = el.querySelector('[data-plc="close"]');
-    if (closeEl) closeEl.addEventListener('click', function() { plcDismiss(card); });
-
-    // Initial stage
-    var initialStage = triggerType === 'territory' ? 'territory_search' : 'discovery';
-    plcUpdate(card, initialStage);
-
-    // Show with animation
-    requestAnimationFrame(function() {
-      plcReposition();
-      requestAnimationFrame(function() { el.classList.add('plc-visible'); });
+    var stagesHtml = '';
+    STAGES.forEach(function(st, i) {
+      var circleClass = i === 0 ? 'lbp-stage-circle active' : 'lbp-stage-circle pending';
+      var labelClass  = i === 0 ? 'lbp-stage-label active' : 'lbp-stage-label';
+      var detailClass = i === 0 ? 'lbp-stage-detail visible' : 'lbp-stage-detail';
+      stagesHtml +=
+        '<div class="lbp-stage-row">' +
+          '<div class="' + circleClass + '">' + st.icon + '</div>' +
+          '<div style="flex:1;">' +
+            '<div class="' + labelClass + '">' + st.label + '</div>' +
+            '<div class="' + detailClass + '">' + st.detail + '</div>' +
+          '</div>' +
+        '</div>';
     });
 
-    // Start polling
-    plcStartPolling(card);
+    card.innerHTML =
+      '<div style="background:#1E3348; padding:14px 18px; display:flex; align-items:center; justify-content:space-between;">' +
+        '<div style="display:flex; align-items:center; gap:10px;">' +
+          '<div style="font-size:14px; font-weight:800; color:#fff; letter-spacing:-0.02em;">MANAGE<span style="color:#4A8FD6;">AI</span></div>' +
+          '<div style="width:1px; height:16px; background:rgba(255,255,255,0.2);"></div>' +
+          '<div id="lbp-header-label" style="font-size:12px; font-weight:600; color:rgba(255,255,255,0.85);">Lead Booster Running</div>' +
+        '</div>' +
+        '<button id="lbp-close" style="background:none; border:none; color:rgba(255,255,255,0.5); font-size:18px; cursor:pointer; line-height:1; padding:0 2px;">\u00D7</button>' +
+      '</div>' +
+      '<div style="background:#fff; border:1px solid #E2E6EC; border-top:none; border-radius:0 0 16px 16px; padding:20px;">' +
+        '<div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #F1F5F9;">' +
+          '<div id="lbp-vert-icon" style="font-size:26px; line-height:1;">' + vertIcon + '</div>' +
+          '<div>' +
+            '<div id="lbp-company-name" style="font-size:14px; font-weight:700; color:#1E293B;">' + (company || domain || 'Processing...') + '</div>' +
+            '<div id="lbp-company-sub" style="font-size:11px; color:#7A8B9A; margin-top:2px;">' + (vertical || '').replace(/_/g, ' ') + (lbpCompanyCount > 1 ? ' \u00B7 ' + lbpCompanyCount + ' companies' : '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="lbp-stages">' + stagesHtml + '</div>' +
+        '<div style="margin-bottom:12px;">' +
+          '<div style="height:6px; background:#F5F6F8; border-radius:3px; overflow:hidden;">' +
+            '<div id="lbp-progress-fill" style="height:100%; width:0%; background:#4A8FD6; border-radius:3px; transition:width 1.2s cubic-bezier(0.16,1,0.3,1);"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="lbp-estimate" style="font-size:11px; color:#7A8B9A; margin-bottom:16px;">\u23F1 Calculating estimate...</div>' +
+        '<div id="lbp-btn-wrap" style="display:none; opacity:0; transform:translateY(8px); transition:opacity 0.4s ease, transform 0.4s ease;">' +
+          '<a id="lbp-sheet-btn" href="https://docs.google.com/spreadsheets/d/1Vg5cHkFLFIxfS88l3gRymXgKWNJLhzIlt-3nkg2Z8k8" target="_blank" style="display:block; width:100%; padding:14px 20px; background:linear-gradient(135deg,#5B21B6,#7C3AED); color:#fff; text-align:center; font-size:14px; font-weight:700; border-radius:10px; text-decoration:none; box-shadow:0 4px 16px rgba(124,58,237,0.4); box-sizing:border-box; letter-spacing:0.01em;">\uD83D\uDCCA View Leads in Google Sheet \u2192</a>' +
+        '</div>' +
+      '</div>';
 
-    return card;
+    document.body.appendChild(card);
+
+    // Close button
+    document.getElementById('lbp-close').addEventListener('click', lbpDismissCard);
+
+    // Slide in
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        card.classList.add('lbp-visible');
+      });
+    });
+
+    // Set initial stage
+    lbpSetStage(0);
+
+    // Schedule timed stage advances
+    var elapsed = 0;
+    for (var i = 0; i < STAGES.length - 1; i++) {
+      elapsed += lbpTimings[STAGES[i].key] || 0;
+      (function(stageIdx, delay) {
+        var t = setTimeout(function() { lbpSetStage(stageIdx); }, delay);
+        lbpTimers.push(t);
+      })(i + 1, elapsed);
+    }
+
+    // Also drive the header ticker
+    tickerStartTime = Date.now();
+    var ticker = document.getElementById('pipeline-ticker');
+    var tickerText = document.getElementById('ticker-text');
+    if (ticker) {
+      ticker.style.display = 'flex';
+      if (tickerText) tickerText.textContent = (company || 'Running') + ' \u2014 Starting...';
+    }
+    if (tickerPollInterval) clearInterval(tickerPollInterval);
+    tickerPollInterval = setInterval(function() { tickerPoll(domain); }, 4000);
+    if (tickerHideTimer) clearTimeout(tickerHideTimer);
+    tickerHideTimer = setTimeout(hideTicker, 360000);
+
+    // Start Supabase polling (every 8s, max 20min)
+    var pollStart = Date.now();
+    lbpPollTimer = setInterval(async function() {
+      if (Date.now() - pollStart > 20 * 60 * 1000) {
+        clearInterval(lbpPollTimer);
+        lbpPollTimer = null;
+        return;
+      }
+      var finished = await lbpPoll();
+      if (finished) {
+        clearInterval(lbpPollTimer);
+        lbpPollTimer = null;
+      }
+    }, 8000);
   };
-
-  // Reposition on resize
-  window.addEventListener('resize', plcReposition);
 })();
 </script>
 
