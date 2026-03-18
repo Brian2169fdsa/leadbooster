@@ -144,6 +144,9 @@
     }
     .mode-tab.active { background: var(--nav); color: #fff; }
     .mode-tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
+    .mode-tab.purple { background: #7C3AED; color: #fff; }
+    .mode-tab.purple:hover { background: #6D28D9; color: #fff; }
+    .mode-tab.purple.active { background: #7C3AED; color: #fff; }
 
     /* Rebecca sub-action tabs (grouped like main tabs) */
     .rb-action-tab {
@@ -1552,7 +1555,7 @@
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="setMode('rebecca')" id="tab-rebecca">Rebecca</button>
     <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard" style="display:none;">Dashboard</button>
-    <button class="mode-tab" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
+    <button class="mode-tab purple" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">Feedback</button>
     <!-- Hidden tabs — do not delete, just hidden -->
@@ -1574,9 +1577,10 @@
       <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
         Access Sheet
       </a>
-      <button onclick="var c=document.getElementById('rb-precall-company'),d=document.getElementById('rb-precall-domain'),v=document.getElementById('rb-precall-vertical');if(document.getElementById('pcb-company-input')&amp;&amp;c&amp;&amp;c.value)document.getElementById('pcb-company-input').value=c.value;if(document.getElementById('pcb-domain-input')&amp;&amp;d&amp;&amp;d.value)document.getElementById('pcb-domain-input').value=d.value;if(document.getElementById('pcb-vertical-input')&amp;&amp;v&amp;&amp;v.value)document.getElementById('pcb-vertical-input').value=v.value;setMode('precall');" id="rb-precall-btn" style="background:#1a1a2e;color:white;border:none;border-radius:7px;padding:10px 18px;font-size:12px;font-weight:700;letter-spacing:0.02em;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;font-family:inherit;" onmouseover="this.style.background='#16213e'" onmouseout="this.style.background='#1a1a2e'">
-        📋 Pre-Call Brief
-      </button>
+      <a href="https://manageai.pipedrive.com" target="_blank" id="rb-pipedrive-btn" style="background:#fff;color:#1E293B;border:1px solid #E2E6EC;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;font-family:inherit;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.08);" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 3C10.7 3 6 7.7 6 13.5c0 3.5 1.7 6.6 4.3 8.5L16.5 29l6.2-7c2.6-1.9 4.3-5 4.3-8.5C27 7.7 22.3 3 16.5 3zm0 15.2c-3.1 0-5.7-2.5-5.7-5.7 0-3.1 2.5-5.7 5.7-5.7 3.1 0 5.7 2.5 5.7 5.7 0 3.2-2.6 5.7-5.7 5.7z" fill="#017737"/></svg>
+        Pipedrive
+      </a>
       <div class="mode-tabs" style="margin-bottom:0;">
         <button class="rb-action-tab active" onclick="toggleRebeccaForm('territory')" id="rb-tab-territory">Territory Search</button>
         <button class="rb-action-tab" onclick="toggleRebeccaForm('single')" id="rb-tab-single">Single Company</button>
