@@ -4878,23 +4878,18 @@ Turner Construction, turnerconstruction.com"
     history.scrollTop = history.scrollHeight;
     try {
       const resp = await fetch(
-        'https://api.anthropic.com/v1/messages',
+        'https://manageai2026.app.n8n.cloud/webhook/lb-rebecca-chat',
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': ['sk-ant-api','03-Z5t5bkLT92WX5QtE','ocR5lOSoYPGT2xjBLBUF','_diFTe19dwRPMnhOWds9','lBrEMAYSUTGOKFgcyrQC','0PdynzqMaA-knFAfwAA'].join(''),
-            'anthropic-version': '2023-06-01'
-          },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
+            model: 'claude-haiku-4-5-20251001',
             max_tokens: 150,
             system: `You are Rebecca, AI assistant for ManageAI Lead Booster Pro.
 Someone is giving you feedback about the system.
 Respond warmly and conversationally — acknowledge what they said,
-ask a brief follow-up question if it would help clarify,
-or let them know their feedback will be passed on.
-Keep responses under 2 sentences. Be human, not robotic.
+ask a brief follow-up if it helps clarify, or confirm their feedback
+will be passed on. Under 2 sentences. Be human, not robotic.
 The user is ${user.name || 'a team member'}.`,
             messages: feedbackMessages.slice(-6)
           })
