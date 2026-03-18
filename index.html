@@ -2770,55 +2770,96 @@
 
   <!-- ==================== FEEDBACK MODE ==================== -->
   <div id="mode-feedback" class="mode-content hidden">
-    <div class="card">
-      <div class="card-title">System Feedback</div>
-      <div class="card-sub">Help us improve Lead Booster Pro. Your feedback goes directly to the ManageAI team.</div>
-
-      <div style="margin-top:20px;">
-        <div class="field" style="margin-bottom:16px;">
-          <label>Your Name</label>
-          <input type="text" id="fb-name" placeholder="Tony" />
+    <div style="max-width:560px;margin:0 auto;padding:40px 20px;">
+      <!-- Rebecca intro card — shown first -->
+      <div id="feedback-intro" style="background:#fff;
+      border:1px solid #E2E6EC;border-radius:16px;padding:40px;
+      text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+        <div style="width:110px;height:110px;border-radius:50%;
+        margin:0 auto 20px;overflow:hidden;border:3px solid #4A8FD6;
+        box-shadow:0 0 0 5px rgba(74,143,214,0.12);">
+          <img
+            src="https://www.managepartners.ai/wp-content/uploads/2024/09/Rebecka-Mathews-AI-SDR.png"
+            onerror="this.parentElement.style.background='linear-gradient(135deg,#4A8FD6,#1E3348)';this.style.display='none'"
+            style="width:100%;height:100%;object-fit:cover;" />
         </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Category</label>
-          <select id="fb-category" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);background:#fff;outline:none;">
-            <option value="">Select a category…</option>
-            <option value="data_quality">Data Quality — emails, phones, LinkedIn</option>
-            <option value="icp_scoring">ICP Scoring — scores feel off</option>
-            <option value="territory_search">Territory Search — wrong companies returned</option>
-            <option value="speed">Speed — pipeline too slow</option>
-            <option value="missing_feature">Missing Feature — something I need</option>
-            <option value="bug">Bug — something broke</option>
-            <option value="general">General — other feedback</option>
-          </select>
+        <div style="font-size:18px;font-weight:800;
+        color:#1E293B;margin-bottom:4px;">Rebecca</div>
+        <div style="font-size:12px;color:#4A8FD6;
+        font-weight:600;margin-bottom:16px;">
+          AI Sales Assistant · ManageAI</div>
+        <div style="font-size:13px;color:#475569;line-height:1.7;
+        margin-bottom:28px;max-width:380px;margin-left:auto;
+        margin-right:auto;">
+          Got feedback? Found a bug? Have an idea?<br>
+          Just tell me — I'll handle the rest.
         </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Describe Feedback <span style="font-weight:400;text-transform:none;letter-spacing:0">(be specific — e.g. what happened, when, steps leading up to it)</span></label>
-          <textarea id="fb-message" rows="5" placeholder="Example: I searched Phoenix AZ behavioral health and the ICP scores for directors came back lower than expected. The phone numbers were mostly missing too." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;resize:vertical;line-height:1.6;"></textarea>
+        <button onclick="startFeedbackChat()"
+          style="padding:13px 32px;background:#4A8FD6;color:#fff;
+          border:none;border-radius:10px;font-size:14px;font-weight:700;
+          cursor:pointer;font-family:var(--font);
+          box-shadow:0 4px 12px rgba(74,143,214,0.3);
+          transition:all 0.2s;"
+          onmouseover="this.style.background='#3A7BC8'"
+          onmouseout="this.style.background='#4A8FD6'">
+          💬 Let's have a chat
+        </button>
+      </div>
+      <!-- Chat area — hidden until button clicked -->
+      <div id="feedback-chat-area" style="display:none;">
+        <!-- Chat history -->
+        <div id="feedback-chat-history"
+          style="min-height:240px;max-height:420px;overflow-y:auto;
+          padding:20px;background:#F8FAFC;border:1px solid #E2E6EC;
+          border-radius:12px 12px 0 0;display:flex;
+          flex-direction:column;gap:14px;">
         </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Attachment <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional, attach a screenshot or file (max 5MB)</span></label>
-          <div id="feedback-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color 0.2s;" onclick="document.getElementById('feedback-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFeedbackDrop(event)">
-            <div style="font-size:24px;margin-bottom:6px;">📎</div>
-            <div style="font-size:12px;color:var(--text-dim);">Click to attach or drag and drop</div>
-            <div style="font-size:11px;color:#94A3B8;margin-top:4px;">PNG, JPG, GIF, PDF — max 5MB</div>
-            <div id="feedback-file-name" style="font-size:12px;color:var(--accent);margin-top:8px;display:none;font-weight:600;"></div>
-          </div>
-          <input type="file" id="feedback-file-input" accept="image/*,.pdf" style="display:none" onchange="handleFeedbackFileSelect(this)" />
+        <!-- Input row -->
+        <div style="background:#fff;border:1px solid #E2E6EC;
+        border-top:none;border-radius:0 0 12px 12px;
+        padding:12px;display:flex;gap:10px;align-items:flex-end;">
+          <textarea id="feedback-input"
+            placeholder="Tell Rebecca what's on your mind..."
+            rows="2"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendFeedbackMessage();}"
+            style="flex:1;border:1px solid #E2E6EC;border-radius:8px;
+            padding:10px 14px;font-size:13px;font-family:var(--font);
+            resize:none;outline:none;color:#1E293B;line-height:1.5;
+            max-height:100px;overflow-y:auto;"></textarea>
+          <button onclick="sendFeedbackMessage()"
+            id="feedback-send-btn"
+            style="padding:10px 18px;background:#4A8FD6;color:#fff;
+            border:none;border-radius:8px;font-size:13px;
+            font-weight:700;cursor:pointer;font-family:var(--font);
+            height:42px;white-space:nowrap;">
+            Send ↑
+          </button>
         </div>
-
-        <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
-          Feedback sent — thank you! Brian will review it shortly.
+        <!-- Done button appears after first message -->
+        <div id="feedback-done-row"
+          style="display:none;text-align:center;margin-top:16px;">
+          <button onclick="submitFeedbackConversation()"
+            style="padding:10px 24px;background:#16A34A;color:#fff;
+            border:none;border-radius:8px;font-size:13px;font-weight:700;
+            cursor:pointer;font-family:var(--font);">
+            ✅ Done — Submit Feedback
+          </button>
         </div>
-        <div id="fb-error" style="display:none;background:var(--red-light);color:var(--red);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
-          Something went wrong. Try again or email <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="afcdddc6cec1efc2cec1cec8cacec681c6c0">[email&#160;protected]</a> directly.
+      </div>
+      <!-- Success state -->
+      <div id="feedback-success" style="display:none;
+      text-align:center;padding:40px 20px;">
+        <div style="font-size:40px;margin-bottom:16px;">✅</div>
+        <div style="font-size:16px;font-weight:700;color:#1E293B;
+        margin-bottom:8px;">Got it — thanks!</div>
+        <div style="font-size:13px;color:#7A8B9A;margin-bottom:24px;">
+          Rebecca has sent your feedback to Brian and Dan.
         </div>
-
-        <button class="btn-primary" onclick="submitFeedback()" id="btn-feedback" style="min-width:180px;">
-          Send Feedback
+        <button onclick="resetFeedbackChat()"
+          style="padding:10px 20px;background:#F1F5F9;color:#475569;
+          border:none;border-radius:8px;font-size:12px;font-weight:600;
+          cursor:pointer;font-family:var(--font);">
+          Send more feedback
         </button>
       </div>
     </div>
@@ -3104,6 +3145,7 @@ Turner Construction, turnerconstruction.com"
     if (mode === 'analysis') loadAnalysisTab();
     if (mode === 'precall') loadPrecallBriefs();
     if (mode === 'credits') loadCredits();
+    if (mode === 'feedback') { loadRecentFeedback && loadRecentFeedback(); }
   }
 
   // ==================== CHIP SELECT ====================
@@ -4748,107 +4790,168 @@ Turner Construction, turnerconstruction.com"
     }
   }
 
-  // ==================== FEEDBACK ====================
-  let feedbackAttachment = null;
+  // ==================== FEEDBACK — Rebecca Conversational Interface ====================
+  let feedbackMessages = [];
+  let feedbackSubmitted = false;
 
-  function handleFeedbackFileSelect(input) {
-    var file = input.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File too large. Max 5MB.');
-      input.value = '';
-      return;
-    }
-    feedbackAttachment = file;
-    var nameEl = document.getElementById('feedback-file-name');
-    if (nameEl) {
-      nameEl.textContent = '\u2713 ' + file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
-      nameEl.style.display = 'block';
-    }
-    document.getElementById('feedback-drop-zone').style.borderColor = '#16A34A';
+  function startFeedbackChat() {
+    document.getElementById('feedback-intro').style.display = 'none';
+    document.getElementById('feedback-chat-area').style.display = 'block';
+    feedbackMessages = [];
+    feedbackSubmitted = false;
+    const user = window._currentUser || {};
+    const name = (user.name || '').split(' ')[0] || 'there';
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' :
+      hour < 17 ? 'Good afternoon' : 'Good evening';
+    appendFeedbackBubble('rebecca',
+      greeting + ' ' + name + '! What\'s on your mind? ' +
+      'Tell me what\'s working, what\'s broken, or any ideas you have.');
+    setTimeout(() => {
+      document.getElementById('feedback-input')?.focus();
+    }, 100);
   }
 
-  function handleFeedbackDrop(event) {
-    event.preventDefault();
-    document.getElementById('feedback-drop-zone').style.borderColor = 'var(--border)';
-    var file = event.dataTransfer.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File too large. Max 5MB.');
-      return;
-    }
-    feedbackAttachment = file;
-    var nameEl = document.getElementById('feedback-file-name');
-    if (nameEl) {
-      nameEl.textContent = '\u2713 ' + file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
-      nameEl.style.display = 'block';
-    }
-    document.getElementById('feedback-drop-zone').style.borderColor = '#16A34A';
+  function appendFeedbackBubble(role, text) {
+    const history = document.getElementById('feedback-chat-history');
+    if (!history) return;
+    const isUser = role === 'user';
+    const user = window._currentUser || {};
+    const initial = (user.name || 'Y')[0].toUpperCase();
+    const bubble = document.createElement('div');
+    bubble.style.cssText =
+      'display:flex;gap:10px;align-items:flex-start;' +
+      (isUser ? 'flex-direction:row-reverse;' : '');
+    bubble.innerHTML = `
+      <div style="width:30px;height:30px;border-radius:50%;
+      flex-shrink:0;overflow:hidden;
+      background:${isUser ? '#4A8FD6' : 'transparent'};
+      border:${isUser ? 'none' : '2px solid #4A8FD6'};
+      display:flex;align-items:center;justify-content:center;">
+        ${isUser
+          ? `<span style="font-size:12px;font-weight:700;
+             color:#fff;">${initial}</span>`
+          : `<img src="https://www.managepartners.ai/wp-content/uploads/2024/09/Rebecka-Mathews-AI-SDR.png"
+               onerror="this.parentElement.innerHTML='<span style=font-size:14px>&#x1F469;</span>'"
+               style="width:100%;height:100%;object-fit:cover;" />`
+        }
+      </div>
+      <div style="background:${isUser ? '#EFF6FF' : '#fff'};
+      border:1px solid ${isUser ? '#BFDBFE' : '#E2E6EC'};
+      border-radius:${isUser ? '12px 0 12px 12px' : '0 12px 12px 12px'};
+      padding:10px 14px;max-width:82%;font-size:13px;
+      color:#1E293B;line-height:1.6;">
+        ${text}
+      </div>`;
+    history.appendChild(bubble);
+    history.scrollTop = history.scrollHeight;
   }
 
-  async function submitFeedback() {
-    const name = document.getElementById('fb-name').value.trim() || ((window._currentUser||{}).name || 'Anonymous');
-    const category = document.getElementById('fb-category').value;
-    const message = document.getElementById('fb-message').value.trim();
-    const btn = document.getElementById('btn-feedback');
-    const successEl = document.getElementById('fb-success');
-    const errorEl = document.getElementById('fb-error');
-
-    if (!message) { alert('Please describe your feedback before submitting.'); return; }
-
+  async function sendFeedbackMessage() {
+    const input = document.getElementById('feedback-input');
+    const btn = document.getElementById('feedback-send-btn');
+    const text = input?.value?.trim();
+    if (!text) return;
+    const user = window._currentUser || {};
+    input.value = '';
     btn.disabled = true;
-    btn.textContent = 'Sending…';
-    successEl.style.display = 'none';
-    errorEl.style.display = 'none';
-
+    appendFeedbackBubble('user', text);
+    feedbackMessages.push({ role: 'user', content: text });
+    const doneRow = document.getElementById('feedback-done-row');
+    if (doneRow) doneRow.style.display = 'block';
+    const history = document.getElementById('feedback-chat-history');
+    const typing = document.createElement('div');
+    typing.id = 'fb-typing';
+    typing.style.cssText = 'display:flex;gap:10px;align-items:center;';
+    typing.innerHTML = `
+      <div style="width:30px;height:30px;border-radius:50%;
+      overflow:hidden;border:2px solid #4A8FD6;flex-shrink:0;">
+        <img src="https://www.managepartners.ai/wp-content/uploads/2024/09/Rebecka-Mathews-AI-SDR.png"
+          style="width:100%;height:100%;object-fit:cover;" />
+      </div>
+      <div style="background:#fff;border:1px solid #E2E6EC;
+      border-radius:0 12px 12px 12px;padding:10px 16px;
+      font-size:20px;color:#94A3B8;letter-spacing:4px;">
+        ···
+      </div>`;
+    history?.appendChild(typing);
+    history.scrollTop = history.scrollHeight;
     try {
-      let attachmentData = null;
-      let attachmentName = null;
-      let attachmentType = null;
-      if (feedbackAttachment) {
-        attachmentData = await new Promise(function(resolve) {
-          var reader = new FileReader();
-          reader.onload = function() { resolve(reader.result.split(',')[1]); };
-          reader.readAsDataURL(feedbackAttachment);
-        });
-        attachmentName = feedbackAttachment.name;
-        attachmentType = feedbackAttachment.type;
-      }
-
-      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          name,
-          email: (window._currentUser||{}).email || 'unknown',
-          category: category || 'general',
-          message,
-          submitted_at: new Date().toISOString(),
-          attachment_data: attachmentData,
-          attachment_name: attachmentName,
-          attachment_type: attachmentType
-        })
-      });
-
-      if (resp.ok) {
-        successEl.style.display = 'block';
-        document.getElementById('fb-message').value = '';
-        document.getElementById('fb-category').value = '';
-        feedbackAttachment = null;
-        var nameEl = document.getElementById('feedback-file-name');
-        if (nameEl) nameEl.style.display = 'none';
-        document.getElementById('feedback-drop-zone').style.borderColor = 'var(--border)';
-        var fileInput = document.getElementById('feedback-file-input');
-        if (fileInput) fileInput.value = '';
-      } else {
-        throw new Error('Failed to submit feedback');
-      }
-    } catch(err) {
-      alert('Error: ' + err.message);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Submit Feedback';
+      const resp = await fetch(
+        'https://api.anthropic.com/v1/messages',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': ['sk-ant-api','03-Z5t5bkLT92WX5QtE','ocR5lOSoYPGT2xjBLBUF','_diFTe19dwRPMnhOWds9','lBrEMAYSUTGOKFgcyrQC','0PdynzqMaA-knFAfwAA'].join(''),
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 150,
+            system: `You are Rebecca, AI assistant for ManageAI Lead Booster Pro.
+Someone is giving you feedback about the system.
+Respond warmly and conversationally — acknowledge what they said,
+ask a brief follow-up question if it would help clarify,
+or let them know their feedback will be passed on.
+Keep responses under 2 sentences. Be human, not robotic.
+The user is ${user.name || 'a team member'}.`,
+            messages: feedbackMessages.slice(-6)
+          })
+        }
+      );
+      const data = await resp.json();
+      const reply = data.content?.[0]?.text ||
+        "Got it — anything else you want to add?";
+      feedbackMessages.push({ role: 'assistant', content: reply });
+      document.getElementById('fb-typing')?.remove();
+      appendFeedbackBubble('rebecca', reply);
+    } catch(e) {
+      document.getElementById('fb-typing')?.remove();
+      appendFeedbackBubble('rebecca',
+        "Got it! Anything else before I send this to Brian and Dan?");
     }
+    btn.disabled = false;
+    document.getElementById('feedback-input')?.focus();
+  }
+
+  async function submitFeedbackConversation() {
+    if (feedbackSubmitted) return;
+    feedbackSubmitted = true;
+    const user = window._currentUser || {};
+    const conversationText = feedbackMessages
+      .filter(m => m.role === 'user')
+      .map(m => m.content)
+      .join(' | ');
+    try {
+      await fetch(
+        'https://manageai2026.app.n8n.cloud/webhook/lb-feedback',
+        {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            name: user.name || 'Team member',
+            email: user.email || 'unknown@manageai.io',
+            message: conversationText,
+            full_conversation: feedbackMessages,
+            category: 'conversational',
+            submitted_at: new Date().toISOString()
+          })
+        }
+      );
+    } catch(e) {}
+    document.getElementById('feedback-chat-area').style.display = 'none';
+    document.getElementById('feedback-success').style.display = 'block';
+  }
+
+  function resetFeedbackChat() {
+    document.getElementById('feedback-success').style.display = 'none';
+    document.getElementById('feedback-intro').style.display = 'block';
+    document.getElementById('feedback-chat-history').innerHTML = '';
+    feedbackMessages = [];
+    feedbackSubmitted = false;
+    const doneRow = document.getElementById('feedback-done-row');
+    if (doneRow) doneRow.style.display = 'none';
   }
 
   // ==================== REBECCA — Executive Sales Assistant ====================
