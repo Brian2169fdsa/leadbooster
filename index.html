@@ -2015,22 +2015,22 @@
   <div id="mode-precall" class="mode-content hidden">
 
     <!-- SECTION A — New Brief Form -->
-    <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:24px 28px;margin-bottom:24px;">
-      <div style="font-size:13px;font-weight:800;color:#1E293B;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:18px;">
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:24px;">
+      <div style="font-size:13px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:18px;">
         Generate Pre-Call Brief
       </div>
       <div style="display:flex;gap:16px;flex-wrap:wrap;">
         <div style="flex:3;min-width:200px;">
-          <label style="font-size:11px;font-weight:700;color:#7A8B9A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block;">Company Name</label>
-          <input type="text" id="pcb-company-input" placeholder="e.g. DPR Construction" style="width:100%;padding:10px 14px;border:1px solid #E2E6EC;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" />
+          <label style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block;">Company Name</label>
+          <input type="text" id="pcb-company-input" placeholder="e.g. DPR Construction" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;" />
         </div>
         <div style="flex:3;min-width:200px;">
-          <label style="font-size:11px;font-weight:700;color:#7A8B9A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block;">Website Domain</label>
-          <input type="text" id="pcb-domain-input" placeholder="e.g. dpr.com" style="width:100%;padding:10px 14px;border:1px solid #E2E6EC;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" />
+          <label style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block;">Website Domain</label>
+          <input type="text" id="pcb-domain-input" placeholder="e.g. dpr.com" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;" />
         </div>
         <div style="flex:2;min-width:160px;">
-          <label style="font-size:11px;font-weight:700;color:#7A8B9A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block;">Vertical</label>
-          <select id="pcb-vertical-input" style="width:100%;padding:10px 14px;border:1px solid #E2E6EC;border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <label style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block;">Vertical</label>
+          <select id="pcb-vertical-input" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
             <option value="construction">Construction</option>
             <option value="behavioral_health">Behavioral Health</option>
             <option value="medical_transport">Medical Transport</option>
@@ -2054,7 +2054,7 @@
           </select>
         </div>
       </div>
-      <button onclick="launchPreCallBrief()" id="pcb-launch-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,#1E3348,#2d4a6e);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;box-shadow:0 4px 16px rgba(30,51,72,0.25);">
+      <button onclick="launchPreCallBrief()" id="pcb-launch-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;box-shadow:0 4px 16px rgba(74,144,217,0.35);">
         Generate Pre-Call Brief
       </button>
       <div id="pcb-launch-status" style="display:none;margin-top:10px;font-size:12px;font-weight:600;text-align:center;"></div>
@@ -2062,9 +2062,9 @@
 
     <!-- SECTION B — Filter Bar -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-      <div style="font-size:12px;font-weight:700;color:#7A8B9A;text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;">Filter:</div>
-      <input type="text" id="pcb-filter-company" placeholder="Search company..." oninput="filterPrecallBriefs()" style="padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:inherit;outline:none;width:200px;" />
-      <select id="pcb-filter-vertical" onchange="filterPrecallBriefs()" style="padding:8px 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:#fff;color:#475569;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;">Filter:</div>
+      <input type="text" id="pcb-filter-company" placeholder="Search company..." oninput="filterPrecallBriefs()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;outline:none;width:200px;" />
+      <select id="pcb-filter-vertical" onchange="filterPrecallBriefs()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:#fff;color:var(--text-mid);">
         <option value="">All Verticals</option>
         <option value="behavioral_health">Behavioral Health</option>
         <option value="construction">Construction</option>
@@ -2087,17 +2087,17 @@
         <option value="auto_dealerships">Auto Dealerships</option>
         <option value="technology_saas">Technology / SaaS</option>
       </select>
-      <div id="pcb-filter-count" style="font-size:12px;color:#7A8B9A;margin-left:auto;"></div>
+      <div id="pcb-filter-count" style="font-size:12px;color:var(--text-dim);margin-left:auto;"></div>
     </div>
 
     <!-- SECTION C — Briefs List -->
     <div id="pcb-briefs-container"></div>
 
     <!-- Pagination -->
-    <div id="pcb-pagination" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:20px;padding:16px 0;">
-      <button onclick="pcbPrevPage()" id="pcb-prev-btn" style="padding:8px 18px;border:1px solid #E2E6EC;border-radius:8px;background:#fff;color:#475569;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">&#8592; Previous</button>
-      <span id="pcb-page-label" style="font-size:12px;color:#7A8B9A;font-weight:600;"></span>
-      <button onclick="pcbNextPage()" id="pcb-next-btn" style="padding:8px 18px;border:1px solid #E2E6EC;border-radius:8px;background:#fff;color:#475569;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Next &#8594;</button>
+    <div id="pcb-pagination" style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:20px;padding:16px 0;">
+      <button onclick="pcbPrevPage()" id="pcb-prev-btn" style="padding:8px 20px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">&larr; Previous</button>
+      <span id="pcb-page-label" style="font-size:12px;color:var(--text-dim);font-weight:600;"></span>
+      <button onclick="pcbNextPage()" id="pcb-next-btn" style="padding:8px 20px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Next &rarr;</button>
     </div>
   </div>
 
@@ -5379,7 +5379,7 @@ Turner Construction, turnerconstruction.com"
   async function loadPrecallBriefs() {
     const container = document.getElementById('pcb-briefs-container');
     if (!container) return;
-    container.innerHTML = '<div style="text-align:center;padding:40px;color:#7A8B9A;font-size:13px;">Loading briefs...</div>';
+    container.innerHTML = '<div class="dash-loading"><div class="dash-loading-ring"></div> Loading briefs...</div>';
     try {
       const rows = await sbProxy('lb_precall_briefs', 'GET', 'select=*&order=created_at.desc&limit=100');
       pcbAllBriefs = Array.isArray(rows) ? rows : [];
@@ -5424,8 +5424,8 @@ Turner Construction, turnerconstruction.com"
     if (!pageBriefs.length) {
       container.innerHTML = '<div style="text-align:center;padding:60px 20px;">' +
         '<div style="font-size:32px;margin-bottom:12px;">📋</div>' +
-        '<div style="font-size:14px;font-weight:600;color:#1E293B;margin-bottom:6px;">No briefs found</div>' +
-        '<div style="font-size:12px;color:#7A8B9A;">Run your first pre-call brief using the form above</div>' +
+        '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">No briefs found</div>' +
+        '<div style="font-size:12px;color:var(--text-dim);">Run your first pre-call brief using the form above</div>' +
         '</div>';
       return;
     }
@@ -5439,28 +5439,36 @@ Turner Construction, turnerconstruction.com"
       var safeCompany = (b.company_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
       var safeDomain = (b.domain || '').replace(/'/g, "\\'");
       var safeVertical = (b.vertical || '').replace(/'/g, "\\'");
-      return '<div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;margin-bottom:10px;overflow:hidden;cursor:pointer;" onclick="toggleBriefExpand(\'' + b.id + '\')">' +
-        '<div style="display:flex;align-items:center;padding:14px 20px;gap:12px;">' +
-          '<div style="width:38px;height:38px;border-radius:10px;background:#EFF6FF;color:#4A8FD6;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + initial + '</div>' +
+      return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;cursor:pointer;" onclick="toggleBriefExpand(\'' + b.id + '\')">' +
+        '<div style="display:flex;align-items:center;padding:16px 20px;gap:16px;">' +
+          '<div style="width:48px;height:48px;border-radius:10px;background:#F0F4FF;color:var(--accent);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + initial + '</div>' +
           '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:13px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (b.company_name || 'Unknown Company') + '</div>' +
-            '<div style="font-size:11px;color:#7A8B9A;margin-top:1px;font-family:\'JetBrains Mono\',monospace;">' + (b.domain || '') + '</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (b.company_name || 'Unknown Company') + '</div>' +
+            '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">' + (b.domain || '') + ' · ' + (b.contacts_found || 0) + ' contacts · ' + date + '</div>' +
           '</div>' +
-          '<div style="padding:3px 9px;border-radius:20px;background:#F1F5F9;color:#475569;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;flex-shrink:0;white-space:nowrap;">' + vertLabel + '</div>' +
+          '<div style="padding:3px 9px;border-radius:20px;background:var(--surface);color:var(--text-mid);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;flex-shrink:0;white-space:nowrap;">' + vertLabel + '</div>' +
           '<div style="padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;flex-shrink:0;' + confStyle + '">' + conf + '</div>' +
-          '<div style="font-size:11px;color:#7A8B9A;white-space:nowrap;flex-shrink:0;">' + date + '</div>' +
           '<div id="pcbarrow-' + b.id + '" style="font-size:12px;color:#94A3B8;transition:transform 0.2s ease;flex-shrink:0;">&#9660;</div>' +
         '</div>' +
-        '<div id="pcbbody-' + b.id + '" style="display:none;padding:0 20px 20px;background:#FAFBFC;border-top:1px solid #F1F5F9;">' +
-          '<div style="display:flex;gap:16px;padding:12px 0 14px;border-bottom:1px solid #F1F5F9;margin-bottom:14px;">' +
-            '<div style="font-size:11px;color:#7A8B9A;"><span style="font-weight:700;color:#1E293B;">' + (b.contacts_found || 0) + '</span> contacts in DB</div>' +
-            '<div style="font-size:11px;color:#7A8B9A;">Website: <span style="font-weight:700;color:' + (b.website_scraped ? '#16A34A' : '#DC2626') + ';">' + (b.website_scraped ? 'Scraped' : 'Not scraped') + '</span></div>' +
-            '<div style="font-size:11px;color:#7A8B9A;">Source confidence: <span style="font-weight:700;">' + conf + '</span></div>' +
+        '<div id="pcbbody-' + b.id + '" style="display:none;padding:0 32px 24px;background:var(--surface);border-top:1px solid var(--border);">' +
+          '<div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;">' +
+            '<div style="flex:1;padding:14px 16px;text-align:center;border-right:1px solid var(--border);">' +
+              '<div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--text);">' + (b.contacts_found || 0) + '</div>' +
+              '<div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">Contacts</div>' +
+            '</div>' +
+            '<div style="flex:1;padding:14px 16px;text-align:center;border-right:1px solid var(--border);">' +
+              '<div style="font-size:18px;font-weight:800;font-family:var(--mono);color:' + (b.website_scraped ? '#16A34A' : '#DC2626') + ';">' + (b.website_scraped ? 'Yes' : 'No') + '</div>' +
+              '<div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">Website Scraped</div>' +
+            '</div>' +
+            '<div style="flex:1;padding:14px 16px;text-align:center;">' +
+              '<div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--text);">' + conf + '</div>' +
+              '<div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">Confidence</div>' +
+            '</div>' +
           '</div>' +
-          '<div style="font-size:12px;color:#1E293B;line-height:1.75;white-space:pre-wrap;font-family:Arial,sans-serif;max-height:500px;overflow-y:auto;">' + formatBriefText(b.brief_text || 'No brief content') + '</div>' +
-          '<div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #F1F5F9;">' +
-            '<button onclick="event.stopPropagation();copyBriefText(\'' + b.id + '\')" style="padding:7px 14px;border:1px solid #E2E6EC;border-radius:8px;background:#fff;color:#475569;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📋 Copy</button>' +
-            '<button onclick="event.stopPropagation();refreshBrief(\'' + safeCompany + '\',\'' + safeDomain + '\',\'' + safeVertical + '\')" style="padding:7px 14px;border:1px solid #4A8FD6;border-radius:8px;background:#EFF6FF;color:#4A8FD6;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">🔄 Refresh</button>' +
+          '<div style="font-size:14px;color:var(--text);line-height:1.8;white-space:pre-wrap;max-height:500px;overflow-y:auto;">' + formatBriefText(b.brief_text || 'No brief content') + '</div>' +
+          '<div style="display:flex;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">' +
+            '<button onclick="event.stopPropagation();copyBriefText(\'' + b.id + '\')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);">Copy Brief</button>' +
+            '<button onclick="event.stopPropagation();refreshBrief(\'' + safeCompany + '\',\'' + safeDomain + '\',\'' + safeVertical + '\')" style="padding:8px 16px;background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);box-shadow:0 4px 16px rgba(74,144,217,0.35);">Refresh Brief</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -5468,7 +5476,11 @@ Turner Construction, turnerconstruction.com"
   }
 
   function formatBriefText(text) {
-    return text.replace(/##\s*/g, '<strong style="font-size:12px;font-weight:800;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-top:14px;margin-bottom:4px;">').replace(/\n/g, '<br>');
+    return text
+      .replace(/## (.*)/g, '<h3 style="font-size:14px;font-weight:700;color:var(--text);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n- /g, '<br>• ')
+      .replace(/\n/g, '<br>');
   }
 
   function toggleBriefExpand(id) {
