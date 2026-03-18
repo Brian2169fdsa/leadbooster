@@ -1551,7 +1551,7 @@
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="setMode('rebecca')" id="tab-rebecca">Rebecca</button>
     <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard" style="display:none;">Dashboard</button>
-    <button class="mode-tab" onclick="setMode('precall')" id="tab-precall">Pre-Call Brief</button>
+    <button class="mode-tab" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">Feedback</button>
     <!-- Hidden tabs — do not delete, just hidden -->
@@ -2966,7 +2966,7 @@ Turner Construction, turnerconstruction.com"
   // ==================== CONFIG ====================
   const WEBHOOK = "https://manageai2026.app.n8n.cloud/webhook/lb-discovery";
   const WEBHOOK_TERRITORY = "https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2";
-  const MAX_COMPANIES = 50;
+  const MAX_COMPANIES = 150;
 
   // Supabase (Lead Booster project)
   const SB_URL = "https://palcqjfgygpidzwjzikn.supabase.co";
