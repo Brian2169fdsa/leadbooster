@@ -5,6 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lead Booster Pro — ManageAI</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style id="pcb-card-css">
+    #pcb-card {
+      position: fixed; bottom: 24px; right: 24px; width: 33vw;
+      min-width: 360px; max-width: 460px; border-radius: 16px;
+      overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      z-index: 9991; transform: translateY(110%);
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+      font-family: 'Montserrat', sans-serif;
+    }
+    #pcb-card.pcb-visible { transform: translateY(0); }
+    #pcb-card.pcb-hiding  { transform: translateY(110%); }
+
+    .pcb-stage-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid #F8FAFC;
+    }
+    .pcb-stage-row:last-child { border-bottom: none; }
+
+    .pcb-stage-circle {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0; margin-top: 1px;
+    }
+    .pcb-stage-circle.pending { background: #F1F5F9; color: #94A3B8; }
+    .pcb-stage-circle.active  { background: #EFF6FF; color: #4A8FD6; animation: pcbPulse 1.5s infinite; }
+    .pcb-stage-circle.done    { background: #DCFCE7; color: #16A34A; }
+    .pcb-stage-circle.error   { background: #FEE2E2; color: #DC2626; }
+
+    .pcb-stage-label { font-size: 12px; font-weight: 600; color: #94A3B8; }
+    .pcb-stage-label.active { color: #1E293B; font-weight: 700; }
+    .pcb-stage-label.done   { color: #16A34A; }
+    .pcb-stage-label.error  { color: #DC2626; }
+
+    .pcb-stage-detail { font-size: 11px; color: #7A8B9A; margin-top: 2px; display: none; }
+    .pcb-stage-detail.visible { display: block; }
+
+    @keyframes pcbPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(74,143,214,0.3); }
+      50%     { box-shadow: 0 0 0 6px rgba(74,143,214,0); }
+    }
+
+    @media (max-width: 768px) {
+      #pcb-card { left: 12px; right: 12px; width: auto; min-width: 0; bottom: 80px; }
+    }
+  </style>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -5036,6 +5081,9 @@ Turner Construction, turnerconstruction.com"
     // Show loading card immediately
     showPreCallCard(company, domain, null);
 
+    // Show PCB progress card
+    pcbShowCard(company, domain);
+
     // Hide the form
     const modal = document.getElementById('rb-precall-modal');
     if (modal) modal.style.display = 'none';
@@ -5069,6 +5117,7 @@ Turner Construction, turnerconstruction.com"
       if (attempts > maxAttempts) {
         clearInterval(preCallPollInterval);
         updatePreCallCard(company, 'Still generating \u2014 taking longer than usual. Check back in 30 seconds or click Pre-Call Brief again.', null);
+        pcbMarkComplete('Check the brief card above \u2014 may need more time');
         return;
       }
 
@@ -5080,6 +5129,7 @@ Turner Construction, turnerconstruction.com"
         if (rows && rows[0] && rows[0].brief_text) {
           clearInterval(preCallPollInterval);
           updatePreCallCard(company, null, rows[0].brief_text);
+          pcbMarkComplete('Brief ready for ' + company);
         }
       } catch(e) {
         console.error('[PreCall] Poll error:', e);
@@ -5845,6 +5895,146 @@ Turner Construction, turnerconstruction.com"
 
     if (typeof initListNamePreviews === 'function') initListNamePreviews();
   });
+
+  /* ── Pre-Call Brief Progress Card JS ── */
+  const PCB_STAGES = [
+    { key: 'init',      icon: '🚀', label: 'Brief Started',              detail: 'Initializing data pull...',                                       pct: 8 },
+    { key: 'contacts',  icon: '👥', label: 'Checking Existing Contacts',  detail: 'Searching Lead Booster database for this company',                 pct: 22 },
+    { key: 'apollo',    icon: '🔍', label: 'Enriching Company Profile',   detail: 'Pulling from Apollo — employees, revenue, description',            pct: 42 },
+    { key: 'news',      icon: '📰', label: 'Searching Recent News',       detail: 'Google search for signals, announcements, hiring',                 pct: 60 },
+    { key: 'builtwith', icon: '🛠️', label: 'Reading Tech Stack',          detail: 'BuiltWith scan — CRM, project management, communication tools',   pct: 74 },
+    { key: 'claude',    icon: '🧠', label: 'Generating Brief with Claude', detail: 'AI writing warm opener, discovery questions, objections',          pct: 90 },
+    { key: 'complete',  icon: '✅', label: 'Brief Complete',               detail: 'Ready to view',                                                   pct: 100 }
+  ];
+
+  let pcbCurrentStage = 0;
+  let pcbStageTimer = null;
+  let pcbPollTimer = null;
+  let pcbDismissTimer = null;
+  let pcbIsComplete = false;
+
+  function pcbShowCard(companyName, domain) {
+    pcbIsComplete = false;
+    pcbCurrentStage = 0;
+    if (pcbStageTimer) clearTimeout(pcbStageTimer);
+    if (pcbPollTimer)  clearInterval(pcbPollTimer);
+    if (pcbDismissTimer) clearTimeout(pcbDismissTimer);
+
+    const card = document.getElementById('pcb-card');
+    card.style.display = 'block';
+    document.getElementById('pcb-company-name').textContent = companyName || 'Company';
+    document.getElementById('pcb-domain-name').textContent  = domain || '';
+    document.getElementById('pcb-header-label').textContent  = 'Pre-Call Brief Running';
+    document.getElementById('pcb-btn-wrap').style.display    = 'none';
+    document.getElementById('pcb-btn-wrap').style.opacity    = '0';
+    document.getElementById('pcb-progress-fill').style.width = '0%';
+    document.getElementById('pcb-status-text').textContent   = 'Starting...';
+
+    const stagesEl = document.getElementById('pcb-stages');
+    stagesEl.innerHTML = PCB_STAGES.slice(0, -1).map((s, i) => `
+      <div class="pcb-stage-row" id="pcb-stage-row-${i}">
+        <div class="pcb-stage-circle pending" id="pcb-circle-${i}">${s.icon}</div>
+        <div>
+          <div class="pcb-stage-label" id="pcb-label-${i}">${s.label}</div>
+          <div class="pcb-stage-detail" id="pcb-detail-${i}">${s.detail}</div>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('pcb-close').onclick = function() { pcbHideCard(); };
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { card.classList.add('pcb-visible'); });
+    });
+
+    const stageDurations = [2000, 8000, 20000, 15000, 12000, 30000];
+
+    function advanceStage(idx) {
+      if (pcbIsComplete) return;
+      if (idx >= PCB_STAGES.length - 1) return;
+
+      if (idx > 0) {
+        const prev = idx - 1;
+        const prevCircle = document.getElementById('pcb-circle-' + prev);
+        const prevLabel  = document.getElementById('pcb-label-'  + prev);
+        const prevDetail = document.getElementById('pcb-detail-' + prev);
+        if (prevCircle) { prevCircle.className = 'pcb-stage-circle done'; prevCircle.textContent = '✓'; }
+        if (prevLabel)  prevLabel.className = 'pcb-stage-label done';
+        if (prevDetail) prevDetail.classList.remove('visible');
+      }
+
+      const circle = document.getElementById('pcb-circle-' + idx);
+      const label  = document.getElementById('pcb-label-'  + idx);
+      const detail = document.getElementById('pcb-detail-' + idx);
+      if (circle) { circle.className = 'pcb-stage-circle active'; circle.textContent = PCB_STAGES[idx].icon; }
+      if (label)  label.className = 'pcb-stage-label active';
+      if (detail) detail.classList.add('visible');
+
+      const fill = document.getElementById('pcb-progress-fill');
+      if (fill) fill.style.width = PCB_STAGES[idx].pct + '%';
+
+      const statusEl = document.getElementById('pcb-status-text');
+      if (statusEl) {
+        const remaining = stageDurations.slice(idx).reduce((a,b) => a+b, 0);
+        const mins = Math.ceil(remaining / 60000);
+        statusEl.textContent = mins > 1 ? '⏱ Est. ~' + mins + ' min remaining' : '⏱ Almost done...';
+      }
+
+      pcbCurrentStage = idx;
+      if (idx < stageDurations.length) {
+        pcbStageTimer = setTimeout(() => advanceStage(idx + 1), stageDurations[idx]);
+      }
+    }
+
+    advanceStage(0);
+  }
+
+  function pcbMarkComplete(detailText) {
+    if (pcbIsComplete) return;
+    pcbIsComplete = true;
+    if (pcbStageTimer) clearTimeout(pcbStageTimer);
+    if (pcbPollTimer)  clearInterval(pcbPollTimer);
+
+    PCB_STAGES.slice(0, -1).forEach((s, i) => {
+      const circle = document.getElementById('pcb-circle-' + i);
+      const label  = document.getElementById('pcb-label-'  + i);
+      const detail = document.getElementById('pcb-detail-' + i);
+      if (circle) { circle.className = 'pcb-stage-circle done'; circle.textContent = '✓'; }
+      if (label)  label.className = 'pcb-stage-label done';
+      if (detail) detail.classList.remove('visible');
+    });
+
+    const fill = document.getElementById('pcb-progress-fill');
+    if (fill) fill.style.width = '100%';
+
+    const statusEl = document.getElementById('pcb-status-text');
+    if (statusEl) statusEl.textContent = '✅ ' + (detailText || 'Brief ready');
+    document.getElementById('pcb-header-label').textContent = 'Brief Complete';
+
+    const btnWrap = document.getElementById('pcb-btn-wrap');
+    btnWrap.style.display = 'block';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        btnWrap.style.opacity = '1';
+        btnWrap.style.transform = 'translateY(0)';
+      });
+    });
+
+    pcbDismissTimer = setTimeout(pcbHideCard, 120000);
+  }
+
+  function pcbHideCard() {
+    const card = document.getElementById('pcb-card');
+    card.classList.remove('pcb-visible');
+    card.classList.add('pcb-hiding');
+    setTimeout(() => {
+      card.style.display = 'none';
+      card.classList.remove('pcb-hiding');
+    }, 400);
+    if (pcbStageTimer)   clearTimeout(pcbStageTimer);
+    if (pcbPollTimer)    clearInterval(pcbPollTimer);
+    if (pcbDismissTimer) clearTimeout(pcbDismissTimer);
+  }
 
 </script>
 </div>
@@ -6726,6 +6916,42 @@ function closeAuditModal() {
   };
 })();
 </script>
+
+<!-- Pre-Call Brief Progress Card -->
+<div id="pcb-card">
+  <div style="background:#1E3348;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:-0.02em;">
+        MANAGE<span style="color:#4A8FD6;">AI</span>
+      </div>
+      <div style="width:1px;height:14px;background:rgba(255,255,255,0.2);"></div>
+      <div id="pcb-header-label" style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);">Pre-Call Brief Running</div>
+    </div>
+    <button id="pcb-close" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;line-height:1;padding:0 2px;">×</button>
+  </div>
+  <div style="background:#fff;border:1px solid #E2E6EC;border-top:none;border-radius:0 0 16px 16px;padding:18px 20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F1F5F9;">
+      <div style="font-size:22px;line-height:1;">📋</div>
+      <div>
+        <div id="pcb-company-name" style="font-size:13px;font-weight:700;color:#1E293B;">Loading...</div>
+        <div id="pcb-domain-name" style="font-size:11px;color:#7A8B9A;margin-top:2px;font-family:'JetBrains Mono',monospace;"></div>
+      </div>
+    </div>
+    <div id="pcb-stages" style="margin-bottom:14px;"></div>
+    <div style="margin-bottom:10px;">
+      <div style="height:5px;background:#F5F6F8;border-radius:3px;overflow:hidden;">
+        <div id="pcb-progress-fill" style="height:100%;width:0%;background:#4A8FD6;border-radius:3px;transition:width 1s cubic-bezier(0.16,1,0.3,1);"></div>
+      </div>
+    </div>
+    <div id="pcb-status-text" style="font-size:11px;color:#7A8B9A;margin-bottom:14px;">Starting...</div>
+    <div id="pcb-btn-wrap" style="display:none;opacity:0;transform:translateY(6px);transition:opacity 0.4s ease,transform 0.4s ease;">
+      <button onclick="document.getElementById('pcb-card').classList.add('pcb-hiding');setTimeout(()=>{document.getElementById('pcb-card').style.display='none'},400);"
+        style="width:100%;padding:13px 20px;background:linear-gradient(135deg,#1E3348,#2d4a6e);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(30,51,72,0.3);">
+        ✓ Brief Ready — Click Why? to View
+      </button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
