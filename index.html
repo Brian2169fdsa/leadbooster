@@ -144,9 +144,6 @@
     }
     .mode-tab.active { background: var(--nav); color: #fff; }
     .mode-tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
-    .mode-tab.purple { background: #7C3AED; color: #fff; }
-    .mode-tab.purple:hover { background: #6D28D9; color: #fff; }
-    .mode-tab.purple.active { background: #7C3AED; color: #fff; }
 
     /* Rebecca sub-action tabs (grouped like main tabs) */
     .rb-action-tab {
@@ -1555,7 +1552,7 @@
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="setMode('rebecca')" id="tab-rebecca">Rebecca</button>
     <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard" style="display:none;">Dashboard</button>
-    <button class="mode-tab purple" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
+    <button class="mode-tab" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">Feedback</button>
     <!-- Hidden tabs — do not delete, just hidden -->
