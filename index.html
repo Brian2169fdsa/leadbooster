@@ -3418,6 +3418,7 @@ Turner Construction, turnerconstruction.com"
     table.innerHTML = `
       <thead><tr>
         <th>Company</th><th>Domain</th><th>Vertical</th><th>Status</th><th>Contacts</th><th>When</th>
+        <th style='padding:8px 10px;font-size:10px;font-weight:700;color:#7A8B9A;text-transform:uppercase;letter-spacing:0.07em;background:#F8FAFC;border-bottom:1px solid #E2E6EC;'>Outcome</th>
       </tr></thead>
       <tbody>
         ${rows.map(r => `
@@ -3428,6 +3429,19 @@ Turner Construction, turnerconstruction.com"
             <td><span class="badge ${statusBadge(r.status)}">${esc(r.status || '—')}</span></td>
             <td style="font-family:var(--mono);font-weight:700;text-align:center;">${r.contacts_found != null ? r.contacts_found : 0}</td>
             <td style="font-size:11px;color:#94A3B8;" title="${r.created_at ? new Date(r.created_at).toLocaleString() : ''}">${r.created_at ? timeAgo(r.created_at) : '—'}</td>
+            <td style='padding:7px 10px;'>
+              <select onchange='logOutcome(this, "${esc(r.id || '')}")'
+                style='font-size:11px;font-family:var(--font);border:1px solid #E2E6EC;
+                border-radius:6px;padding:3px 6px;color:#475569;background:#fff;
+                cursor:pointer;outline:none;'>
+                <option value=''>— mark —</option>
+                <option value='won'>✅ Won</option>
+                <option value='meeting_booked'>📅 Meeting</option>
+                <option value='no_response'>📭 No Response</option>
+                <option value='lost'>❌ Lost</option>
+                <option value='unqualified'>🚫 Unqualified</option>
+              </select>
+            </td>
           </tr>
         `).join('')}
       </tbody>
@@ -4248,7 +4262,7 @@ Turner Construction, turnerconstruction.com"
       applyContactFilters();
     } catch(e) {
       console.error('Contacts viewer error:', e);
-      document.getElementById('cv-tbody').innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:#DC2626;">Error loading contacts</td></tr>';
+      document.getElementById('cv-tbody').innerHTML = '<tr><td colspan="11" style="padding:30px;text-align:center;color:#DC2626;">Error loading contacts</td></tr>';
     }
   }
 
@@ -4319,7 +4333,7 @@ Turner Construction, turnerconstruction.com"
     const page = cvFilteredContacts.slice(start, start + CV_PER_PAGE);
     const tbody = document.getElementById('cv-tbody');
     if (!page.length) {
-      tbody.innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:#94A3B8;font-weight:600;">No contacts found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:30px;text-align:center;color:#94A3B8;font-weight:600;">No contacts found</td></tr>';
     } else {
       tbody.innerHTML = page.map((c, i) => {
         const icpColor = c.icp_score >= 90 ? '#166534' : c.icp_score >= 70 ? '#1D4ED8' : c.icp_score >= 50 ? '#92400E' : '#64748B';
@@ -4340,6 +4354,19 @@ Turner Construction, turnerconstruction.com"
           '<td style="padding:7px 10px;text-align:center;">' + emailIcon + '</td>' +
           '<td style="padding:7px 10px;text-align:center;">' + liIcon + '</td>' +
           '<td style="padding:7px 10px;font-size:11px;color:#94A3B8;">' + added + '</td>' +
+          '<td style="padding:7px 10px;">' +
+            '<select onchange="logOutcome(this, \'' + String(c.id || '').replace(/'/g, "\\'") + '\')" ' +
+              'style="font-size:11px;font-family:var(--font);border:1px solid #E2E6EC;' +
+              'border-radius:6px;padding:3px 6px;color:#475569;background:#fff;' +
+              'cursor:pointer;outline:none;">' +
+              '<option value="">— mark —</option>' +
+              '<option value="won">✅ Won</option>' +
+              '<option value="meeting_booked">📅 Meeting</option>' +
+              '<option value="no_response">📭 No Response</option>' +
+              '<option value="lost">❌ Lost</option>' +
+              '<option value="unqualified">🚫 Unqualified</option>' +
+            '</select>' +
+          '</td>' +
         '</tr>';
       }).join('');
     }
@@ -4456,6 +4483,50 @@ Turner Construction, turnerconstruction.com"
     a.download = 'pipedrive-import-' + new Date().toISOString().split('T')[0] + '.csv';
     a.click();
     URL.revokeObjectURL(a.href);
+  }
+
+  // ==================== OUTCOME TRACKING ====================
+  async function logOutcome(selectEl, contactId) {
+    const outcome = selectEl.value;
+    if (!outcome) return;
+    const original = selectEl.style.background;
+    selectEl.disabled = true;
+    selectEl.style.background = '#F0FDF4';
+    try {
+      const resp = await fetch(
+        'https://manageai2026.app.n8n.cloud/webhook/lb-outcome',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contact_id: contactId,
+            outcome: outcome,
+            reported_by: (window._currentUser && window._currentUser.email)
+              || 'unknown',
+            notes: 'Logged from Lead Booster dashboard'
+          })
+        }
+      );
+      if (resp.ok) {
+        selectEl.style.background = '#DCFCE7';
+        selectEl.style.borderColor = '#16A34A';
+        setTimeout(() => {
+          selectEl.disabled = false;
+          selectEl.style.background = original;
+          selectEl.style.borderColor = '#E2E6EC';
+        }, 2000);
+      } else {
+        throw new Error('Failed');
+      }
+    } catch(e) {
+      selectEl.disabled = false;
+      selectEl.style.background = '#FEE2E2';
+      selectEl.style.borderColor = '#DC2626';
+      setTimeout(() => {
+        selectEl.style.background = original;
+        selectEl.style.borderColor = '#E2E6EC';
+      }, 2000);
+    }
   }
 
   // ==================== FEEDBACK ====================
