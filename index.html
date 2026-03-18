@@ -1439,24 +1439,24 @@
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      background: radial-gradient(circle at 40% 35%,
-        #ffffff 0%,
-        #93C5FD 25%,
-        #3B82F6 55%,
-        #1E3348 100%);
+      background: radial-gradient(circle at 38% 35%,
+        #FFFFFF 0%,
+        #EFF6FF 30%,
+        #BFDBFE 65%,
+        #93C5FD 100%);
       box-shadow:
-        0 0 50px rgba(59,130,246,0.5),
-        0 0 100px rgba(59,130,246,0.2),
-        inset 0 0 30px rgba(255,255,255,0.1);
-      transition: transform 0.3s ease;
+        0 0 30px rgba(74,143,214,0.25),
+        0 0 60px rgba(74,143,214,0.1),
+        inset 0 0 20px rgba(255,255,255,0.8);
+      transition: all 0.3s ease;
     }
     .neural-node {
-      fill: #60A5FA;
+      fill: #93C5FD;
       opacity: 0.7;
       animation: nodeFloat 4s ease-in-out infinite;
     }
     .neural-line {
-      stroke: #3B82F6;
+      stroke: #BFDBFE;
       stroke-width: 0.8;
       opacity: 0;
       animation: linePulse 3s ease-in-out infinite;
@@ -1464,7 +1464,7 @@
     .neural-ring {
       position: absolute;
       border-radius: 50%;
-      border: 1px solid rgba(59,130,246,0.2);
+      border: 1px solid rgba(74,143,214,0.15);
     }
     .neural-ring-1 { inset: -20px; animation: ringPulse 3s ease-in-out infinite 0s; }
     .neural-ring-2 { inset: -40px; animation: ringPulse 3s ease-in-out infinite 0.7s; }
@@ -1483,24 +1483,44 @@
     }
     .neural-core.state-idle {
       animation: neuralIdle 3s ease-in-out infinite;
+      background: radial-gradient(circle at 38% 35%,
+        #FFFFFF 0%,
+        #EFF6FF 30%,
+        #BFDBFE 65%,
+        #93C5FD 100%);
+      box-shadow: 0 0 30px rgba(74,143,214,0.2),
+        0 0 60px rgba(74,143,214,0.08),
+        inset 0 0 20px rgba(255,255,255,0.9);
     }
     .neural-core.state-listening {
       animation: neuralListen 0.7s ease-in-out infinite;
-      background: radial-gradient(circle at 40% 35%,
-        #fff 0%, #67E8F9 25%, #06B6D4 55%, #164E63 100%);
-      box-shadow: 0 0 60px rgba(6,182,212,0.7), 0 0 120px rgba(6,182,212,0.3);
+      background: radial-gradient(circle at 38% 35%,
+        #EFF6FF 0%,
+        #BFDBFE 30%,
+        #60A5FA 60%,
+        #2563EB 100%);
+      box-shadow: 0 0 40px rgba(74,143,214,0.5),
+        0 0 80px rgba(74,143,214,0.25);
     }
     .neural-core.state-speaking {
       animation: neuralSpeak 0.35s ease-in-out infinite;
-      background: radial-gradient(circle at 40% 35%,
-        #fff 0%, #86EFAC 25%, #22C55E 55%, #14532D 100%);
-      box-shadow: 0 0 60px rgba(34,197,94,0.7), 0 0 120px rgba(34,197,94,0.3);
+      background: radial-gradient(circle at 38% 35%,
+        #F0FDF4 0%,
+        #BBF7D0 30%,
+        #4ADE80 60%,
+        #16A34A 100%);
+      box-shadow: 0 0 40px rgba(22,163,74,0.4),
+        0 0 80px rgba(22,163,74,0.2);
     }
     .neural-core.state-thinking {
       animation: neuralThink 1s ease-in-out infinite;
-      background: radial-gradient(circle at 40% 35%,
-        #fff 0%, #C4B5FD 25%, #8B5CF6 55%, #2E1065 100%);
-      box-shadow: 0 0 60px rgba(139,92,246,0.7);
+      background: radial-gradient(circle at 38% 35%,
+        #FAF5FF 0%,
+        #E9D5FF 30%,
+        #A855F7 60%,
+        #7C3AED 100%);
+      box-shadow: 0 0 40px rgba(139,92,246,0.4),
+        0 0 80px rgba(139,92,246,0.2);
     }
     @keyframes neuralIdle {
       0%,100% { transform: scale(1); }
@@ -1529,25 +1549,24 @@
     .rebecka-wave-bar {
       width: 3px;
       border-radius: 2px;
-      background: #4A8FD6;
+      background: #CBD5E1;
       transition: height 0.12s ease, background 0.3s ease;
     }
     #feedback-card {
-      background: #fff;
+      background: #FFFFFF;
       border: 1px solid #E2E6EC;
       border-radius: 16px;
       padding: 40px;
       text-align: center;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-      transition: all 0.5s ease;
-      max-width: 520px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      max-width: 480px;
       margin: 0 auto;
+      transition: box-shadow 0.3s ease;
     }
     #feedback-card.orb-mode {
-      background: linear-gradient(160deg, #0F172A 0%, #1E3348 100%);
-      border-color: rgba(74,143,214,0.3);
-      box-shadow: 0 8px 40px rgba(59,130,246,0.2);
-      padding: 32px 28px;
+      background: #FFFFFF;
+      border-color: #E2E6EC;
+      box-shadow: 0 4px 24px rgba(74,143,214,0.12);
     }
     #feedback-photo-section {
       transition: all 0.4s ease;
@@ -2906,9 +2925,9 @@
           box-shadow:0 0 0 5px rgba(74,143,214,0.12);cursor:pointer;"
           onclick="activateFeedbackOrb()">
             <img
-              src="https://managepartners.ai/wp-content/uploads/2024/09/Rebecka-Mathews-AI-SDR.png"
-              onerror="this.src='https://www.managepartners.ai/wp-content/uploads/2024/09/Rebecka-Mathews-AI-SDR.png';this.onerror=function(){this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1E3348,#4A8FD6)';this.parentElement.innerHTML+='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;font-size:3em;\'>&#x1F469;</div>';};"
-              style="width:100%;height:100%;object-fit:cover;" />
+              src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp"
+              style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+              onerror="this.style.display='none'" />
           </div>
           <div style="font-size:18px;font-weight:800;color:#1E293B;
           margin-bottom:3px;">Rebecka</div>
@@ -2989,33 +3008,17 @@
             Click the orb to talk</div>
           <!-- Transcript -->
           <div id="rebecka-fb-transcript"
-            style="font-size:13px;color:#CBD5E1;text-align:center;
+            style="font-size:13px;color:#334155;text-align:center;
             max-width:400px;margin:0 auto;line-height:1.6;min-height:20px;">
           </div>
           <!-- Response -->
           <div id="rebecka-fb-response"
-            style="display:none;font-size:13px;color:#94A3B8;
-            text-align:center;max-width:420px;margin:10px auto 0;
-            line-height:1.7;padding:12px 16px;
-            background:rgba(255,255,255,0.06);
-            border:1px solid rgba(255,255,255,0.1);
-            border-radius:10px;">
-          </div>
-          <!-- Text input -->
-          <div style="display:flex;gap:8px;margin-top:18px;width:100%;">
-            <input type="text" id="rebecka-fb-input"
-              placeholder="Or type here..."
-              onkeydown="if(event.key==='Enter')rebeckaFbSubmitText()"
-              style="flex:1;padding:10px 14px;
-              background:rgba(255,255,255,0.08);
-              border:1px solid rgba(255,255,255,0.12);
-              border-radius:8px;font-size:13px;
-              font-family:var(--font);outline:none;color:#F1F5F9;" />
-            <button onclick="rebeckaFbSubmitText()"
-              style="padding:10px 16px;background:#4A8FD6;color:#fff;
-              border:none;border-radius:8px;font-size:12px;font-weight:700;
-              cursor:pointer;font-family:var(--font);">
-              Send</button>
+            style="display:none;font-size:13px;color:#475569;
+            text-align:center;max-width:400px;margin:10px auto 0;
+            line-height:1.7;padding:14px 18px;
+            background:#F8FAFC;
+            border:1px solid #E2E6EC;
+            border-radius:12px;">
           </div>
           <!-- Submit when done -->
           <div id="rebecka-fb-done"
@@ -3031,13 +3034,13 @@
         <!-- Success -->
         <div id="feedback-success" style="display:none;">
           <div style="font-size:36px;margin-bottom:14px;">&#x2705;</div>
-          <div style="font-size:16px;font-weight:700;color:#F1F5F9;
+          <div style="font-size:16px;font-weight:700;color:#1E293B;
           margin-bottom:8px;">Got it — thanks!</div>
-          <div style="font-size:13px;color:#64748B;margin-bottom:22px;">
+          <div style="font-size:13px;color:#475569;margin-bottom:22px;">
             Rebecka has sent your feedback to Brian and Dan.</div>
           <button onclick="resetFeedbackOrb()"
-            style="padding:8px 20px;background:rgba(255,255,255,0.08);
-            color:#94A3B8;border:1px solid rgba(255,255,255,0.1);
+            style="padding:8px 20px;background:#F1F5F9;
+            color:#475569;border:1px solid #E2E6EC;
             border-radius:8px;font-size:12px;cursor:pointer;
             font-family:var(--font);">
             Send more feedback
@@ -5015,9 +5018,9 @@ Turner Construction, turnerconstruction.com"
     if (core) { core.className = 'neural-core state-' + state; }
     const stateMap = {
       idle:      { text: 'Click the orb to talk', color: '#64748B' },
-      listening: { text: '\uD83C\uDF99 Listening...', color: '#06B6D4' },
+      listening: { text: '\uD83C\uDF99 Listening...', color: '#4A8FD6' },
       thinking:  { text: '\u23F3 Thinking...', color: '#8B5CF6' },
-      speaking:  { text: '\uD83D\uDD0A Speaking', color: '#22C55E' }
+      speaking:  { text: '\uD83D\uDD0A Speaking', color: '#16A34A' }
     };
     const s = stateMap[state] || stateMap.idle;
     if (status) { status.textContent = s.text; status.style.color = s.color; }
@@ -5027,11 +5030,11 @@ Turner Construction, turnerconstruction.com"
   function rebeckaFbAnimateWave(active) {
     const bars = document.querySelectorAll('#rebecka-fb-wave .rebecka-wave-bar');
     if (rebeckaFbWaveInterval) clearInterval(rebeckaFbWaveInterval);
-    const colors = { listening: '#06B6D4', thinking: '#8B5CF6', speaking: '#22C55E' };
+    const colors = { listening: '#4A8FD6', thinking: '#8B5CF6', speaking: '#16A34A' };
     if (!active) {
       bars.forEach((b,i) => {
         b.style.height = [4,8,16,22,12,20,8,14,18,6][i] + 'px';
-        b.style.background = '#334155';
+        b.style.background = '#CBD5E1';
       });
       return;
     }
@@ -5047,7 +5050,7 @@ Turner Construction, turnerconstruction.com"
       if (rebeckaFbRecognition) rebeckaFbRecognition.stop();
     } else if (rebeckaFbState === 'idle') {
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { document.getElementById('rebecka-fb-input')?.focus(); return; }
+      if (!SR) { return; }
       rebeckaFbRecognition = new SR();
       rebeckaFbRecognition.continuous = false;
       rebeckaFbRecognition.interimResults = true;
@@ -5071,16 +5074,6 @@ Turner Construction, turnerconstruction.com"
       rebeckaFbRecognition.onerror = () => setFbOrbState('idle');
       rebeckaFbRecognition.start();
     }
-  }
-
-  function rebeckaFbSubmitText() {
-    const input = document.getElementById('rebecka-fb-input');
-    const text = input?.value?.trim();
-    if (!text) return;
-    input.value = '';
-    const t = document.getElementById('rebecka-fb-transcript');
-    if (t) t.textContent = text;
-    rebeckaFbProcess(text);
   }
 
   async function rebeckaFbProcess(text) {
@@ -5118,10 +5111,18 @@ Turner Construction, turnerconstruction.com"
   async function rebeckaFbSpeak(text) {
     setFbOrbState('speaking');
     const responseEl = document.getElementById('rebecka-fb-response');
-    if (responseEl) { responseEl.textContent = text; responseEl.style.display = 'block'; }
+    if (responseEl) {
+      responseEl.textContent = text;
+      responseEl.style.display = 'block';
+    }
+    // Cancel any existing browser speech
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    let audioPlayed = false;
     try {
-      const resp = await fetch(
-        'https://api.elevenlabs.io/v1/text-to-speech/9BWtsMINqrJLrRacOk9x/stream',
+      const elResp = await fetch(
+        'https://api.elevenlabs.io/v1/text-to-speech/9BWtsMINqrJLrRacOk9x',
         {
           method: 'POST',
           headers: {
@@ -5132,23 +5133,50 @@ Turner Construction, turnerconstruction.com"
           body: JSON.stringify({
             text: text,
             model_id: 'eleven_turbo_v2_5',
-            voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+            voice_settings: {
+              stability: 0.45,
+              similarity_boost: 0.80,
+              style: 0.25,
+              use_speaker_boost: true
+            }
           })
         }
       );
-      if (!resp.ok) throw new Error('ElevenLabs error');
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.onended = () => { setFbOrbState('idle'); URL.revokeObjectURL(url); };
-      audio.onerror = () => setFbOrbState('idle');
-      await audio.play();
+      if (elResp.ok) {
+        const arrayBuffer = await elResp.arrayBuffer();
+        const audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.onended = () => setFbOrbState('idle');
+        source.start(0);
+        audioPlayed = true;
+      } else {
+        const errText = await elResp.text();
+        console.error('ElevenLabs error:', elResp.status, errText);
+      }
     } catch(e) {
+      console.error('ElevenLabs fetch failed:', e);
+    }
+    if (!audioPlayed) {
+      // Only use browser TTS as last resort
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.onend = () => setFbOrbState('idle');
-        window.speechSynthesis.speak(u);
+        const utterance = new SpeechSynthesisUtterance(text);
+        // Force a neutral American female voice
+        const voices = window.speechSynthesis.getVoices();
+        const preferred = voices.find(v =>
+          v.name.includes('Samantha') ||
+          v.name.includes('Google US English Female') ||
+          v.name.includes('Microsoft Zira') ||
+          (v.lang === 'en-US' && v.name.toLowerCase().includes('female'))
+        ) || voices.find(v => v.lang === 'en-US');
+        if (preferred) utterance.voice = preferred;
+        utterance.rate = 0.95;
+        utterance.pitch = 1.1;
+        utterance.onend = () => setFbOrbState('idle');
+        window.speechSynthesis.speak(utterance);
       } else {
         setTimeout(() => setFbOrbState('idle'), 3000);
       }
