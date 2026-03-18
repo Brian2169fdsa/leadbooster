@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lead Booster Pro — ManageAI</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style id="pcb-card-css">
     #pcb-card {
       position: fixed; bottom: 24px; left: 24px; width: 33vw;
@@ -1594,26 +1595,26 @@
         <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <select id="rb-vertical-input" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
           <option value="">Select Vertical</option>
-          <option value="construction">Construction</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="medical_transport">Medical Transport</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
           <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="legal_services">Legal Services</option>
           <option value="insurance">Insurance</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="manufacturing">Manufacturing</option>
+          <option value="legal_services">Legal Services</option>
           <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
           <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
         </select>
         <button onclick="rebeccaFireSingle()" style="background:#4a90d9;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Run It</button>
         <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
@@ -1637,26 +1638,26 @@
         <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1;min-width:100px;max-width:120px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <select id="rb-territory-vertical" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
           <option value="">Select Vertical</option>
-          <option value="construction">Construction</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="medical_transport">Medical Transport</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
           <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="legal_services">Legal Services</option>
           <option value="insurance">Insurance</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="manufacturing">Manufacturing</option>
+          <option value="legal_services">Legal Services</option>
           <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
           <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
         </select>
         <select id="rb-territory-qty" style="flex:1;min-width:120px;max-width:140px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
           <option value="10">10 companies</option>
@@ -1682,26 +1683,26 @@
         <input id="rb-precall-company" type="text" placeholder="Company name" style="flex:2;min-width:180px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <input id="rb-precall-domain" type="text" placeholder="domain.com" style="flex:1;min-width:140px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;" />
         <select id="rb-precall-vertical" style="flex:1;min-width:160px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
-          <option value="construction">Construction</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="medical_transport">Medical Transport</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
           <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="legal_services">Legal Services</option>
           <option value="insurance">Insurance</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="manufacturing">Manufacturing</option>
+          <option value="legal_services">Legal Services</option>
           <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
           <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
         </select>
         <button onclick="runPreCallBrief()" style="background:#1a1a2e;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Generate Brief</button>
         <button onclick="document.getElementById('rb-precall-modal').style.display='none'" style="background:transparent;color:#666;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;font-family:inherit;">Cancel</button>
@@ -1715,36 +1716,36 @@
         <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:20px;line-height:1;">×</button>
       </div>
       <select id="rb-bulk-vertical" style="width:100%;max-width:280px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:14px;font-family:inherit;background:#fff;outline:none;">
-        <option value="">Select Vertical</option>
-        <option value="construction">Construction</option>
-        <option value="behavioral_health">Behavioral Health</option>
-        <option value="medical_transport">Medical Transport</option>
-        <option value="b2b_professional_services">B2B Professional Services</option>
-        <option value="health_wellness">Health &amp; Wellness</option>
-        <option value="home_services">Home Services</option>
-        <option value="accounting_tax">Accounting &amp; Tax</option>
-        <option value="legal_services">Legal Services</option>
-        <option value="insurance">Insurance</option>
-        <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-        <option value="financial_services">Financial Svcs (Non-Bank)</option>
-        <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-        <option value="wholesale_distribution">Wholesale Distribution</option>
-        <option value="marketing_advertising">Marketing &amp; Advertising</option>
-        <option value="manufacturing">Manufacturing</option>
-        <option value="logistics_transportation">Logistics &amp; Transportation</option>
-        <option value="construction_engineering">Construction &amp; Engineering</option>
-        <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-        <option value="auto_dealerships">Auto Dealerships</option>
-        <option value="technology_saas">Technology / SaaS</option>
-      </select>
+          <option value="">Select Vertical</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
+          <option value="health_wellness">Health &amp; Wellness</option>
+          <option value="home_services">Home Services</option>
+          <option value="insurance">Insurance</option>
+          <option value="legal_services">Legal Services</option>
+          <option value="logistics_transportation">Logistics &amp; Transportation</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
+          <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
+        </select>
       <div id="rb-drop-zone" style="border:2px dashed #e2e8f0;border-radius:8px;padding:24px;text-align:center;margin-bottom:14px;cursor:pointer;transition:border-color 0.2s;"
         ondragover="event.preventDefault();this.style.borderColor='#4a90d9';"
         ondragleave="this.style.borderColor='#e2e8f0';"
         ondrop="handleRbDrop(event);"
         onclick="document.getElementById('rb-csv-input').click();">
-        <div style="font-size:13px;color:#64748b;font-weight:500;">Drop CSV file here or click to browse</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:4px;">Format: company_name, domain (one per line)</div>
-        <input id="rb-csv-input" type="file" accept=".csv" style="display:none;" onchange="handleRbCsvFile(event);">
+        <div style="font-size:13px;color:#64748b;font-weight:500;">Drop file here or click to browse</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:4px;">CSV, XLS, or XLSX — any column order, any format</div>
+        <input id="rb-csv-input" type="file" accept=".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;" onchange="handleRbCsvFile(event);">
       </div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
         <div style="flex:1;height:1px;background:#e2e8f0;"></div>
@@ -2031,27 +2032,27 @@
         <div style="flex:2;min-width:160px;">
           <label style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block;">Vertical</label>
           <select id="pcb-vertical-input" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
-            <option value="construction">Construction</option>
-            <option value="behavioral_health">Behavioral Health</option>
-            <option value="medical_transport">Medical Transport</option>
-            <option value="b2b_professional_services">B2B Professional Services</option>
-            <option value="health_wellness">Health &amp; Wellness</option>
-            <option value="home_services">Home Services</option>
-            <option value="accounting_tax">Accounting &amp; Tax</option>
-            <option value="legal_services">Legal Services</option>
-            <option value="insurance">Insurance</option>
-            <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-            <option value="financial_services">Financial Svcs (Non-Bank)</option>
-            <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-            <option value="wholesale_distribution">Wholesale Distribution</option>
-            <option value="marketing_advertising">Marketing &amp; Advertising</option>
-            <option value="manufacturing">Manufacturing</option>
-            <option value="logistics_transportation">Logistics &amp; Transportation</option>
-            <option value="construction_engineering">Construction &amp; Engineering</option>
-            <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-            <option value="auto_dealerships">Auto Dealerships</option>
-            <option value="technology_saas">Technology / SaaS</option>
-          </select>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
+          <option value="health_wellness">Health &amp; Wellness</option>
+          <option value="home_services">Home Services</option>
+          <option value="insurance">Insurance</option>
+          <option value="legal_services">Legal Services</option>
+          <option value="logistics_transportation">Logistics &amp; Transportation</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
+          <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
+        </select>
         </div>
       </div>
       <button onclick="launchPreCallBrief()" id="pcb-launch-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a5fb4,#4a90d9);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;box-shadow:0 4px 16px rgba(74,144,217,0.35);">
@@ -2066,26 +2067,26 @@
       <input type="text" id="pcb-filter-company" placeholder="Search company..." oninput="filterPrecallBriefs()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;outline:none;width:200px;" />
       <select id="pcb-filter-vertical" onchange="filterPrecallBriefs()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:#fff;color:var(--text-mid);">
         <option value="">All Verticals</option>
+        <option value="accounting_tax">Accounting &amp; Tax</option>
+        <option value="auto_dealerships">Auto Dealerships</option>
+        <option value="b2b_professional_services">B2B Professional Services</option>
         <option value="behavioral_health">Behavioral Health</option>
         <option value="construction">Construction</option>
-        <option value="medical_transport">Medical Transport</option>
-        <option value="b2b_professional_services">B2B Professional Services</option>
+        <option value="construction_engineering">Construction &amp; Engineering</option>
+        <option value="financial_services">Financial Svcs (Non-Bank)</option>
+        <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
         <option value="health_wellness">Health &amp; Wellness</option>
         <option value="home_services">Home Services</option>
-        <option value="accounting_tax">Accounting &amp; Tax</option>
-        <option value="legal_services">Legal Services</option>
         <option value="insurance">Insurance</option>
-        <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-        <option value="financial_services">Financial Svcs (Non-Bank)</option>
-        <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-        <option value="wholesale_distribution">Wholesale Distribution</option>
-        <option value="marketing_advertising">Marketing &amp; Advertising</option>
-        <option value="manufacturing">Manufacturing</option>
+        <option value="legal_services">Legal Services</option>
         <option value="logistics_transportation">Logistics &amp; Transportation</option>
-        <option value="construction_engineering">Construction &amp; Engineering</option>
-        <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-        <option value="auto_dealerships">Auto Dealerships</option>
+        <option value="manufacturing">Manufacturing</option>
+        <option value="marketing_advertising">Marketing &amp; Advertising</option>
+        <option value="medical_transport">Medical Transport</option>
+        <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+        <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
         <option value="technology_saas">Technology / SaaS</option>
+        <option value="wholesale_distribution">Wholesale Distribution</option>
       </select>
       <div id="pcb-filter-count" style="font-size:12px;color:var(--text-dim);margin-left:auto;"></div>
     </div>
@@ -2135,26 +2136,26 @@
       <div class="field">
         <label>Vertical</label>
         <div class="chips" id="s-chips">
-          <button class="chip active" data-v="behavioral_health" onclick="selectChip(this,'s-chips')">Behavioral Health</button>
+          <button class="chip active" data-v="accounting_tax" onclick="selectChip(this,'s-chips')">Accounting &amp; Tax</button>
+          <button class="chip" data-v="auto_dealerships" onclick="selectChip(this,'s-chips')">Auto Dealerships</button>
+          <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'s-chips')">B2B Professional Services</button>
+          <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'s-chips')">Behavioral Health</button>
           <button class="chip" data-v="construction" onclick="selectChip(this,'s-chips')">Construction</button>
-          <button class="chip" data-v="medical_transport" onclick="selectChip(this,'s-chips')">Medical Transport</button>
-          <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'s-chips')">B2B Services</button>
+          <button class="chip" data-v="construction_engineering" onclick="selectChip(this,'s-chips')">Construction &amp; Engineering</button>
+          <button class="chip" data-v="financial_services" onclick="selectChip(this,'s-chips')">Financial Svcs (Non-Bank)</button>
+          <button class="chip" data-v="healthcare_services" onclick="selectChip(this,'s-chips')">Healthcare Svcs (Non-Hospital)</button>
           <button class="chip" data-v="health_wellness" onclick="selectChip(this,'s-chips')">Health &amp; Wellness</button>
           <button class="chip" data-v="home_services" onclick="selectChip(this,'s-chips')">Home Services</button>
-          <button class="chip" data-v="accounting_tax" onclick="selectChip(this,'s-chips')">Accounting &amp; Tax</button>
-          <button class="chip" data-v="legal_services" onclick="selectChip(this,'s-chips')">Legal Services</button>
           <button class="chip" data-v="insurance" onclick="selectChip(this,'s-chips')">Insurance</button>
-          <button class="chip" data-v="staffing_professional_svcs" onclick="selectChip(this,'s-chips')">Professional Svcs / Staffing</button>
-          <button class="chip" data-v="financial_services" onclick="selectChip(this,'s-chips')">Financial Svcs (Non-Bank)</button>
-          <button class="chip" data-v="real_estate" onclick="selectChip(this,'s-chips')">Real Estate &amp; Property Mgmt</button>
-          <button class="chip" data-v="wholesale_distribution" onclick="selectChip(this,'s-chips')">Wholesale Distribution</button>
-          <button class="chip" data-v="marketing_advertising" onclick="selectChip(this,'s-chips')">Marketing &amp; Advertising</button>
-          <button class="chip" data-v="manufacturing" onclick="selectChip(this,'s-chips')">Manufacturing</button>
+          <button class="chip" data-v="legal_services" onclick="selectChip(this,'s-chips')">Legal Services</button>
           <button class="chip" data-v="logistics_transportation" onclick="selectChip(this,'s-chips')">Logistics &amp; Transportation</button>
-          <button class="chip" data-v="construction_engineering" onclick="selectChip(this,'s-chips')">Construction &amp; Engineering</button>
-          <button class="chip" data-v="healthcare_services" onclick="selectChip(this,'s-chips')">Healthcare Svcs (Non-Hospital)</button>
-          <button class="chip" data-v="auto_dealerships" onclick="selectChip(this,'s-chips')">Auto Dealerships</button>
+          <button class="chip" data-v="manufacturing" onclick="selectChip(this,'s-chips')">Manufacturing</button>
+          <button class="chip" data-v="marketing_advertising" onclick="selectChip(this,'s-chips')">Marketing &amp; Advertising</button>
+          <button class="chip" data-v="medical_transport" onclick="selectChip(this,'s-chips')">Medical Transport</button>
+          <button class="chip" data-v="real_estate" onclick="selectChip(this,'s-chips')">Real Estate &amp; Property Mgmt</button>
+          <button class="chip" data-v="staffing_professional_svcs" onclick="selectChip(this,'s-chips')">Professional Svcs / Staffing</button>
           <button class="chip" data-v="technology_saas" onclick="selectChip(this,'s-chips')">Technology / SaaS</button>
+          <button class="chip" data-v="wholesale_distribution" onclick="selectChip(this,'s-chips')">Wholesale Distribution</button>
         </div>
       </div>
 
@@ -2202,10 +2203,10 @@
 
       <!-- Upload area -->
       <div class="upload-area" id="drop-zone" onclick="document.getElementById('csv-input').click()" ondragover="handleDrag(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-        <input type="file" id="csv-input" class="upload-input" accept=".csv,.txt" onchange="handleFile(event)" />
+        <input type="file" id="csv-input" class="upload-input" accept=".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="handleFile(event)" />
         <div class="upload-icon">📄</div>
-        <div class="upload-title">Drop CSV here or click to browse</div>
-        <div class="upload-sub">Accepted format: Company Name, domain.com (one per row) · Max 50 rows</div>
+        <div class="upload-title">Drop file here or click to browse</div>
+        <div class="upload-sub">CSV, XLS, or XLSX — any column order, any format</div>
       </div>
 
       <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px;">
@@ -2231,26 +2232,26 @@
         <label>Default Vertical</label>
         <select id="b-vertical">
           <option value="">Select Vertical</option>
-          <option value="construction">Construction</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="medical_transport">Medical Transport</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
           <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="legal_services">Legal Services</option>
           <option value="insurance">Insurance</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="manufacturing">Manufacturing</option>
+          <option value="legal_services">Legal Services</option>
           <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
           <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
         </select>
       </div>
 
@@ -2305,26 +2306,26 @@
       <div class="field">
         <label>Vertical</label>
         <div class="chips" id="t-chips">
-          <button class="chip active" data-v="construction" onclick="selectChip(this,'t-chips')">Construction</button>
-          <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'t-chips')">Behavioral Health</button>
-          <button class="chip" data-v="medical_transport" onclick="selectChip(this,'t-chips')">Medical Transport</button>
+          <button class="chip active" data-v="accounting_tax" onclick="selectChip(this,'t-chips')">Accounting &amp; Tax</button>
+          <button class="chip" data-v="auto_dealerships" onclick="selectChip(this,'t-chips')">Auto Dealerships</button>
           <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'t-chips')">B2B Professional Services</button>
+          <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'t-chips')">Behavioral Health</button>
+          <button class="chip" data-v="construction" onclick="selectChip(this,'t-chips')">Construction</button>
+          <button class="chip" data-v="construction_engineering" onclick="selectChip(this,'t-chips')">Construction &amp; Engineering</button>
+          <button class="chip" data-v="financial_services" onclick="selectChip(this,'t-chips')">Financial Svcs (Non-Bank)</button>
+          <button class="chip" data-v="healthcare_services" onclick="selectChip(this,'t-chips')">Healthcare Svcs (Non-Hospital)</button>
           <button class="chip" data-v="health_wellness" onclick="selectChip(this,'t-chips')">Health &amp; Wellness</button>
           <button class="chip" data-v="home_services" onclick="selectChip(this,'t-chips')">Home Services</button>
-          <button class="chip" data-v="accounting_tax" onclick="selectChip(this,'t-chips')">Accounting &amp; Tax</button>
-          <button class="chip" data-v="legal_services" onclick="selectChip(this,'t-chips')">Legal Services</button>
           <button class="chip" data-v="insurance" onclick="selectChip(this,'t-chips')">Insurance</button>
-          <button class="chip" data-v="staffing_professional_svcs" onclick="selectChip(this,'t-chips')">Professional Svcs / Staffing</button>
-          <button class="chip" data-v="financial_services" onclick="selectChip(this,'t-chips')">Financial Svcs (Non-Bank)</button>
-          <button class="chip" data-v="real_estate" onclick="selectChip(this,'t-chips')">Real Estate &amp; Property Mgmt</button>
-          <button class="chip" data-v="wholesale_distribution" onclick="selectChip(this,'t-chips')">Wholesale Distribution</button>
-          <button class="chip" data-v="marketing_advertising" onclick="selectChip(this,'t-chips')">Marketing &amp; Advertising</button>
-          <button class="chip" data-v="manufacturing" onclick="selectChip(this,'t-chips')">Manufacturing</button>
+          <button class="chip" data-v="legal_services" onclick="selectChip(this,'t-chips')">Legal Services</button>
           <button class="chip" data-v="logistics_transportation" onclick="selectChip(this,'t-chips')">Logistics &amp; Transportation</button>
-          <button class="chip" data-v="construction_engineering" onclick="selectChip(this,'t-chips')">Construction &amp; Engineering</button>
-          <button class="chip" data-v="healthcare_services" onclick="selectChip(this,'t-chips')">Healthcare Svcs (Non-Hospital)</button>
-          <button class="chip" data-v="auto_dealerships" onclick="selectChip(this,'t-chips')">Auto Dealerships</button>
+          <button class="chip" data-v="manufacturing" onclick="selectChip(this,'t-chips')">Manufacturing</button>
+          <button class="chip" data-v="marketing_advertising" onclick="selectChip(this,'t-chips')">Marketing &amp; Advertising</button>
+          <button class="chip" data-v="medical_transport" onclick="selectChip(this,'t-chips')">Medical Transport</button>
+          <button class="chip" data-v="real_estate" onclick="selectChip(this,'t-chips')">Real Estate &amp; Property Mgmt</button>
+          <button class="chip" data-v="staffing_professional_svcs" onclick="selectChip(this,'t-chips')">Professional Svcs / Staffing</button>
           <button class="chip" data-v="technology_saas" onclick="selectChip(this,'t-chips')">Technology / SaaS</button>
+          <button class="chip" data-v="wholesale_distribution" onclick="selectChip(this,'t-chips')">Wholesale Distribution</button>
         </div>
       </div>
 
@@ -2712,6 +2713,17 @@
           <textarea id="fb-message" rows="5" placeholder="Example: I searched Phoenix AZ behavioral health and the ICP scores for directors came back lower than expected. The phone numbers were mostly missing too." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;resize:vertical;line-height:1.6;"></textarea>
         </div>
 
+        <div class="field" style="margin-bottom:16px;">
+          <label>Attachment <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional, attach a screenshot or file (max 5MB)</span></label>
+          <div id="feedback-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color 0.2s;" onclick="document.getElementById('feedback-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFeedbackDrop(event)">
+            <div style="font-size:24px;margin-bottom:6px;">📎</div>
+            <div style="font-size:12px;color:var(--text-dim);">Click to attach or drag and drop</div>
+            <div style="font-size:11px;color:#94A3B8;margin-top:4px;">PNG, JPG, GIF, PDF — max 5MB</div>
+            <div id="feedback-file-name" style="font-size:12px;color:var(--accent);margin-top:8px;display:none;font-weight:600;"></div>
+          </div>
+          <input type="file" id="feedback-file-input" accept="image/*,.pdf" style="display:none" onchange="handleFeedbackFileSelect(this)" />
+        </div>
+
         <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
           Feedback sent — thank you! Brian will review it shortly.
         </div>
@@ -2759,36 +2771,36 @@
         <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:18px;">x</button>
       </div>
       <select id="rb-bulk-vertical" style="width:100%; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:12px; font-family:inherit;">
-        <option value="">Select Vertical</option>
-        <option value="construction">Construction</option>
-        <option value="behavioral_health">Behavioral Health</option>
-        <option value="medical_transport">Medical Transport</option>
-        <option value="b2b_professional_services">B2B Professional Services</option>
-        <option value="health_wellness">Health &amp; Wellness</option>
-        <option value="home_services">Home Services</option>
-        <option value="accounting_tax">Accounting &amp; Tax</option>
-        <option value="legal_services">Legal Services</option>
-        <option value="insurance">Insurance</option>
-        <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-        <option value="financial_services">Financial Svcs (Non-Bank)</option>
-        <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-        <option value="wholesale_distribution">Wholesale Distribution</option>
-        <option value="marketing_advertising">Marketing &amp; Advertising</option>
-        <option value="manufacturing">Manufacturing</option>
-        <option value="logistics_transportation">Logistics &amp; Transportation</option>
-        <option value="construction_engineering">Construction &amp; Engineering</option>
-        <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-        <option value="auto_dealerships">Auto Dealerships</option>
-        <option value="technology_saas">Technology / SaaS</option>
-      </select>
+          <option value="">Select Vertical</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
+          <option value="health_wellness">Health &amp; Wellness</option>
+          <option value="home_services">Home Services</option>
+          <option value="insurance">Insurance</option>
+          <option value="legal_services">Legal Services</option>
+          <option value="logistics_transportation">Logistics &amp; Transportation</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
+          <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
+        </select>
       <div id="rb-drop-zone" style="border:2px dashed #e2e8f0; border-radius:8px; padding:20px; text-align:center; margin-bottom:12px; cursor:pointer; transition:border-color 0.2s;"
         ondragover="event.preventDefault(); this.style.borderColor='#4a90d9';"
         ondragleave="this.style.borderColor='#e2e8f0';"
         ondrop="handleRbDrop(event);"
         onclick="document.getElementById('rb-csv-input').click();">
-        <div style="font-size:13px; color:#64748b;">Drop CSV file here or click to browse</div>
-        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Format: company_name, domain (one per line)</div>
-        <input id="rb-csv-input" type="file" accept=".csv" style="display:none;" onchange="handleRbCsvFile(event);">
+        <div style="font-size:13px; color:#64748b;">Drop file here or click to browse</div>
+        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">CSV, XLS, or XLSX — any column order, any format</div>
+        <input id="rb-csv-input" type="file" accept=".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;" onchange="handleRbCsvFile(event);">
       </div>
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
         <div style="flex:1; height:1px; background:#e2e8f0;"></div>
@@ -2816,26 +2828,26 @@ Turner Construction, turnerconstruction.com"
         <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
         <select id="rb-vertical-input" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
           <option value="">Select Vertical</option>
-          <option value="construction">Construction</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="medical_transport">Medical Transport</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
           <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="legal_services">Legal Services</option>
           <option value="insurance">Insurance</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="manufacturing">Manufacturing</option>
+          <option value="legal_services">Legal Services</option>
           <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
           <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
         </select>
         <button onclick="rebeccaFireSingle()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
         <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
@@ -2849,26 +2861,26 @@ Turner Construction, turnerconstruction.com"
         <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1; min-width:80px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
         <select id="rb-territory-vertical" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
           <option value="">Select Vertical</option>
-          <option value="construction">Construction</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="medical_transport">Medical Transport</option>
+          <option value="accounting_tax">Accounting &amp; Tax</option>
+          <option value="auto_dealerships">Auto Dealerships</option>
           <option value="b2b_professional_services">B2B Professional Services</option>
+          <option value="behavioral_health">Behavioral Health</option>
+          <option value="construction">Construction</option>
+          <option value="construction_engineering">Construction &amp; Engineering</option>
+          <option value="financial_services">Financial Svcs (Non-Bank)</option>
+          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
           <option value="health_wellness">Health &amp; Wellness</option>
           <option value="home_services">Home Services</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="legal_services">Legal Services</option>
           <option value="insurance">Insurance</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="manufacturing">Manufacturing</option>
+          <option value="legal_services">Legal Services</option>
           <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="marketing_advertising">Marketing &amp; Advertising</option>
+          <option value="medical_transport">Medical Transport</option>
+          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
           <option value="technology_saas">Technology / SaaS</option>
+          <option value="wholesale_distribution">Wholesale Distribution</option>
         </select>
         <select id="rb-territory-qty" style="flex:1; min-width:120px; max-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; background:#fff;">
           <option value="10">10 companies</option>
@@ -3109,26 +3121,54 @@ Turner Construction, turnerconstruction.com"
     return results.slice(0, MAX_COMPANIES);
   }
 
-  // ==================== CSV UPLOAD ====================
+  // ==================== CSV / EXCEL UPLOAD ====================
   function handleDrag(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag'); }
   function handleDragLeave() { document.getElementById('drop-zone').classList.remove('drag'); }
   function handleDrop(e) {
     e.preventDefault();
     document.getElementById('drop-zone').classList.remove('drag');
     const file = e.dataTransfer.files[0];
-    if (file) readCSV(file);
+    if (file) handleBulkFile(file, 'b-list', updateBulkCount);
   }
   function handleFile(e) {
     const file = e.target.files[0];
-    if (file) readCSV(file);
+    if (file) handleBulkFile(file, 'b-list', updateBulkCount);
   }
   function readCSV(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      document.getElementById('b-list').value = e.target.result;
-      updateBulkCount();
-    };
-    reader.readAsText(file);
+    handleBulkFile(file, 'b-list', updateBulkCount);
+  }
+  function handleBulkFile(file, textareaId, countFn) {
+    var name = file.name.toLowerCase();
+    var isExcel = name.endsWith('.xls') || name.endsWith('.xlsx');
+    if (isExcel) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var data = new Uint8Array(e.target.result);
+          var workbook = XLSX.read(data, { type: 'array' });
+          var sheet = workbook.Sheets[workbook.SheetNames[0]];
+          var rows = XLSX.utils.sheet_to_csv(sheet);
+          var textarea = document.getElementById(textareaId);
+          if (textarea) {
+            textarea.value = rows;
+            if (countFn) countFn();
+          }
+        } catch(err) {
+          alert('Could not read Excel file. Try saving as CSV and uploading again.');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var textarea = document.getElementById(textareaId);
+        if (textarea) {
+          textarea.value = e.target.result;
+          if (countFn) countFn();
+        }
+      };
+      reader.readAsText(file);
+    }
   }
 
   // ==================== RESULTS UI ====================
@@ -4622,6 +4662,43 @@ Turner Construction, turnerconstruction.com"
   }
 
   // ==================== FEEDBACK ====================
+  let feedbackAttachment = null;
+
+  function handleFeedbackFileSelect(input) {
+    var file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File too large. Max 5MB.');
+      input.value = '';
+      return;
+    }
+    feedbackAttachment = file;
+    var nameEl = document.getElementById('feedback-file-name');
+    if (nameEl) {
+      nameEl.textContent = '\u2713 ' + file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+      nameEl.style.display = 'block';
+    }
+    document.getElementById('feedback-drop-zone').style.borderColor = '#16A34A';
+  }
+
+  function handleFeedbackDrop(event) {
+    event.preventDefault();
+    document.getElementById('feedback-drop-zone').style.borderColor = 'var(--border)';
+    var file = event.dataTransfer.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File too large. Max 5MB.');
+      return;
+    }
+    feedbackAttachment = file;
+    var nameEl = document.getElementById('feedback-file-name');
+    if (nameEl) {
+      nameEl.textContent = '\u2713 ' + file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+      nameEl.style.display = 'block';
+    }
+    document.getElementById('feedback-drop-zone').style.borderColor = '#16A34A';
+  }
+
   async function submitFeedback() {
     const name = document.getElementById('fb-name').value.trim() || ((window._currentUser||{}).name || 'Anonymous');
     const category = document.getElementById('fb-category').value;
@@ -4638,6 +4715,19 @@ Turner Construction, turnerconstruction.com"
     errorEl.style.display = 'none';
 
     try {
+      let attachmentData = null;
+      let attachmentName = null;
+      let attachmentType = null;
+      if (feedbackAttachment) {
+        attachmentData = await new Promise(function(resolve) {
+          var reader = new FileReader();
+          reader.onload = function() { resolve(reader.result.split(',')[1]); };
+          reader.readAsDataURL(feedbackAttachment);
+        });
+        attachmentName = feedbackAttachment.name;
+        attachmentType = feedbackAttachment.type;
+      }
+
       const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -4646,7 +4736,10 @@ Turner Construction, turnerconstruction.com"
           email: (window._currentUser||{}).email || 'unknown',
           category: category || 'general',
           message,
-          submitted_at: new Date().toISOString()
+          submitted_at: new Date().toISOString(),
+          attachment_data: attachmentData,
+          attachment_name: attachmentName,
+          attachment_type: attachmentType
         })
       });
 
@@ -4654,6 +4747,12 @@ Turner Construction, turnerconstruction.com"
         successEl.style.display = 'block';
         document.getElementById('fb-message').value = '';
         document.getElementById('fb-category').value = '';
+        feedbackAttachment = null;
+        var nameEl = document.getElementById('feedback-file-name');
+        if (nameEl) nameEl.style.display = 'none';
+        document.getElementById('feedback-drop-zone').style.borderColor = 'var(--border)';
+        var fileInput = document.getElementById('feedback-file-input');
+        if (fileInput) fileInput.value = '';
       } else {
         throw new Error('Failed to submit feedback');
       }
@@ -5694,26 +5793,14 @@ Turner Construction, turnerconstruction.com"
   function handleRbDrop(event) {
     event.preventDefault();
     document.getElementById('rb-drop-zone').style.borderColor = '#e2e8f0';
-    const file = event.dataTransfer.files[0];
-    if (file && file.name.endsWith('.csv')) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById('rb-bulk-paste').value = e.target.result;
-        updateRbBulkCount();
-      };
-      reader.readAsText(file);
-    }
+    var file = event.dataTransfer.files[0];
+    if (file) handleBulkFile(file, 'rb-bulk-paste', updateRbBulkCount);
   }
 
   function handleRbCsvFile(event) {
-    const file = event.target.files[0];
+    var file = event.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('rb-bulk-paste').value = e.target.result;
-      updateRbBulkCount();
-    };
-    reader.readAsText(file);
+    handleBulkFile(file, 'rb-bulk-paste', updateRbBulkCount);
   }
 
   function updateRbBulkCount() {
