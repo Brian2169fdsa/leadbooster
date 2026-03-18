@@ -1,5 +1,5 @@
 # Pre-Call Brief System Test Report
-**Date:** 2026-03-18
+**Date:** 2026-03-18 (Run 2 — refreshed)
 **Workflow:** WF-PRECALL-BRIEFING (NthQ2FsFZ726kVV4)
 **Status:** Active
 
@@ -16,76 +16,74 @@ The system generates complete briefs with all required sections for every compan
 ```
 Webhook
   ├─> Respond Immediately (returns {status:"processing"} to caller)
-  └─> Get Existing Contacts
-        └─> Apollo Company Enrich
-              └─> Google News Search
-                    └─> BuiltWith Tech Stack
-                          └─> Pipedrive Company Search
-                                └─> Job Postings Search
-                                      └─> Website Scrape Fallback
-                                            └─> Website Google Search
-                                                  └─> Generate Brief
+  └─> Get Existing Contacts                   [alwaysOutputData: true]  ✅
+        └─> Apollo Company Enrich              [alwaysOutputData: true]  ✅
+              └─> Google News Search           [alwaysOutputData: true]  ✅
+                    └─> BuiltWith Tech Stack   [alwaysOutputData: true]  ✅
+                          └─> Pipedrive Company Search [alwaysOutputData: true]  ✅
+                                └─> Job Postings Search [alwaysOutputData: true]  ✅
+                                      └─> Website Scrape Fallback [alwaysOutputData: true]  ✅
+                                            └─> Website Google Search [alwaysOutputData: true]  ✅
+                                                  └─> Generate Brief [alwaysOutputData: NOT SET]  ⚠️
 ```
 
-### alwaysOutputData Status
-
-| Node | alwaysOutputData | Status |
-|------|-----------------|--------|
-| Webhook | NOT SET | OK (always has data) |
-| Respond Immediately | NOT SET | OK (response node) |
-| Get Existing Contacts | **true** | OK |
-| Apollo Company Enrich | **true** | OK |
-| Google News Search | **true** | OK |
-| BuiltWith Tech Stack | **true** | OK |
-| Pipedrive Company Search | **true** | OK |
-| Job Postings Search | **true** | OK |
-| Website Scrape Fallback | **true** | OK |
-| Website Google Search | **true** | OK |
-| Generate Brief | **NOT SET** | RISK — terminal node so acceptable, but would lose error info |
-
-**SILENT FAILURE NODES (missing alwaysOutputData: true):** Generate Brief only. All HTTP enrichment nodes correctly have `alwaysOutputData: true` set at the node level, so the chain never breaks even when APIs fail.
+**Total nodes:** 11
+**SILENT FAILURE NODES (missing alwaysOutputData: true):** Generate Brief only (terminal node — acceptable but risky).
 
 ---
 
 ## STEP 2 — GENERATE BRIEF CODE ANALYSIS
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| 1. lb-pd-activity webhook call | **YES** | Line 362: POST to `/webhook/lb-pd-activity` |
-| 1a. Before return statement? | **YES** | Fires at line 362, return at line 385 |
-| 2. Jina scrape read (Website Scrape Fallback) | **YES** | Line 63: `$('Website Scrape Fallback').first().json` |
-| 3. Website Google Search read | **YES** | Line 73: `$('Website Google Search').first().json` |
-| 4. dataConfidence logic | **YES** | Lines 80-90: high/medium/low based on Apollo, website, web search |
-| 5. Fallback brief if Claude fails | **YES** | Lines 268-311: Full hardcoded brief template |
-| 6. Dual API key retry | **YES** | Lines 232-265: Two API keys with loop, breaks on success |
-| 7. Always writes to lb_precall_briefs | **YES** | Lines 313-341: Supabase POST always fires |
+| # | Check | Result | Detail |
+|---|-------|--------|--------|
+| 1 | lb-pd-activity webhook call | **YES** | POST to `/webhook/lb-pd-activity` |
+| 1a | Before return statement? | **YES** | Fires before `return [{json: ...}]` |
+| 2 | Reads Website Scrape Fallback | **YES** | `$('Website Scrape Fallback').first().json` |
+| 3 | Website Google Search read | **YES** | `$('Website Google Search').first().json` |
+| 4 | dataConfidence logic | **YES** | high if Apollo, medium if website/search, low otherwise |
+| 5 | Fallback brief if Claude fails | **YES** | Full template with all 7 required sections |
+| 6 | Dual API key retry | **YES** | 2 `sk-ant-api03` keys, loop breaks on success |
+| 7 | Always writes to lb_precall_briefs | **YES** | Supabase POST always fires |
 
-### BUG FOUND — Missing columns in Supabase write
+### BUG: Missing columns in Supabase write
 
-The Supabase POST body (lines 325-336) does NOT include:
-- `data_confidence` — computed but never saved
-- `website_scraped` — computed but never saved
+The Supabase POST body does NOT include `data_confidence` or `website_scraped`. These columns exist in the table but are always NULL.
 
-These columns exist in the `lb_precall_briefs` table but are always NULL. The Generate Brief node computes them correctly (returned in the output JSON at line 390-393) but the Supabase save payload omits them.
+### EXPRESSION CONTEXT BUG (ROOT CAUSE OF APOLLO FAILURE)
+
+**4 nodes use `$json` to reference webhook data:**
+- `Get Existing Contacts` — `($json.body || $json).domain` — **WORKS** (receives webhook data directly)
+- `Apollo Company Enrich` — `($json.body || $json).domain` — **BROKEN** (receives contact records from Get Existing Contacts, which have `first_name`, `last_name` etc. — no `domain` field)
+- `Google News Search` — `($json.body || $json).company_name` — **BROKEN** (same problem)
+- `BuiltWith Tech Stack` — `($json.body || $json).domain` — **BROKEN** (same problem)
+
+**5 nodes correctly use `$('Webhook').first().json`:**
+- `Pipedrive Company Search` — **CORRECT**
+- `Job Postings Search` — **CORRECT**
+- `Website Scrape Fallback` — **CORRECT**
+- `Website Google Search` — **CORRECT**
+- (Generate Brief uses `$('Webhook').first().json` inside its code block)
+
+**This is the #1 systemic bug.** Nodes 2-4 in the chain send empty strings to their APIs because `$json` points to the previous node's output, not the original webhook payload.
 
 ---
 
-## STEP 3 & 4 — TEST RESULTS
+## STEP 3 & 4 — TEST RESULTS (Run 2)
 
 All 5 webhooks returned `{"status":"processing"}` immediately. All 5 executions completed successfully.
 
-| Test | Company | Confidence (computed) | Brief Length | Sections Complete | Contacts | Result |
-|------|---------|----------------------|-------------|-------------------|----------|--------|
-| A | DPR Construction | medium | 4,143 chars | 7/7 | 10 | **PASS** |
-| B | Pacific Lifestyle Homes | medium | 4,118 chars | 7/7 | 1 | **PASS** |
-| C | Adelante Healthcare | medium | 4,087 chars | 7/7 | 10 | **PASS** |
-| D | Southwest Ambulance | medium | 3,916 chars | 7/7 | 1 | **PASS** |
-| E | Desert Valley Contractors | low | 3,522 chars | 7/7 | 1 | **PASS** |
+| Test | Company | Confidence (computed) | Brief Length | Sections 7/7 | Contacts | Result |
+|------|---------|----------------------|-------------|---------------|----------|--------|
+| A | DPR Construction | medium | 4,406 chars | YES | 10 | **PASS** |
+| B | Pacific Lifestyle Homes | medium | 3,835 chars | YES | 1 | **PASS** |
+| C | Adelante Healthcare | medium | 4,143 chars | YES | 10 | **PASS** |
+| D | Southwest Ambulance | medium | 4,152 chars | YES | 1 | **PASS** |
+| E | Desert Valley Contractors | medium | 4,068 chars | YES | 1 | **PASS** |
 
 ### Section Presence (all 5 tests):
 - WARM OPENER: YES (5/5)
 - COMPANY SNAPSHOT: YES (5/5)
-- TECH STACK: YES (5/5)
+- TECH STACK INTELLIGENCE: YES (5/5)
 - WHO YOU ARE MEETING: YES (5/5)
 - DISCOVERY QUESTIONS: YES (5/5)
 - OBJECTION PREP: YES (5/5)
@@ -93,7 +91,7 @@ All 5 webhooks returned `{"status":"processing"}` immediately. All 5 executions 
 
 **PASS RATE: 5/5** (all briefs generated with all sections)
 
-**However:** All results have `data_confidence: NULL` and `website_scraped: NULL` in Supabase due to the missing fields bug above.
+**However:** `data_confidence` and `website_scraped` are NULL in Supabase for all 5 (missing from POST body).
 
 ---
 
@@ -101,38 +99,58 @@ All 5 webhooks returned `{"status":"processing"}` immediately. All 5 executions 
 
 | Execution ID | Status | Duration | Company |
 |-------------|--------|----------|---------|
-| 27555 | success | 25.7s | DPR Construction |
-| 27554 | success | 34.8s | Adelante Healthcare |
-| 27553 | success | 26.1s | Southwest Ambulance |
-| 27552 | success | 45.5s | Desert Valley Contractors |
-| 27551 | success | 26.6s | Pacific Lifestyle Homes |
+| 28505 | success | 38.7s | DPR Construction |
+| 28504 | success | 24.5s | Pacific Lifestyle Homes |
+| 28503 | success | 44.3s | Adelante Healthcare |
+| 28502 | success | 47.6s | Southwest Ambulance |
+| 28500 | success | 25.7s | Desert Valley Contractors |
 
-No node failures. All Generate Brief nodes completed. Desert Valley took longest (45.5s) as the unknown company with least data.
+No node failures (all marked `success`). All Generate Brief nodes completed.
 
----
-
-## STEP 6 — SILENT FAILURE NODE ANALYSIS (Execution 27555 — DPR Construction)
+### Node-Level Analysis (Execution 28505 — DPR Construction)
 
 | Node | Status | Detail |
 |------|--------|--------|
-| Get Existing Contacts | **SUCCESS** | Returned 10 contacts with ICP scores |
-| Apollo Company Enrich | **ERROR (silent)** | Returned empty object `{}` — API key works externally but n8n node returns empty |
-| Google News Search | **ERROR (silent)** | `403: This project does not have access to Custom Search JSON API` |
-| BuiltWith Tech Stack | **ERROR (silent)** | `429: Rate limited` — "Try spacing your requests out" |
-| Pipedrive Company Search | **ERROR (silent)** | `429: Rate limited` — same as BuiltWith |
-| Job Postings Search | **ERROR (silent)** | `403: Custom Search JSON API access denied` |
-| Website Scrape Fallback | **SUCCESS** | Jina returned 15,763 chars of content for dpr.com |
-| Website Google Search | **ERROR (silent)** | `403: Custom Search JSON API access denied` |
-| Generate Brief | **SUCCESS** | Produced 4,143 char brief |
+| Get Existing Contacts | **SUCCESS** | 10 contacts with ICP scores |
+| Apollo Company Enrich | **NO_DATA** | Returns empty `{}` — sends `domain: ""` due to `$json` context bug |
+| Google News Search | **ERROR** | `403: This project does not have the access to Custom Search JSON API` |
+| BuiltWith Tech Stack | **SUCCESS** | Returns `{"Results":[],"Errors":[]}` — sends empty domain due to same `$json` bug |
+| Pipedrive Company Search | **SUCCESS** | Correctly uses `$('Webhook')` — returns real data |
+| Job Postings Search | **ERROR** | `403: Custom Search JSON API access denied` |
+| Website Scrape Fallback | **SUCCESS** | Jina returned 15,763 chars for dpr.com |
+| Website Google Search | **ERROR** | `403: Custom Search JSON API access denied` |
+| Generate Brief | **SUCCESS** | 4,406 chars, confidence=medium, apollo=false, scraped=true |
 
-### Root Cause Summary:
-- **Apollo**: API key `q54-425S9MpJYWrWR3NK6A` works when called directly via curl (returns DPR Construction with 8,900 employees), but returns empty `{}` from n8n. Likely an n8n HTTP Request node configuration issue — possibly the response is being parsed differently or the POST body expression isn't evaluating correctly.
-- **Google Custom Search (3 nodes)**: Google Custom Search JSON API is not enabled on the GCP project. All 3 nodes using it (Google News, Website Google Search, Job Postings) fail with 403.
-- **BuiltWith + Pipedrive**: Rate limited (429). Likely hitting free-tier limits when 5 tests fire simultaneously.
+### Cross-Execution Comparison
+
+| Node | 28505 (DPR) | 28504 (Pacific) | 28503 (Adelante) | 28502 (SW Amb) | 28500 (Desert) |
+|------|------------|----------------|-----------------|---------------|---------------|
+| Apollo | EMPTY | EMPTY | EMPTY | EMPTY | EMPTY |
+| BuiltWith | OK (empty results) | OK | 429 rate limit | OK | OK |
+| Pipedrive | OK | OK | 429 rate limit | OK | OK |
+| Website Scrape | OK | OK | OK | OK | OK |
+| Google Search (3 nodes) | 403 | 403 | 403 | 403 | 403 |
+
+**Apollo fails 5/5** (expression bug). **Google Search fails 5/5** (API not enabled). **BuiltWith/Pipedrive intermittently 429** under concurrent load.
 
 ---
 
-## STEP 7 — FRONTEND POLLING
+## STEP 6 — FRONTEND POLLING (from local codebase index.html:5180)
+
+```javascript
+async function pollPreCallBrief(domain, company) {
+    let attempts = 0;
+    const maxAttempts = 40; // 160 seconds
+    preCallPollInterval = setInterval(async () => {
+        attempts++;
+        if (attempts > maxAttempts) { clearInterval(...); return; }
+        const since = new Date(Date.now() - 600000).toISOString();
+        const rows = await sbProxy('lb_precall_briefs', 'GET',
+            'domain=eq.' + domain + '&order=created_at.desc&limit=1&created_at=gte.' + since);
+        if (rows && rows[0] && rows[0].brief_text) { ... }
+    }, 4000);
+}
+```
 
 | Setting | Value |
 |---------|-------|
@@ -140,10 +158,12 @@ No node failures. All Generate Brief nodes completed. Desert Valley took longest
 | Polling interval | **4,000ms** (4 seconds) |
 | Since window | **600,000ms** (10 minutes) |
 | Total polling duration | **160 seconds** |
-| Queries lb_precall_briefs? | **YES** — via `sbProxy('lb_precall_briefs', 'GET', ...)` |
-| Filters by company correctly? | **YES** — filters by `domain=eq.{domain}` and `created_at=gte.{since}` |
+| Queries lb_precall_briefs? | **YES** |
+| Filters by domain? | **YES** — `domain=eq.{domain}` |
+| Filters by created_at? | **YES** — `created_at=gte.{since}` |
+| Checks brief_text populated? | **YES** — `rows[0].brief_text` |
 
-The frontend polling is well-configured. 160-second window is generous enough for the ~25-45s workflow execution.
+Note: The live Vercel deployment does NOT expose the polling code in the initial HTML — it's likely bundled separately or the deployed version differs from the local codebase. The analysis above is from the local `index.html`.
 
 ---
 
@@ -151,52 +171,66 @@ The frontend polling is well-configured. 160-second window is generous enough fo
 
 ### PRECALL BRIEF SYSTEM STATUS: PARTIALLY WORKING
 
-**The system produces complete, well-structured briefs for all company types**, but is operating in degraded mode because 5 of 8 enrichment APIs are failing silently.
+### NODE CHAIN:
+```
+Webhook [aOD: —] → Respond Immediately [aOD: —]
+                  → Get Existing Contacts [aOD: true ✅]
+                    → Apollo Company Enrich [aOD: true ✅]
+                      → Google News Search [aOD: true ✅]
+                        → BuiltWith Tech Stack [aOD: true ✅]
+                          → Pipedrive Company Search [aOD: true ✅]
+                            → Job Postings Search [aOD: true ✅]
+                              → Website Scrape Fallback [aOD: true ✅]
+                                → Website Google Search [aOD: true ✅]
+                                  → Generate Brief [aOD: NOT SET ⚠️]
+```
+
+### SILENT FAILURE NODES:
+- **Generate Brief** — missing `alwaysOutputData: true` (terminal node, low risk but should be set)
+
+### TEST RESULTS:
+| Test | Company | Result | Confidence | Length |
+|------|---------|--------|-----------|--------|
+| A | DPR Construction | **PASS** | medium | 4,406 chars |
+| B | Pacific Lifestyle Homes | **PASS** | medium | 3,835 chars |
+| C | Adelante Healthcare | **PASS** | medium | 4,143 chars |
+| D | Southwest Ambulance | **PASS** | medium | 4,152 chars |
+| E | Desert Valley Contractors | **PASS** | medium | 4,068 chars |
 
 ### PASS RATE: 5/5
-| Test | Result | Confidence | Length |
-|------|--------|-----------|--------|
-| Test A — DPR Construction | **PASS** | medium | 4,143 chars |
-| Test B — Pacific Lifestyle Homes | **PASS** | medium | 4,118 chars |
-| Test C — Adelante Healthcare | **PASS** | medium | 4,087 chars |
-| Test D — Southwest Ambulance | **PASS** | medium | 3,916 chars |
-| Test E — Desert Valley Contractors | **PASS** | low | 3,522 chars |
 
-### ROOT CAUSES OF DEGRADED QUALITY
+### ROOT CAUSES OF FAILURES:
+1. **Apollo Company Enrich** — `$json` expression resolves to Get Existing Contacts output (contact records), not webhook data. Sends `domain: ""` to Apollo API. Returns empty `{}`.
+2. **Google News Search** — Same `$json` bug (sends empty company_name) AND Google Custom Search API is not enabled (403).
+3. **BuiltWith Tech Stack** — Same `$json` bug (sends empty domain) AND rate limited under concurrent load (429).
+4. **Google Custom Search API** — Not enabled on GCP project. Blocks 3 nodes: Google News, Website Google Search, Job Postings.
+5. **Supabase write** — Missing `data_confidence` and `website_scraped` in POST body.
 
-1. **Apollo Company Enrich** — Returns empty `{}` from n8n despite API key working externally. The node's `jsonBody` expression `={{ JSON.stringify({ domain: ($json.body || $json).domain || "" }) }}` may not be resolving correctly in the execution context after the `Get Existing Contacts` node transforms the data. DPR Construction should be "high" confidence but gets "medium" because Apollo data is missing.
+### APOLLO STATUS:
+- Returning data in n8n: **NO** (empty object — sends empty domain)
+- API key correct: **YES** (works via direct curl — returns DPR Construction, 8,900 employees)
+- Root cause: `$json` expression context bug — should use `$('Webhook').first().json.body.domain`
 
-2. **Google Custom Search API (3 nodes)** — `403: This project does not have access to Custom Search JSON API`. The GCP project needs the Custom Search JSON API enabled. Affects: Google News Search, Website Google Search, Job Postings Search.
-
-3. **BuiltWith Tech Stack** — `429 Rate Limited`. Free tier or concurrent requests exceeding limit.
-
-4. **Pipedrive Company Search** — `429 Rate Limited`. Same issue.
-
-5. **Supabase write missing fields** — `data_confidence` and `website_scraped` are computed correctly in the Generate Brief node but are NOT included in the Supabase POST body. They are always NULL in the database.
-
-### APOLLO STATUS
-- Returning data in n8n: **NO** (empty object)
-- API key correct: **YES** (works via direct curl — returns full org data for DPR Construction)
-- Root cause: n8n HTTP Request node expression context issue
-
-### JINA SCRAPE (Website Scrape Fallback)
+### JINA SCRAPE (Website Scrape Fallback):
 - Firing and returning content: **YES**
-- Content length avg: ~10,313 chars (range: 0 for unknown domains to 21,397 for known ones)
-- This is the PRIMARY data source keeping briefs useful
+- Content length avg: ~10,232 chars (range: 437 for redirected sites to 21,397 for well-built sites)
+- This is currently the PRIMARY working data source keeping briefs useful
 
-### FALLBACK BRIEF
-- Triggers when needed: **YES** (would trigger if Claude API fails)
-- Returns useful content: **YES** (tested via code review — full template with all sections)
-- Note: Did not trigger in these tests because Claude API succeeded for all 5
+### FALLBACK BRIEF:
+- Triggers when needed: **YES** (code-verified — activates if Claude returns < 100 chars)
+- Returns useful content: **YES** (full template with all 7 sections)
+- Did not trigger in tests (Claude API succeeded for all 5)
 
-### PIPEDRIVE ACTIVITY LOG
-- lb-pd-activity firing after brief: **YES** (code confirmed at line 362, fires before return)
+### PIPEDRIVE ACTIVITY LOG (lb-pd-activity):
+- Firing after brief: **YES** (confirmed in code — fires before return statement)
 
-### FRONTEND POLLING
+### FRONTEND POLLING:
 - maxAttempts: **40**
-- Interval: **4,000ms**
-- Window: **600,000ms** (10 minutes)
-- Correctly reads briefs: **YES** (filters by domain and created_at)
+- interval: **4,000ms**
+- since window: **600,000ms**
+- reads lb_precall_briefs: **YES**
+- filters by domain and created_at: **YES**
+- Correctly reads briefs: **YES**
 
 ---
 
@@ -204,12 +238,14 @@ The frontend polling is well-configured. 160-second window is generous enough fo
 
 ### Fixes needed (in priority order):
 
-1. **FIX Apollo Company Enrich node** — The `$json` context after `Get Existing Contacts` no longer contains the original webhook body. The expression `($json.body || $json).domain` likely resolves to empty string. Fix: reference the Webhook node directly: `$('Webhook').first().json.body.domain`. This is the #1 priority — Apollo data drives "high" confidence briefs.
+1. **FIX `$json` expression bug in 3 nodes** — Apollo Company Enrich, Google News Search, and BuiltWith Tech Stack all use `($json.body || $json)` which resolves to the previous node's output, not the webhook payload. Change to `$('Webhook').first().json.body` (matching the pattern used by Pipedrive, Job Postings, Website Scrape, and Website Google Search nodes which already work correctly).
 
-2. **Enable Google Custom Search JSON API** in the GCP project. This blocks 3 nodes: Google News Search, Website Google Search, and Job Postings Search.
+2. **Enable Google Custom Search JSON API** on GCP project (API key: `AIzaSyA3blo1W2pKT9oQD9f6SfPqfNcroeU6mZs`). This unblocks 3 nodes: Google News Search, Website Google Search, Job Postings Search.
 
-3. **Add `data_confidence` and `website_scraped` to the Supabase POST body** in the Generate Brief code (line 326). These fields are computed but never saved. The frontend could use `data_confidence` to display quality indicators.
+3. **Add `data_confidence` and `website_scraped` to Supabase POST body** in Generate Brief code. Currently computed but never saved — always NULL in database.
 
-4. **Add rate limiting / retry logic** for BuiltWith and Pipedrive nodes, or stagger the 5 parallel enrichment nodes to avoid 429s when multiple briefs fire simultaneously.
+4. **Add rate limiting / batching** for BuiltWith and Pipedrive nodes to prevent 429 errors under concurrent load.
 
-5. **Consider adding `alwaysOutputData: true`** to the Generate Brief node — while it's terminal, adding it ensures n8n records a successful execution even if an error occurs mid-generation.
+5. **Set `alwaysOutputData: true`** on Generate Brief node for safety.
+
+**After fixes #1 and #2:** DPR Construction would become "high" confidence (Apollo + website + news), and all companies would have richer briefs with real tech stack, news, and job posting data.
