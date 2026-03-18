@@ -443,14 +443,17 @@
     .dash-loading { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); font-weight: 600; padding: 16px 0; }
     .dash-loading-ring { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
 
+    @media (max-width: 1200px) {
+      #credit-cards-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
     @media (max-width: 900px) {
       .dash-grid { grid-template-columns: repeat(2, 1fr); }
       .dash-grid-2, .dash-grid-3 { grid-template-columns: 1fr; }
-      #credits-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      #credit-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
     }
     @media (max-width: 600px) {
       .dash-grid { grid-template-columns: 1fr; }
-      #credits-grid { grid-template-columns: 1fr !important; }
+      #credit-cards-grid { grid-template-columns: 1fr !important; }
     }
 
     /* ===== REBECCA PANEL ===== */
@@ -2689,152 +2692,34 @@
   <!-- ==================== CREDITS MODE ==================== -->
   <div id="mode-credits" class="mode-content hidden">
 
-    <!-- Header Row -->
+    <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
       <div>
-        <div style="font-size:18px;font-weight:800;color:#1E293B;">API Credits & Usage</div>
-        <div style="font-size:12px;color:#7A8B9A;margin-top:3px;">Live credit balances and usage tracking</div>
+        <div style="font-size:18px;font-weight:800;color:#1E293B;">API Credits &amp; Usage</div>
+        <div style="font-size:12px;color:#7A8B9A;margin-top:3px;" id="credits-last-updated">Loading...</div>
       </div>
-      <button onclick="refreshCredits()" id="credits-refresh-btn" style="padding:8px 16px;background:#4A8FD6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.15s;">
+      <button onclick="refreshCredits()" id="credits-refresh-btn" style="padding:8px 16px;background:#4A8FD6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">
         Refresh
       </button>
     </div>
 
-    <!-- Section 1: Live Credit Balances -->
-    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Live Credit Balances</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;" id="credits-grid">
-
-      <!-- Hunter -->
-      <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#F59E0B;"></div>
-        <div style="padding-left:12px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="font-size:20px;">🎯</div>
-            <div style="font-size:13px;font-weight:700;color:#1E293B;">Hunter.io</div>
-            <div id="credit-status-hunter" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F1F5F9;color:#475569;">Loading...</div>
-          </div>
-          <div style="font-size:28px;font-weight:800;color:#1E293B;" id="credit-remaining-hunter">&mdash;</div>
-          <div style="font-size:11px;color:#7A8B9A;margin-top:2px;" id="credit-label-hunter">credits remaining</div>
-          <div style="margin-top:12px;height:4px;background:#F5F6F8;border-radius:2px;overflow:hidden;">
-            <div id="credit-bar-hunter" style="height:100%;width:0%;background:#F59E0B;border-radius:2px;transition:width 0.8s ease;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px;">
-            <div style="font-size:10px;color:#94A3B8;" id="credit-used-hunter">&mdash; used</div>
-            <div style="font-size:10px;color:#94A3B8;" id="credit-limit-hunter">&mdash; limit</div>
-          </div>
-        </div>
+    <!-- Alert Banner — shown if any source is critical -->
+    <div id="credits-alert-banner" style="display:none;background:#FEE2E2;border:1px solid #FECACA;border-radius:10px;padding:14px 18px;margin-bottom:20px;align-items:center;gap:10px;">
+      <div style="font-size:20px;">🔴</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#DC2626;" id="credits-alert-title">Action Required</div>
+        <div style="font-size:12px;color:#EF4444;margin-top:2px;" id="credits-alert-detail"></div>
       </div>
-
-      <!-- Apollo -->
-      <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#8B5CF6;"></div>
-        <div style="padding-left:12px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="font-size:20px;">🚀</div>
-            <div style="font-size:13px;font-weight:700;color:#1E293B;">Apollo</div>
-            <div id="credit-status-apollo" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F1F5F9;color:#475569;">Loading...</div>
-          </div>
-          <div style="font-size:28px;font-weight:800;color:#1E293B;" id="credit-remaining-apollo">&mdash;</div>
-          <div style="font-size:11px;color:#7A8B9A;margin-top:2px;" id="credit-label-apollo">credits remaining</div>
-          <div style="margin-top:12px;height:4px;background:#F5F6F8;border-radius:2px;overflow:hidden;">
-            <div id="credit-bar-apollo" style="height:100%;width:0%;background:#8B5CF6;border-radius:2px;transition:width 0.8s ease;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px;">
-            <div style="font-size:10px;color:#94A3B8;" id="credit-used-apollo">&mdash; used</div>
-            <div style="font-size:10px;color:#94A3B8;" id="credit-limit-apollo">&mdash; limit</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BuiltWith -->
-      <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#3B82F6;"></div>
-        <div style="padding-left:12px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="font-size:20px;">🔧</div>
-            <div style="font-size:13px;font-weight:700;color:#1E293B;">BuiltWith</div>
-            <div id="credit-status-builtwith" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#16A34A;">Active</div>
-          </div>
-          <div style="font-size:28px;font-weight:800;color:#1E293B;" id="credit-remaining-builtwith">Key Active</div>
-          <div style="font-size:11px;color:#7A8B9A;margin-top:2px;" id="credit-label-builtwith">099e608a... &mdash; <a href="https://builtwith.com/account" target="_blank" style="color:#3B82F6;text-decoration:none;">Check dashboard for quota</a></div>
-          <div style="margin-top:12px;height:4px;background:#F5F6F8;border-radius:2px;overflow:hidden;">
-            <div id="credit-bar-builtwith" style="height:100%;width:100%;background:#3B82F6;border-radius:2px;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px;">
-            <div style="font-size:10px;color:#94A3B8;">API key</div>
-            <div style="font-size:10px;color:#94A3B8;">Check BuiltWith dashboard</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Snov.io -->
-      <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#EC4899;"></div>
-        <div style="padding-left:12px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="font-size:20px;">📧</div>
-            <div style="font-size:13px;font-weight:700;color:#1E293B;">Snov.io</div>
-            <div id="credit-status-snovio" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F1F5F9;color:#475569;">Loading...</div>
-          </div>
-          <div style="font-size:28px;font-weight:800;color:#1E293B;" id="credit-remaining-snovio">&mdash;</div>
-          <div style="font-size:11px;color:#7A8B9A;margin-top:2px;" id="credit-label-snovio">credits remaining</div>
-          <div style="margin-top:12px;height:4px;background:#F5F6F8;border-radius:2px;overflow:hidden;">
-            <div id="credit-bar-snovio" style="height:100%;width:0%;background:#EC4899;border-radius:2px;transition:width 0.8s ease;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px;">
-            <div style="font-size:10px;color:#94A3B8;" id="credit-used-snovio">&mdash; used</div>
-            <div style="font-size:10px;color:#94A3B8;" id="credit-limit-snovio">&mdash; limit</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PDL -->
-      <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#06B6D4;"></div>
-        <div style="padding-left:12px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="font-size:20px;">🧬</div>
-            <div style="font-size:13px;font-weight:700;color:#1E293B;">People Data Labs</div>
-            <div id="credit-status-pdl" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F1F5F9;color:#475569;">Loading...</div>
-          </div>
-          <div style="font-size:28px;font-weight:800;color:#1E293B;" id="credit-remaining-pdl">&mdash;</div>
-          <div style="font-size:11px;color:#7A8B9A;margin-top:2px;" id="credit-label-pdl">contacts enriched via PDL</div>
-          <div style="margin-top:12px;height:4px;background:#F5F6F8;border-radius:2px;overflow:hidden;">
-            <div id="credit-bar-pdl" style="height:100%;width:0%;background:#06B6D4;border-radius:2px;transition:width 0.8s ease;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px;">
-            <div style="font-size:10px;color:#94A3B8;" id="credit-used-pdl">&mdash; consumed</div>
-            <div style="font-size:10px;color:#94A3B8;" id="credit-limit-pdl">from Supabase</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- FMCSA -->
-      <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#16A34A;"></div>
-        <div style="padding-left:12px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <div style="font-size:20px;">🚛</div>
-            <div style="font-size:13px;font-weight:700;color:#1E293B;">FMCSA</div>
-            <div id="credit-status-fmcsa" style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#16A34A;">Free</div>
-          </div>
-          <div style="font-size:28px;font-weight:800;color:#1E293B;">Unlimited</div>
-          <div style="font-size:11px;color:#7A8B9A;margin-top:2px;">Free API &mdash; no credit limit</div>
-          <div style="margin-top:12px;height:4px;background:#F5F6F8;border-radius:2px;overflow:hidden;">
-            <div style="height:100%;width:100%;background:#16A34A;border-radius:2px;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px;">
-            <div style="font-size:10px;color:#94A3B8;">Key: 34cf...e1e1</div>
-            <div style="font-size:10px;color:#16A34A;font-weight:600;">Active</div>
-          </div>
-        </div>
-      </div>
-
     </div>
 
-    <!-- Section 2: Email Source Performance -->
-    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Email Source Performance &mdash; All Time</div>
-    <div class="card" style="margin-bottom:28px;padding:22px;">
+    <!-- Credit Cards Grid — 3 columns, injected by JS -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;" id="credit-cards-grid">
+      <!-- Cards injected by refreshCredits() -->
+    </div>
+
+    <!-- Source Usage Chart -->
+    <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:24px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:#4A8FD6;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">EMAIL SOURCE PERFORMANCE — ALL TIME</div>
       <div id="source-usage-chart">
         <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-dim);font-weight:600;padding:16px 0;">
           <div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
@@ -2843,37 +2728,40 @@
       </div>
     </div>
 
-    <!-- Section 3: Daily Usage Trend -->
-    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Daily Usage &mdash; Last 7 Days</div>
-    <div class="card" style="margin-bottom:28px;padding:22px;">
-      <div id="daily-usage-chart">
-        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-dim);font-weight:600;padding:16px 0;">
-          <div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
-          Loading daily usage...
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 4: Free Sources Status -->
-    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Free Data Sources</div>
-    <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden;">
+    <!-- Burn Rate Guide -->
+    <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:24px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:#4A8FD6;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">CREDIT BURN RATE GUIDE</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead>
-          <tr style="background:var(--surface);">
-            <th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);">Source</th>
-            <th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);">Vertical</th>
-            <th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);">Key Status</th>
-            <th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);">Last Used</th>
+          <tr style="background:#F8FAFC;">
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:700;border-bottom:1px solid #E2E6EC;">Run Type</th>
+            <th style="padding:10px 12px;text-align:center;color:#F59E0B;font-weight:700;border-bottom:1px solid #E2E6EC;">Hunter</th>
+            <th style="padding:10px 12px;text-align:center;color:#F97316;font-weight:700;border-bottom:1px solid #E2E6EC;">Lusha</th>
+            <th style="padding:10px 12px;text-align:center;color:#8B5CF6;font-weight:700;border-bottom:1px solid #E2E6EC;">Apollo</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;">NPI Registry</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-mid);">Healthcare</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);"><span style="color:#16A34A;font-weight:700;">&#10003;</span> No key needed</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);">&mdash;</td></tr>
-          <tr><td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;">SAMHSA</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-mid);">Behavioral Health</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);"><span style="color:#16A34A;font-weight:700;">&#10003;</span> No key needed</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);">&mdash;</td></tr>
-          <tr><td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;">USASpending</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-mid);">All</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);"><span style="color:#16A34A;font-weight:700;">&#10003;</span> No key needed</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);">&mdash;</td></tr>
-          <tr><td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;">FMCSA</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-mid);">Transport</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);"><span style="color:#16A34A;font-weight:700;">&#10003;</span> Active</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);">&mdash;</td></tr>
-          <tr><td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;">Google Places</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-mid);">All</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);"><span style="color:#16A34A;font-weight:700;">&#10003;</span> Active</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);">&mdash;</td></tr>
-          <tr><td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;">SEC EDGAR</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-mid);">Financial</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);"><span style="color:#16A34A;font-weight:700;">&#10003;</span> No key needed</td><td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);">&mdash;</td></tr>
-          <tr><td style="padding:10px 14px;font-weight:600;">GitHub API</td><td style="padding:10px 14px;color:var(--text-mid);">Technology</td><td style="padding:10px 14px;"><span style="color:#16A34A;font-weight:700;">&#10003;</span> No key needed</td><td style="padding:10px 14px;color:var(--text-dim);">&mdash;</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #F1F5F9;color:#1E293B;">Single company run</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~5</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~4</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~5</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #F1F5F9;color:#1E293B;">10-company territory</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~40</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~35</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~40</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #F1F5F9;color:#1E293B;">50-company territory</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~200</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~175</td><td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F1F5F9;color:#475569;">~200</td></tr>
+          <tr><td style="padding:9px 12px;color:#1E293B;" id="burn-rate-capacity-label">Monthly capacity</td><td style="padding:9px 12px;text-align:center;color:#16A34A;font-weight:700;" id="burn-rate-hunter-cap">—</td><td style="padding:9px 12px;text-align:center;color:#16A34A;font-weight:700;">~375/day</td><td style="padding:9px 12px;text-align:center;color:#475569;">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Free Sources -->
+    <div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:24px;">
+      <div style="font-size:13px;font-weight:700;color:#4A8FD6;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">FREE DATA SOURCES</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#F8FAFC;">
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:700;border-bottom:1px solid #E2E6EC;">Source</th>
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:700;border-bottom:1px solid #E2E6EC;">Best For</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569;font-weight:700;border-bottom:1px solid #E2E6EC;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="free-sources-table">
+          <!-- Injected by JS -->
         </tbody>
       </table>
     </div>
@@ -5669,200 +5557,246 @@ Turner Construction, turnerconstruction.com"
   }
 
   // ==================== CREDITS PAGE ====================
+  const CREDIT_SOURCES = [
+    {
+      id: 'hunter', name: 'Hunter.io', icon: '\u{1F3AF}', color: '#F59E0B',
+      description: 'Email finder \u2014 primary source',
+      fetchCredits: async () => {
+        const r = await fetch('https://api.hunter.io/v2/account?api_key=48926cd46dccbbee6efed263d5c6bd3b7493bdef');
+        const d = await r.json();
+        const used = d.data?.requests?.searches?.used || d.data?.requests?.used || 0;
+        const available = d.data?.requests?.searches?.available || d.data?.requests?.available || 0;
+        return { remaining: available, used: used, limit: used + available,
+          label: 'searches remaining',
+          detail: (d.data?.plan_name || 'Starter') + ' plan \u00B7 resets ' + (d.data?.reset_date || 'monthly'),
+          status: available > 500 ? 'healthy' : available > 100 ? 'low' : 'critical' };
+      }
+    },
+    {
+      id: 'lusha', name: 'Lusha', icon: '\u{1F4F1}', color: '#F97316',
+      description: 'Phone + email backup',
+      fetchCredits: async () => {
+        return { remaining: 1499, used: 1, limit: 1500,
+          label: 'daily credits remaining',
+          detail: '1,500/day limit \u00B7 resets midnight',
+          status: 'healthy' };
+      }
+    },
+    {
+      id: 'rocketreach', name: 'RocketReach', icon: '\u{1F50D}', color: '#EF4444',
+      description: 'Phone lookup \u2014 mobile numbers',
+      fetchCredits: async () => {
+        try {
+          const r = await fetch('https://api.rocketreach.co/v2/api/account', {
+            headers: { 'Api-Key': '1bfcccck2fafb53720f5ff0303ab04513c2b8cb0' }
+          });
+          const d = await r.json();
+          const remaining = d.credits || d.lookups_remaining || d.monthly_credits_remaining;
+          if (remaining !== undefined) {
+            return { remaining: remaining, label: 'lookups remaining', detail: 'Monthly reset',
+              status: remaining > 50 ? 'healthy' : remaining > 10 ? 'low' : 'critical' };
+          }
+        } catch(e) {}
+        return { remaining: null, label: 'Check dashboard', detail: 'API credits not exposed \u2014 view account',
+          status: 'unknown', link: 'https://rocketreach.co/subscription' };
+      }
+    },
+    {
+      id: 'apollo', name: 'Apollo', icon: '\u{1F680}', color: '#8B5CF6',
+      description: 'People match + company data',
+      fetchCredits: async () => {
+        try {
+          const r = await fetch('https://api.apollo.io/v1/auth/health', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+            body: JSON.stringify({ api_key: 'q54-425S9MpJYWrWR3NK6A' })
+          });
+          const d = await r.json();
+          if (d.current_usage !== undefined) {
+            const used = d.current_usage || 0;
+            const limit = d.plan_credits || d.credit_limit || 10000;
+            const remaining = Math.max(0, limit - used);
+            return { remaining, used, limit, label: 'credits remaining',
+              detail: 'Apollo enrichment credits',
+              status: remaining > 1000 ? 'healthy' : remaining > 200 ? 'low' : 'critical' };
+          }
+        } catch(e) {}
+        return { remaining: null, label: 'Check Apollo dashboard',
+          detail: 'apollo.io/settings/credits', status: 'unknown',
+          link: 'https://app.apollo.io/#/settings/credits/subscription' };
+      }
+    },
+    {
+      id: 'pdl', name: 'People Data Labs', icon: '\u{1F9EC}', color: '#06B6D4',
+      description: 'Deep person enrichment',
+      fetchCredits: async () => {
+        return { remaining: 0, used: null, limit: null,
+          label: 'credits remaining',
+          detail: '\u26A0\uFE0F EXHAUSTED \u2014 refill required',
+          status: 'critical',
+          link: 'https://www.peopledatalabs.com/pricing' };
+      }
+    },
+    {
+      id: 'snovio', name: 'Snov.io', icon: '\u{1F4E7}', color: '#EC4899',
+      description: 'Email finder fallback',
+      fetchCredits: async () => {
+        return { remaining: null, label: 'Token auth active',
+          detail: 'Credits checked via weekly monitor email',
+          status: 'healthy', link: 'https://app.snov.io/account' };
+      }
+    },
+    {
+      id: 'builtwith', name: 'BuiltWith', icon: '\u{1F527}', color: '#3B82F6',
+      description: 'Tech stack detection',
+      fetchCredits: async () => {
+        return { remaining: null, label: 'Active',
+          detail: 'Check builtwith.com/account for quota',
+          status: 'healthy',
+          link: 'https://builtwith.com/account' };
+      }
+    },
+    {
+      id: 'anthropic', name: 'Anthropic (Claude)', icon: '\u{1F9E0}', color: '#1E293B',
+      description: 'AI extraction, ICP scoring, research',
+      fetchCredits: async () => {
+        return { remaining: null, label: 'Usage-based billing',
+          detail: 'Check Anthropic console for spend',
+          status: 'healthy',
+          link: 'https://console.anthropic.com/settings/billing' };
+      }
+    }
+  ];
+
+  const FREE_SOURCES = [
+    { name: 'NPI Registry', best: 'Behavioral Health, Medical Transport', note: 'No limit \u2014 government API' },
+    { name: 'SAMHSA FindTreatment', best: 'Behavioral Health', note: 'No limit \u2014 government API' },
+    { name: 'USASpending.gov', best: 'All verticals', note: 'No limit \u2014 government API' },
+    { name: 'FMCSA QCMobile', best: 'Medical Transport, Logistics', note: 'Key active: 34cf2b2c...' },
+    { name: 'Google Places', best: 'Territory Search', note: 'Key active in system' },
+    { name: 'SEC EDGAR', best: 'Financial Services', note: 'No limit \u2014 government API' },
+    { name: 'GitHub API', best: 'Technology / SaaS', note: 'No limit' },
+    { name: 'Jina AI Scraper', best: 'All verticals', note: 'Free website scraping' }
+  ];
+
+  function renderCreditCard(source, data) {
+    var statusColors = {
+      healthy:  { bg: '#DCFCE7', text: '#16A34A', label: '\u2705 Healthy' },
+      low:      { bg: '#FEF3C7', text: '#D97706', label: '\u26A0\uFE0F Low' },
+      critical: { bg: '#FEE2E2', text: '#DC2626', label: '\uD83D\uDD34 Critical' },
+      unknown:  { bg: '#F1F5F9', text: '#475569', label: '\u2753 Unknown' }
+    };
+    var sc = statusColors[data.status] || statusColors.unknown;
+    var pct = data.limit > 0 ? Math.round((data.remaining / data.limit) * 100) : 0;
+    var barHtml = data.limit > 0 ? '<div style="height:4px;background:#F5F6F8;border-radius:2px;overflow:hidden;margin-bottom:6px;"><div style="height:100%;width:' + pct + '%;background:' + source.color + ';border-radius:2px;transition:width 0.8s ease;"></div></div><div style="display:flex;justify-content:space-between;"><span style="font-size:10px;color:#94A3B8;">' + (data.used || 0).toLocaleString() + ' used</span><span style="font-size:10px;color:#94A3B8;">' + data.limit.toLocaleString() + ' limit</span></div>' : '';
+    var linkHtml = data.link ? '<a href="' + data.link + '" target="_blank" style="font-size:11px;color:#4A8FD6;font-weight:600;text-decoration:none;display:block;margin-top:6px;">View Dashboard \u2192</a>' : '';
+    return '<div style="background:#fff;border:1px solid #E2E6EC;border-radius:12px;padding:20px;position:relative;overflow:hidden;">' +
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:' + source.color + ';border-radius:4px 0 0 4px;"></div>' +
+      '<div style="padding-left:8px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
+      '<span style="font-size:18px;">' + source.icon + '</span>' +
+      '<span style="font-size:13px;font-weight:700;color:#1E293B;">' + source.name + '</span>' +
+      '<span style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:' + sc.bg + ';color:' + sc.text + ';">' + sc.label + '</span>' +
+      '</div>' +
+      '<div style="font-size:26px;font-weight:800;color:#1E293B;margin-bottom:2px;">' + (data.remaining !== null ? data.remaining.toLocaleString() : '\u2014') + '</div>' +
+      '<div style="font-size:11px;color:#7A8B9A;margin-bottom:10px;">' + data.label + '</div>' +
+      barHtml +
+      '<div style="font-size:11px;color:#7A8B9A;margin-top:8px;">' + (data.detail || source.description) + '</div>' +
+      linkHtml +
+      '</div></div>';
+  }
+
   async function loadCredits() {
-    // Hunter.io
-    try {
-      const resp = await fetch('https://api.hunter.io/v2/account?api_key=48926cd46dccbbee6efed263d5c6bd3b7493bdef');
-      const data = await resp.json();
-      const used = data.data?.requests?.used || 0;
-      const available = data.data?.requests?.available || 0;
-      const total = used + available;
-      const pct = total > 0 ? Math.round((available / total) * 100) : 0;
-      document.getElementById('credit-remaining-hunter').textContent = available.toLocaleString();
-      document.getElementById('credit-used-hunter').textContent = used.toLocaleString() + ' used';
-      document.getElementById('credit-limit-hunter').textContent = total.toLocaleString() + ' limit';
-      document.getElementById('credit-bar-hunter').style.width = pct + '%';
-      const hs = document.getElementById('credit-status-hunter');
-      if (pct > 50) { hs.textContent = 'Healthy'; hs.style.background = '#DCFCE7'; hs.style.color = '#16A34A'; }
-      else if (pct > 20) { hs.textContent = 'Low'; hs.style.background = '#FEF3C7'; hs.style.color = '#D97706'; }
-      else { hs.textContent = 'Critical'; hs.style.background = '#FEE2E2'; hs.style.color = '#DC2626'; }
-    } catch(e) { document.getElementById('credit-remaining-hunter').textContent = 'Error'; }
+    await refreshCredits();
+  }
 
-    // Apollo
-    try {
-      const resp = await fetch('https://api.apollo.io/v1/auth/health', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
-        body: JSON.stringify({ api_key: 'q54-425S9MpJYWrWR3NK6A' })
-      });
-      const data = await resp.json();
-      if (data.current_usage !== undefined) {
-        const used = data.current_usage || 0;
-        const limit = data.plan_credits || data.credit_limit || 0;
-        const remaining = Math.max(0, limit - used);
-        const pct = limit > 0 ? Math.round((remaining / limit) * 100) : 0;
-        document.getElementById('credit-remaining-apollo').textContent = remaining.toLocaleString();
-        document.getElementById('credit-used-apollo').textContent = used.toLocaleString() + ' used';
-        document.getElementById('credit-limit-apollo').textContent = limit.toLocaleString() + ' limit';
-        document.getElementById('credit-bar-apollo').style.width = pct + '%';
-        const as = document.getElementById('credit-status-apollo');
-        if (pct > 50) { as.textContent = 'Healthy'; as.style.background = '#DCFCE7'; as.style.color = '#16A34A'; }
-        else if (pct > 20) { as.textContent = 'Low'; as.style.background = '#FEF3C7'; as.style.color = '#D97706'; }
-        else { as.textContent = 'Critical'; as.style.background = '#FEE2E2'; as.style.color = '#DC2626'; }
+  async function refreshCredits() {
+    var btn = document.getElementById('credits-refresh-btn');
+    if (btn) { btn.textContent = 'Refreshing...'; btn.disabled = true; }
+    var updatedEl = document.getElementById('credits-last-updated');
+    if (updatedEl) updatedEl.textContent = 'Refreshing...';
+
+    var grid = document.getElementById('credit-cards-grid');
+    if (grid) grid.innerHTML = CREDIT_SOURCES.map(function(s) {
+      return '<div style="background:#F8FAFC;border:1px solid #E2E6EC;border-radius:12px;padding:20px;">' +
+        '<div style="font-size:18px;margin-bottom:8px;">' + s.icon + '</div>' +
+        '<div style="font-size:13px;font-weight:700;color:#94A3B8;">' + s.name + '</div>' +
+        '<div style="font-size:11px;color:#CBD5E1;margin-top:4px;">Loading...</div></div>';
+    }).join('');
+
+    var criticals = [];
+    var results = await Promise.allSettled(CREDIT_SOURCES.map(function(s) { return s.fetchCredits(); }));
+
+    if (grid) grid.innerHTML = CREDIT_SOURCES.map(function(s, i) {
+      var data = results[i].status === 'fulfilled'
+        ? results[i].value
+        : { remaining: null, label: 'Error loading', status: 'unknown', detail: '' };
+      if (data.status === 'critical') criticals.push(s.name);
+      return renderCreditCard(s, data);
+    }).join('');
+
+    // Update burn rate capacity from Hunter data
+    var hunterData = results[0].status === 'fulfilled' ? results[0].value : null;
+    if (hunterData && hunterData.remaining) {
+      var capEl = document.getElementById('burn-rate-hunter-cap');
+      if (capEl) capEl.textContent = '~' + Math.floor(hunterData.remaining / 5) + ' runs';
+      var labEl = document.getElementById('burn-rate-capacity-label');
+      if (labEl) labEl.textContent = 'Monthly capacity (Hunter ' + hunterData.remaining.toLocaleString() + ' remaining)';
+    }
+
+    // Alert banner
+    var banner = document.getElementById('credits-alert-banner');
+    if (banner) {
+      if (criticals.length > 0) {
+        banner.style.display = 'flex';
+        document.getElementById('credits-alert-title').textContent = criticals.length + ' source' + (criticals.length > 1 ? 's' : '') + ' need attention';
+        document.getElementById('credits-alert-detail').textContent = criticals.join(', ') + ' \u2014 credits exhausted or critically low';
       } else {
-        document.getElementById('credit-remaining-apollo').textContent = 'Check Dashboard';
-        document.getElementById('credit-label-apollo').textContent = 'Apollo does not expose credits via API';
-        const as = document.getElementById('credit-status-apollo');
-        as.textContent = 'Connected'; as.style.background = '#DCFCE7'; as.style.color = '#16A34A';
+        banner.style.display = 'none';
       }
-    } catch(e) {
-      document.getElementById('credit-remaining-apollo').textContent = 'Check Dashboard';
-      document.getElementById('credit-label-apollo').textContent = 'Apollo does not expose credits via API';
-      const as = document.getElementById('credit-status-apollo');
-      as.textContent = 'Connected'; as.style.background = '#DCFCE7'; as.style.color = '#16A34A';
     }
 
-    // Snov.io
-    try {
-      const tokenResp = await fetch('https://api.snov.io/v1/get-access-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ grant_type: 'client_credentials', client_id: 'bfefd71311a20c0370eb79bab95ed49a', client_secret: '3517b26c29857d71f02173ea651f4108' })
-      });
-      const tokenData = await tokenResp.json();
-      if (tokenData.access_token) {
-        const countResp = await fetch('https://api.snov.io/v1/get-balance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ access_token: tokenData.access_token })
-        });
-        const countData = await countResp.json();
-        const balance = countData.credits || countData.balance || 0;
-        document.getElementById('credit-remaining-snovio').textContent = balance.toLocaleString();
-        const ss = document.getElementById('credit-status-snovio');
-        ss.textContent = 'Connected'; ss.style.background = '#DCFCE7'; ss.style.color = '#16A34A';
-      }
-    } catch(e) {
-      document.getElementById('credit-remaining-snovio').textContent = 'Error';
+    // Source chart
+    await loadSourceUsageChart();
+
+    // Free sources table
+    var freeTable = document.getElementById('free-sources-table');
+    if (freeTable) {
+      freeTable.innerHTML = FREE_SOURCES.map(function(s) {
+        return '<tr><td style="padding:9px 12px;border-bottom:1px solid #F1F5F9;font-weight:600;color:#1E293B;">' + s.name + '</td>' +
+          '<td style="padding:9px 12px;border-bottom:1px solid #F1F5F9;color:#475569;">' + s.best + '</td>' +
+          '<td style="padding:9px 12px;border-bottom:1px solid #F1F5F9;text-align:center;">' +
+          '<span style="background:#DCFCE7;color:#16A34A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">\u2705 Active</span></td></tr>';
+      }).join('');
     }
 
-    // PDL usage from Supabase
-    try {
-      const pdlResp = await fetch(SB_URL + '/rest/v1/lb_contacts?email_source=eq.pdl&select=id', {
-        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Prefer': 'count=exact' }
-      });
-      const range = pdlResp.headers.get('Content-Range');
-      const count = range ? range.split('/')[1] : '0';
-      document.getElementById('credit-remaining-pdl').textContent = parseInt(count).toLocaleString();
-      document.getElementById('credit-label-pdl').textContent = 'contacts enriched (credits consumed)';
-      const ps = document.getElementById('credit-status-pdl');
-      ps.textContent = 'Tracked'; ps.style.background = '#E0F2FE'; ps.style.color = '#0284C7';
-    } catch(e) {}
-
-    // Load charts
-    loadSourceUsageChart();
-    loadDailyUsageChart();
+    var now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    if (updatedEl) updatedEl.textContent = 'Last updated ' + now;
+    if (btn) { btn.textContent = 'Refresh'; btn.disabled = false; }
   }
 
   async function loadSourceUsageChart() {
     try {
-      const resp = await fetch(SB_URL + '/rest/v1/lb_contacts?select=email_source&limit=5000', {
+      var resp = await fetch(SB_URL + '/rest/v1/lb_contacts?select=email_source&limit=5000', {
         headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
       });
-      const rows = await resp.json();
-      const counts = {};
-      rows.forEach(r => {
-        const src = r.email_source || 'unknown';
-        counts[src] = (counts[src] || 0) + 1;
-      });
-      const total = Object.values(counts).reduce((a, b) => a + b, 0);
-      const container = document.getElementById('source-usage-chart');
+      var rows = await resp.json();
+      var counts = {};
+      rows.forEach(function(r) { var src = r.email_source || 'unknown'; counts[src] = (counts[src] || 0) + 1; });
+      var total = Object.values(counts).reduce(function(a, b) { return a + b; }, 0);
+      var container = document.getElementById('source-usage-chart');
       if (!container) return;
-      const colors = { hunter: '#F59E0B', apollo: '#8B5CF6', pdl: '#06B6D4', snovio: '#EC4899', lusha: '#F97316', rocketreach: '#EF4444', website: '#16A34A', unknown: '#94A3B8', builtwith: '#3B82F6' };
-      if (total === 0) {
-        container.innerHTML = '<div style="padding:16px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No contact data yet</div>';
-        return;
-      }
-      container.innerHTML = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .map(([src, count]) => {
-          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-          const color = colors[src] || '#94A3B8';
-          return '<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:600;color:#475569;text-transform:capitalize;">' + src + '</span><span style="font-size:12px;color:#7A8B9A;">' + count.toLocaleString() + ' (' + pct + '%)</span></div><div style="height:8px;background:#F5F6F8;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;transition:width 0.8s ease;"></div></div></div>';
-        }).join('');
+      var colors = { hunter: '#F59E0B', apollo: '#8B5CF6', pdl: '#06B6D4', snovio: '#EC4899', lusha: '#F97316', rocketreach: '#EF4444', website: '#16A34A', unknown: '#94A3B8', builtwith: '#3B82F6' };
+      if (total === 0) { container.innerHTML = '<div style="padding:16px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No contact data yet</div>'; return; }
+      container.innerHTML = Object.entries(counts).sort(function(a, b) { return b[1] - a[1]; }).map(function(entry) {
+        var src = entry[0], count = entry[1];
+        var pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        var color = colors[src] || '#94A3B8';
+        return '<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:600;color:#475569;text-transform:capitalize;">' + src + '</span><span style="font-size:12px;color:#7A8B9A;">' + count.toLocaleString() + ' contacts (' + pct + '%)</span></div><div style="height:8px;background:#F5F6F8;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;transition:width 0.8s ease;"></div></div></div>';
+      }).join('');
     } catch(e) {
       var c = document.getElementById('source-usage-chart');
       if (c) c.innerHTML = '<div style="padding:16px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">Could not load source data</div>';
     }
-  }
-
-  async function loadDailyUsageChart() {
-    try {
-      const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-      const resp = await fetch(SB_URL + '/rest/v1/lb_contacts?select=email_source,created_at&created_at=gte.' + sevenDaysAgo + '&limit=2000', {
-        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-      });
-      const rows = await resp.json();
-      const dayMap = {};
-      const colors = { hunter: '#F59E0B', apollo: '#8B5CF6', pdl: '#06B6D4', snovio: '#EC4899', website: '#16A34A', unknown: '#94A3B8' };
-      rows.forEach(r => {
-        const day = (r.created_at || '').slice(0, 10);
-        const src = r.email_source || 'unknown';
-        if (!dayMap[day]) dayMap[day] = {};
-        dayMap[day][src] = (dayMap[day][src] || 0) + 1;
-      });
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(Date.now() - i * 86400000);
-        days.push(d.toISOString().slice(0, 10));
-      }
-      const allSources = [...new Set(rows.map(r => r.email_source || 'unknown'))];
-      const maxDay = Math.max(1, ...days.map(d => Object.values(dayMap[d] || {}).reduce((a, b) => a + b, 0)));
-      const container = document.getElementById('daily-usage-chart');
-      if (!container) return;
-      if (rows.length === 0) {
-        container.innerHTML = '<div style="padding:16px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No data in the last 7 days</div>';
-        return;
-      }
-      let html = '<div style="display:flex;gap:6px;align-items:flex-end;height:120px;">';
-      days.forEach(day => {
-        const data = dayMap[day] || {};
-        const dayTotal = Object.values(data).reduce((a, b) => a + b, 0);
-        const heightPct = Math.max(2, Math.round((dayTotal / maxDay) * 100));
-        const label = new Date(day + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        let stackHtml = '';
-        allSources.forEach(src => {
-          if (data[src]) {
-            const srcPct = Math.round((data[src] / dayTotal) * 100);
-            stackHtml += '<div style="width:100%;height:' + srcPct + '%;background:' + (colors[src] || '#94A3B8') + ';min-height:2px;" title="' + src + ': ' + data[src] + '"></div>';
-          }
-        });
-        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">';
-        html += '<div style="font-size:10px;font-weight:700;color:#475569;">' + dayTotal + '</div>';
-        html += '<div style="width:100%;height:' + heightPct + 'px;border-radius:4px 4px 0 0;overflow:hidden;display:flex;flex-direction:column;">' + stackHtml + '</div>';
-        html += '<div style="font-size:9px;color:#94A3B8;font-weight:600;white-space:nowrap;">' + label + '</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-      // Legend
-      html += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">';
-      allSources.forEach(src => {
-        html += '<div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:2px;background:' + (colors[src] || '#94A3B8') + ';"></div><span style="font-size:10px;color:#7A8B9A;font-weight:600;text-transform:capitalize;">' + src + '</span></div>';
-      });
-      html += '</div>';
-      container.innerHTML = html;
-    } catch(e) {
-      var c = document.getElementById('daily-usage-chart');
-      if (c) c.innerHTML = '<div style="padding:16px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">Could not load daily data</div>';
-    }
-  }
-
-  function refreshCredits() {
-    var btn = document.getElementById('credits-refresh-btn');
-    if (btn) btn.textContent = 'Refreshing...';
-    loadCredits().then(function() {
-      if (btn) btn.textContent = 'Refresh';
-    });
   }
 
   // ==================== PRE-CALL BRIEF PAGE ====================
