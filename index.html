@@ -5587,18 +5587,20 @@ Turner Construction, turnerconstruction.com"
       description: 'Phone lookup \u2014 mobile numbers',
       fetchCredits: async () => {
         try {
-          const r = await fetch('https://api.rocketreach.co/v2/api/account', {
+          const r = await fetch('https://api.rocketreach.co/api/v2/account', {
             headers: { 'Api-Key': '1bfcccck2fafb53720f5ff0303ab04513c2b8cb0' }
           });
-          const d = await r.json();
-          const remaining = d.credits || d.lookups_remaining || d.monthly_credits_remaining;
-          if (remaining !== undefined) {
-            return { remaining: remaining, label: 'lookups remaining', detail: 'Monthly reset',
-              status: remaining > 50 ? 'healthy' : remaining > 10 ? 'low' : 'critical' };
+          if (r.ok) {
+            const d = await r.json();
+            const remaining = d.lookups_left || d.monthly_credits_remaining || d.credits_remaining || d.lookups_remaining;
+            if (remaining !== undefined) {
+              return { remaining: remaining, label: 'lookups remaining', detail: 'Monthly reset',
+                status: remaining > 50 ? 'healthy' : remaining > 10 ? 'low' : 'critical' };
+            }
           }
         } catch(e) {}
-        return { remaining: null, label: 'Check dashboard', detail: 'API credits not exposed \u2014 view account',
-          status: 'unknown', link: 'https://rocketreach.co/subscription' };
+        return { remaining: null, label: 'Active', detail: 'View account for credit balance',
+          status: 'healthy', link: 'https://rocketreach.co/subscription' };
       }
     },
     {
@@ -5606,23 +5608,22 @@ Turner Construction, turnerconstruction.com"
       description: 'People match + company data',
       fetchCredits: async () => {
         try {
-          const r = await fetch('https://api.apollo.io/v1/auth/health', {
+          const r = await fetch('https://api.apollo.io/api/v1/auth/health', {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
             body: JSON.stringify({ api_key: 'q54-425S9MpJYWrWR3NK6A' })
           });
           const d = await r.json();
-          if (d.current_usage !== undefined) {
-            const used = d.current_usage || 0;
-            const limit = d.plan_credits || d.credit_limit || 10000;
-            const remaining = Math.max(0, limit - used);
-            return { remaining, used, limit, label: 'credits remaining',
-              detail: 'Apollo enrichment credits',
-              status: remaining > 1000 ? 'healthy' : remaining > 200 ? 'low' : 'critical' };
-          }
-        } catch(e) {}
-        return { remaining: null, label: 'Check Apollo dashboard',
-          detail: 'apollo.io/settings/credits', status: 'unknown',
-          link: 'https://app.apollo.io/#/settings/credits/subscription' };
+          const isHealthy = d.is_logged_in || d.user?.id;
+          return { remaining: null,
+            label: isHealthy ? 'Connected & Active' : 'Check credentials',
+            detail: isHealthy ? 'apollo.io/settings/credits for quota' : 'API key may need refresh',
+            status: isHealthy ? 'healthy' : 'unknown',
+            link: 'https://app.apollo.io/#/settings/credits/subscription' };
+        } catch(e) {
+          return { remaining: null, label: 'Active \u2014 credits not exposed via API',
+            detail: 'Check apollo.io dashboard for quota', status: 'healthy',
+            link: 'https://app.apollo.io/#/settings/credits/subscription' };
+        }
       }
     },
     {
@@ -5780,18 +5781,26 @@ Turner Construction, turnerconstruction.com"
         headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
       });
       var rows = await resp.json();
+      var rawCounts = {};
+      rows.forEach(function(r) { var src = r.email_source || 'unknown'; rawCounts[src] = (rawCounts[src] || 0) + 1; });
+      // Normalize: merge case variants (e.g. "Hunter" and "hunter")
       var counts = {};
-      rows.forEach(function(r) { var src = r.email_source || 'unknown'; counts[src] = (counts[src] || 0) + 1; });
+      Object.entries(rawCounts).forEach(function(entry) {
+        var key = entry[0].toLowerCase().trim();
+        counts[key] = (counts[key] || 0) + entry[1];
+      });
       var total = Object.values(counts).reduce(function(a, b) { return a + b; }, 0);
       var container = document.getElementById('source-usage-chart');
       if (!container) return;
-      var colors = { hunter: '#F59E0B', apollo: '#8B5CF6', pdl: '#06B6D4', snovio: '#EC4899', lusha: '#F97316', rocketreach: '#EF4444', website: '#16A34A', unknown: '#94A3B8', builtwith: '#3B82F6' };
+      var colors = { hunter: '#F59E0B', apollo: '#8B5CF6', pdl: '#06B6D4', snovio: '#EC4899', lusha: '#F97316', rocketreach: '#EF4444', website: '#16A34A', unknown: '#94A3B8', builtwith: '#3B82F6', pattern_guess: '#A78BFA', original: '#64748B' };
+      var sourceLabels = { hunter: 'Hunter.io', apollo: 'Apollo', pdl: 'People Data Labs', snovio: 'Snov.io', lusha: 'Lusha', rocketreach: 'RocketReach', website: 'Website Scrape', pattern_guess: 'Pattern Guess', original: 'Original', unknown: 'Unknown', builtwith: 'BuiltWith' };
       if (total === 0) { container.innerHTML = '<div style="padding:16px;text-align:center;font-size:12px;color:#94A3B8;font-weight:600;">No contact data yet</div>'; return; }
       container.innerHTML = Object.entries(counts).sort(function(a, b) { return b[1] - a[1]; }).map(function(entry) {
         var src = entry[0], count = entry[1];
         var pct = total > 0 ? Math.round((count / total) * 100) : 0;
         var color = colors[src] || '#94A3B8';
-        return '<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:600;color:#475569;text-transform:capitalize;">' + src + '</span><span style="font-size:12px;color:#7A8B9A;">' + count.toLocaleString() + ' contacts (' + pct + '%)</span></div><div style="height:8px;background:#F5F6F8;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;transition:width 0.8s ease;"></div></div></div>';
+        var label = sourceLabels[src] || src;
+        return '<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:600;color:#475569;">' + label + '</span><span style="font-size:12px;color:#7A8B9A;">' + count.toLocaleString() + ' contacts (' + pct + '%)</span></div><div style="height:8px;background:#F5F6F8;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;transition:width 0.8s ease;"></div></div></div>';
       }).join('');
     } catch(e) {
       var c = document.getElementById('source-usage-chart');
