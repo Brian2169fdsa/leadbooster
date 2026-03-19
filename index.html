@@ -2950,19 +2950,8 @@
             <option value="data_quality">Data Quality</option>
             <option value="feature_request">Feature Request</option>
             <option value="bug_report">Bug Report</option>
-            <option value="general">General Feedback</option>
+            <option value="general_feedback">General Feedback</option>
           </select>
-        </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Rating</label>
-          <div id="fb-stars" style="display:flex;gap:6px;cursor:pointer;font-size:24px;user-select:none;">
-            <span class="fb-star" data-val="1" onclick="setFbRating(1)">&#9734;</span>
-            <span class="fb-star" data-val="2" onclick="setFbRating(2)">&#9734;</span>
-            <span class="fb-star" data-val="3" onclick="setFbRating(3)">&#9734;</span>
-            <span class="fb-star" data-val="4" onclick="setFbRating(4)">&#9734;</span>
-            <span class="fb-star" data-val="5" onclick="setFbRating(5)">&#9734;</span>
-          </div>
         </div>
 
         <div class="field" style="margin-bottom:16px;">
@@ -2973,6 +2962,21 @@
         <div class="field" style="margin-bottom:16px;">
           <label>Reference <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional (ticket #, URL, company name)</span></label>
           <input type="text" id="fb-reference" placeholder="e.g. ticket #1234 or https://..." />
+        </div>
+
+        <div class="field" style="margin-bottom:16px;">
+          <label>Attachment <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional, attach a screenshot or file (max 5 MB)</span></label>
+          <div id="fb-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color 0.2s;"
+            onclick="document.getElementById('fb-file-input').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+            ondragleave="this.style.borderColor='var(--border)'"
+            ondrop="handleFbFileDrop(event)">
+            <div style="font-size:24px;margin-bottom:6px;">&#128206;</div>
+            <div style="font-size:12px;color:var(--text-dim);">Click to attach or drag and drop</div>
+            <div style="font-size:11px;color:#94A3B8;margin-top:4px;">PNG, JPG, GIF, PDF — max 5 MB</div>
+            <div id="fb-file-name" style="font-size:12px;color:var(--accent);margin-top:8px;display:none;font-weight:600;"></div>
+          </div>
+          <input type="file" id="fb-file-input" accept="image/*,.pdf" style="display:none" onchange="handleFbFileSelect(this)" />
         </div>
 
         <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
@@ -3408,30 +3412,60 @@ Turner Construction, turnerconstruction.com"
   function handleBulkFile(file, textareaId, countFn) {
     var name = file.name.toLowerCase();
     var isExcel = name.endsWith('.xls') || name.endsWith('.xlsx');
+    console.log('[BulkUpload] File:', file.name, 'Size:', file.size, 'Type:', file.type, 'isExcel:', isExcel);
     if (isExcel) {
+      if (typeof XLSX === 'undefined') {
+        console.error('[BulkUpload] XLSX library not loaded — cannot parse Excel files');
+        alert('Excel parser not loaded. Please refresh the page and try again, or upload a CSV.');
+        return;
+      }
       var reader = new FileReader();
+      reader.onerror = function(err) {
+        console.error('[BulkUpload] FileReader error:', err);
+        alert('Could not read the file. Please try again.');
+      };
       reader.onload = function(e) {
         try {
           var data = new Uint8Array(e.target.result);
+          console.log('[BulkUpload] Read', data.length, 'bytes, parsing with XLSX.read...');
           var workbook = XLSX.read(data, { type: 'array' });
-          var sheet = workbook.Sheets[workbook.SheetNames[0]];
-          var rows = XLSX.utils.sheet_to_csv(sheet);
+          console.log('[BulkUpload] Workbook sheets:', workbook.SheetNames);
+          var sheetName = workbook.SheetNames[0];
+          var sheet = workbook.Sheets[sheetName];
+          if (!sheet) {
+            console.error('[BulkUpload] Sheet "' + sheetName + '" is empty or undefined');
+            alert('The first sheet in this file appears to be empty.');
+            return;
+          }
+          var csv = XLSX.utils.sheet_to_csv(sheet);
+          console.log('[BulkUpload] Converted to CSV, length:', csv.length, 'preview:', csv.substring(0, 200));
           var textarea = document.getElementById(textareaId);
           if (textarea) {
-            textarea.value = rows;
+            textarea.value = csv;
+            textarea.dispatchEvent(new Event('input'));
+            console.log('[BulkUpload] Populated textarea "' + textareaId + '"');
             if (countFn) countFn();
+          } else {
+            console.error('[BulkUpload] Textarea "' + textareaId + '" not found in DOM');
           }
         } catch(err) {
-          alert('Could not read Excel file. Try saving as CSV and uploading again.');
+          console.error('[BulkUpload] XLSX parse error:', err.message, err.stack);
+          alert('Could not read Excel file: ' + err.message + '. Try saving as CSV and uploading again.');
         }
       };
       reader.readAsArrayBuffer(file);
     } else {
+      console.log('[BulkUpload] Reading as text (CSV)...');
       var reader = new FileReader();
+      reader.onerror = function(err) {
+        console.error('[BulkUpload] FileReader error:', err);
+      };
       reader.onload = function(e) {
+        console.log('[BulkUpload] CSV read, length:', e.target.result.length);
         var textarea = document.getElementById(textareaId);
         if (textarea) {
           textarea.value = e.target.result;
+          textarea.dispatchEvent(new Event('input'));
           if (countFn) countFn();
         }
       };
@@ -4930,14 +4964,29 @@ Turner Construction, turnerconstruction.com"
   }
 
   // ==================== FEEDBACK — Classic Form ====================
-  let fbRating = 0;
+  let fbAttachmentBase64 = null;
+  let fbAttachmentName = '';
 
-  function setFbRating(n) {
-    fbRating = n;
-    document.querySelectorAll('.fb-star').forEach(s => {
-      s.textContent = parseInt(s.dataset.val) <= n ? '\u2605' : '\u2606';
-      s.style.color = parseInt(s.dataset.val) <= n ? '#F59E0B' : '#CBD5E1';
-    });
+  function handleFbFileDrop(event) {
+    event.preventDefault();
+    document.getElementById('fb-drop-zone').style.borderColor = 'var(--border)';
+    var file = event.dataTransfer.files[0];
+    if (file) processFbAttachment(file);
+  }
+
+  function handleFbFileSelect(input) {
+    var file = input.files[0];
+    if (file) processFbAttachment(file);
+  }
+
+  function processFbAttachment(file) {
+    if (file.size > 5 * 1024 * 1024) { alert('File too large — max 5 MB.'); return; }
+    fbAttachmentName = file.name;
+    var label = document.getElementById('fb-file-name');
+    if (label) { label.textContent = file.name; label.style.display = 'block'; }
+    var reader = new FileReader();
+    reader.onload = function(e) { fbAttachmentBase64 = e.target.result; };
+    reader.readAsDataURL(file);
   }
 
   function initFeedbackForm() {
@@ -4962,26 +5011,50 @@ Turner Construction, turnerconstruction.com"
     if (errorEl) errorEl.style.display = 'none';
     if (!message) { alert('Please enter a message.'); return; }
     if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+    const payload = {
+      name: name || 'Team member',
+      email: email || 'unknown@manageai.io',
+      category: category || 'general_feedback',
+      message: message,
+      reference: reference || '',
+      submitted_at: new Date().toISOString()
+    };
+    if (fbAttachmentBase64) {
+      payload.attachment_base64 = fbAttachmentBase64;
+      payload.attachment_name = fbAttachmentName;
+    }
+
     try {
+      // 1. Send to webhook
       const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name || 'Team member',
-          email: email || 'unknown@manageai.io',
-          category: category || 'general',
-          rating: fbRating,
-          message: message,
-          reference: reference || '',
-          submitted_at: new Date().toISOString()
-        })
+        body: JSON.stringify(payload)
       });
       if (!resp.ok) throw new Error('Webhook returned ' + resp.status);
+
+      // 2. Insert directly into Supabase lb_feedback table
+      const sbPayload = {
+        name: payload.name,
+        email: payload.email,
+        category: payload.category,
+        message: payload.message,
+        reference: payload.reference,
+        submitted_at: payload.submitted_at
+      };
+      try { await sbProxy('lb_feedback', 'POST', '', sbPayload); }
+      catch(sbErr) { console.warn('[Feedback] Supabase insert failed:', sbErr.message); }
+
       if (successEl) successEl.style.display = 'block';
       document.getElementById('fb-message').value = '';
       document.getElementById('fb-reference').value = '';
       document.getElementById('fb-category').value = '';
-      setFbRating(0);
+      fbAttachmentBase64 = null;
+      fbAttachmentName = '';
+      var fileLabel = document.getElementById('fb-file-name');
+      if (fileLabel) { fileLabel.style.display = 'none'; fileLabel.textContent = ''; }
+      // 3. Reload recent feedback to show the new entry
       loadFeedbackHistory();
     } catch(e) {
       console.error('[Feedback] Submit failed:', e.message);
@@ -4999,12 +5072,10 @@ Turner Construction, turnerconstruction.com"
       if (!rows || !rows.length) { container.textContent = 'No feedback yet.'; return; }
       container.innerHTML = rows.map(r => {
         const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '';
-        const stars = r.rating ? '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating) : '';
         return '<div style="padding:10px 0;border-bottom:1px solid var(--border);">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;">' +
           '<strong>' + (r.name || 'Anonymous') + '</strong>' +
           '<span style="font-size:11px;color:var(--text-dim);">' + date + '</span></div>' +
-          (stars ? '<div style="color:#F59E0B;font-size:14px;">' + stars + '</div>' : '') +
           (r.category ? '<div style="font-size:11px;color:var(--accent);margin:2px 0;">' + r.category.replace(/_/g, ' ') + '</div>' : '') +
           '<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.5;">' + (r.message || '') + '</div>' +
           '</div>';
