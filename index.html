@@ -2310,6 +2310,78 @@
   <!-- ==================== MY LISTS MODE ==================== -->
   <div id="mode-lists" class="mode-content hidden">
 
+    <!-- LIST DETAIL VIEW (hidden by default) -->
+    <div id="lists-detail-view" style="display:none;">
+      <!-- BACK + DOWNLOAD BAR -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <button onclick="closeListDetail()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;font-family:var(--font);padding:0;">&larr; Back to My Lists</button>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span id="lists-detail-count" style="font-size:13px;color:var(--text-dim);"></span>
+          <button onclick="downloadListDetailCSV()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">&darr; Download CSV</button>
+        </div>
+      </div>
+      <!-- LIST TITLE + META -->
+      <div style="margin-bottom:16px;">
+        <div id="lists-detail-title" style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;"></div>
+        <div id="lists-detail-meta" style="font-size:13px;color:var(--text-dim);"></div>
+      </div>
+      <!-- FILTER BAR -->
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <input type="text" id="ld-search" placeholder="Search name, company, email..." oninput="filterListDetail()" style="flex:2;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;"/>
+        <select id="ld-filter-icp" onchange="filterListDetail()" style="flex:1;min-width:130px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+          <option value="0">All ICP Scores</option>
+          <option value="80">ICP 80+</option>
+          <option value="70">ICP 70+</option>
+          <option value="60">ICP 60+</option>
+          <option value="50">ICP 50+</option>
+        </select>
+        <select id="ld-filter-email" onchange="filterListDetail()" style="flex:1;min-width:130px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+          <option value="all">All Contacts</option>
+          <option value="email">Has Email</option>
+          <option value="phone">Has Phone</option>
+          <option value="both">Has Email + Phone</option>
+        </select>
+        <select id="ld-sort" onchange="filterListDetail()" style="flex:1;min-width:130px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+          <option value="icp">Sort: ICP Score</option>
+          <option value="name">Sort: Name</option>
+          <option value="company">Sort: Company</option>
+          <option value="date">Sort: Date</option>
+        </select>
+      </div>
+      <!-- RESULTS COUNT -->
+      <div id="ld-filter-count" style="font-size:12px;color:var(--text-dim);margin-bottom:8px;"></div>
+      <!-- SCROLLABLE TABLE -->
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:calc(100vh - 320px);overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:1400px;">
+          <thead style="position:sticky;top:0;z-index:10;">
+            <tr style="background:#1E3348;">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">First</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Last</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Title</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Company</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Domain</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Phone</th>
+              <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">LinkedIn</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">City</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">State</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Vertical</th>
+              <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">ICP</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email Source</th>
+              <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Complete%</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody id="lists-detail-tbody">
+            <tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MAIN LISTS CONTENT -->
+    <div id="lists-main-content">
+
     <!-- HEADER -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div>
@@ -2419,8 +2491,10 @@
       <div style="font-size:48px;margin-bottom:16px;">📋</div>
       <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">No lists yet</div>
       <div style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">Run your first lead search from the Rebecka tab</div>
-      <button onclick="setMode('rebecca')" class="btn-primary">Go to Rebecka →</button>
+      <button onclick="setMode('rebecca')" class="btn-primary">Go to Rebecka &rarr;</button>
     </div>
+
+    </div><!-- /lists-main-content -->
 
   </div>
 
@@ -3414,7 +3488,7 @@
   }
 
   function renderSourceWins(contacts) {
-    const wins = { hunter: 0, apollo: 0, pdl: 0, snovio: 0, rocketreach: 0, website: 0 };
+    const wins = { hunter: 0, apollo: 0, pdl: 0, snovio: 0, rocketreach: 0, website: 0, unknown: 0 };
     contacts.forEach(c => {
       const src = (c.email_source || '').toLowerCase();
       if (src.includes('hunter')) wins.hunter++;
@@ -3423,16 +3497,17 @@
       else if (src.includes('snov')) wins.snovio++;
       else if (src.includes('rocket')) wins.rocketreach++;
       else if (src.includes('web') || src.includes('site')) wins.website++;
+      else if (src) wins.unknown++;
     });
-    const maxWin = Math.max(...Object.values(wins), 1);
     const sourceMap = [
-      { key: 'hunter', label: 'Hunter', color: '#F59E0B' },
+      { key: 'hunter', label: 'Hunter.io', color: '#F59E0B' },
       { key: 'apollo', label: 'Apollo', color: '#8B5CF6' },
-      { key: 'pdl', label: 'PDL', color: '#06B6D4' },
+      { key: 'pdl', label: 'People Data Labs', color: '#06B6D4' },
       { key: 'snovio', label: 'Snov.io', color: '#EC4899' },
       { key: 'rocketreach', label: 'RocketReach', color: '#EF4444' },
-      { key: 'website', label: 'Website', color: '#16A34A' }
-    ];
+      { key: 'website', label: 'Website Scrape', color: '#16A34A' }
+    ].filter(s => wins[s.key] > 0 || s.key === 'hunter');
+    const maxWin = Math.max(...sourceMap.map(s => wins[s.key]), 1);
     const container = document.getElementById('d-source-wins');
     if (!container) {
       ['hunter','apollo','pdl','website'].forEach(s => {
@@ -3449,7 +3524,7 @@
           '<span style="color:var(--text-dim);">' + wins[s.key] + '</span>' +
         '</div>' +
         '<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">' +
-          '<div style="height:100%;width:' + pct + '%;background:' + s.color + ';border-radius:4px;transition:width 0.5s;"></div>' +
+          '<div style="height:100%;width:' + pct + '%;background:' + s.color + ';border-radius:4px;transition:width 0.6s;"></div>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -4467,7 +4542,10 @@
     document.getElementById('fb-view-home').style.display = 'none';
     document.getElementById('fb-view-form').style.display = 'block';
     document.getElementById('fb-view-ticket').style.display = 'none';
-    initFeedbackForm();
+    const nameEl = document.getElementById('fb-name');
+    const emailEl = document.getElementById('fb-email');
+    if (nameEl && window._currentUser?.name) nameEl.value = window._currentUser.name;
+    if (emailEl && window._currentUser?.email) emailEl.value = window._currentUser.email;
   }
 
   function showFbTicket() {
@@ -4833,6 +4911,7 @@
         '<td style="padding:10px 14px;font-size:12px;color:var(--text-mid);">'+date+'</td>' +
         '<td style="padding:10px 14px;text-align:center;">' +
           '<div style="display:flex;gap:4px;justify-content:center;">' +
+          '<button onclick="openListDetail(\''+encodeURIComponent(r.list_tag||'')+'\',\''+encodeURIComponent(r.list_name||'Unnamed')+'\')" style="padding:4px 8px;border:1px solid var(--accent);border-radius:4px;background:#EFF6FF;color:var(--accent);font-size:11px;cursor:pointer;font-family:var(--font);font-weight:600;">\uD83D\uDC41 View</button>' +
           '<button onclick="listsDownloadCSV(\''+encodeURIComponent(r.list_tag||'')+'\')" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">↓ CSV</button>' +
           '<button onclick="listsRerun(\''+r.id+'\')" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">▶ Re-run</button>' +
           '</div></td></tr>';
@@ -4879,6 +4958,141 @@
         if (lName) lName.value = (row.list_name||'') + ' (Re-run)';
       }
     }, 300);
+  }
+
+  // ==================== LIST DETAIL VIEW ====================
+  let currentListDetailContacts = [];
+  let currentListDetailFiltered = [];
+  let currentListDetailName = '';
+  let currentListDetailTag = '';
+
+  async function openListDetail(encodedTag, encodedName) {
+    const listTag = decodeURIComponent(encodedTag);
+    const listName = decodeURIComponent(encodedName);
+    currentListDetailTag = listTag;
+    currentListDetailName = listName;
+    document.getElementById('lists-detail-view').style.display = 'block';
+    document.getElementById('lists-main-content').style.display = 'none';
+    const titleEl = document.getElementById('lists-detail-title');
+    if (titleEl) titleEl.textContent = listName;
+    const tbody = document.getElementById('lists-detail-tbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading contacts...</td></tr>';
+    // Reset filters
+    const ldSearch = document.getElementById('ld-search');
+    const ldIcp = document.getElementById('ld-filter-icp');
+    const ldEmail = document.getElementById('ld-filter-email');
+    const ldSort = document.getElementById('ld-sort');
+    if (ldSearch) ldSearch.value = '';
+    if (ldIcp) ldIcp.value = '0';
+    if (ldEmail) ldEmail.value = 'all';
+    if (ldSort) ldSort.value = 'icp';
+    try {
+      const contacts = await sbProxy('lb_contacts', 'GET',
+        'list_tag=eq.' + encodeURIComponent(listTag) + '&order=icp_score.desc.nullslast&limit=500');
+      currentListDetailContacts = contacts || [];
+      const meta = document.getElementById('lists-detail-meta');
+      const emailCount = currentListDetailContacts.filter(c => c.email).length;
+      const phoneCount = currentListDetailContacts.filter(c => c.phone).length;
+      const withIcp = currentListDetailContacts.filter(c => c.icp_score);
+      const avgIcp = withIcp.length ? (withIcp.reduce((s,c) => s+(c.icp_score||0), 0) / withIcp.length).toFixed(1) : '\u2014';
+      if (meta) meta.textContent = currentListDetailContacts.length + ' contacts \u00B7 Email: ' + emailCount +
+        ' (' + Math.round(emailCount/Math.max(currentListDetailContacts.length,1)*100) + '%) \u00B7 Phone: ' + phoneCount +
+        ' (' + Math.round(phoneCount/Math.max(currentListDetailContacts.length,1)*100) + '%) \u00B7 Avg ICP: ' + avgIcp;
+      filterListDetail();
+    } catch(e) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--red);font-size:13px;">Failed to load: ' + e.message + '</td></tr>';
+    }
+  }
+
+  function filterListDetail() {
+    const search = (document.getElementById('ld-search')?.value || '').toLowerCase();
+    const minIcp = parseInt(document.getElementById('ld-filter-icp')?.value || '0');
+    const emailFilter = document.getElementById('ld-filter-email')?.value || 'all';
+    const sort = document.getElementById('ld-sort')?.value || 'icp';
+    let filtered = currentListDetailContacts.filter(c => {
+      if (search) {
+        const searchable = [c.first_name,c.last_name,c.company_name,c.email,c.title,c.domain].join(' ').toLowerCase();
+        if (!searchable.includes(search)) return false;
+      }
+      if (minIcp > 0 && (c.icp_score||0) < minIcp) return false;
+      if (emailFilter === 'email' && !c.email) return false;
+      if (emailFilter === 'phone' && !c.phone) return false;
+      if (emailFilter === 'both' && (!c.email || !c.phone)) return false;
+      return true;
+    });
+    filtered.sort((a,b) => {
+      if (sort === 'icp') return (b.icp_score||0) - (a.icp_score||0);
+      if (sort === 'name') return (a.first_name||'').localeCompare(b.first_name||'');
+      if (sort === 'company') return (a.company_name||'').localeCompare(b.company_name||'');
+      if (sort === 'date') return new Date(b.created_at||0) - new Date(a.created_at||0);
+      return 0;
+    });
+    currentListDetailFiltered = filtered;
+    const countEl = document.getElementById('ld-filter-count');
+    if (countEl) countEl.textContent = filtered.length + ' of ' + currentListDetailContacts.length + ' contacts shown';
+    const countTop = document.getElementById('lists-detail-count');
+    if (countTop) countTop.textContent = filtered.length + ' contacts';
+    renderListDetailTable(filtered);
+  }
+
+  function renderListDetailTable(contacts) {
+    const tbody = document.getElementById('lists-detail-tbody');
+    if (!tbody) return;
+    if (!contacts || !contacts.length) {
+      tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">No contacts match your filters.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = contacts.map((c, i) => {
+      const rowBg = i % 2 === 0 ? '#fff' : '#F5F6F8';
+      const icp = c.icp_score !== null && c.icp_score !== undefined ? c.icp_score : '\u2014';
+      const icpBg = (c.icp_score||0) >= 80 ? '#DCFCE7' : (c.icp_score||0) >= 60 ? '#DBEAFE' : '#F5F6F8';
+      const icpColor = (c.icp_score||0) >= 80 ? '#15803D' : (c.icp_score||0) >= 60 ? '#1D4ED8' : '#94A3B8';
+      const completeness = c.final_completeness_score ? Math.round(c.final_completeness_score) + '%' : '\u2014';
+      const date = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '\u2014';
+      const li = c.linkedin_url ? '<a href="'+c.linkedin_url+'" target="_blank" style="color:var(--accent);text-decoration:none;font-size:16px;">\uD83D\uDD17</a>' : '<span style="color:#CBD5E1;">\u2014</span>';
+      const emailDisplay = c.email ? '<span style="color:#1D4ED8;">' + c.email + '</span>' : '<span style="color:#CBD5E1;">\u2014</span>';
+      const phoneDisplay = c.phone || '<span style="color:#CBD5E1;">\u2014</span>';
+      const td = (val, style) => '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;'+(style||'color:var(--text);">')+(val||'<span style="color:#CBD5E1;">\u2014</span>')+'</td>';
+      return '<tr style="background:'+rowBg+';" onmouseover="this.style.background=\'#EEF1F5\'" onmouseout="this.style.background=\''+rowBg+'\'">' +
+        td(c.first_name) + td(c.last_name) +
+        td(c.title,'font-size:12px;color:var(--text-mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;') +
+        td(c.company_name,'font-size:12px;font-weight:600;color:var(--text);') +
+        td(c.domain,'font-size:11px;color:var(--text-dim);') +
+        '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;">' + emailDisplay + '</td>' +
+        '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;color:var(--text);">' + phoneDisplay + '</td>' +
+        '<td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F0F0F0;">' + li + '</td>' +
+        td(c.city,'font-size:12px;color:var(--text-mid);') +
+        td(c.state,'font-size:12px;color:var(--text-mid);') +
+        td((c.vertical||'').replace(/_/g,' '),'font-size:11px;color:var(--text-dim);') +
+        '<td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F0F0F0;"><span style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;background:'+icpBg+';color:'+icpColor+';">'+icp+'</span></td>' +
+        td(c.email_source,'font-size:11px;color:var(--text-dim);') +
+        td(completeness,'font-size:12px;text-align:center;color:var(--text-mid);') +
+        td(date,'font-size:11px;color:var(--text-dim);') +
+      '</tr>';
+    }).join('');
+  }
+
+  function closeListDetail() {
+    document.getElementById('lists-detail-view').style.display = 'none';
+    document.getElementById('lists-main-content').style.display = 'block';
+    currentListDetailContacts = [];
+    currentListDetailFiltered = [];
+    currentListDetailTag = '';
+    currentListDetailName = '';
+  }
+
+  function downloadListDetailCSV() {
+    const contacts = currentListDetailFiltered.length ? currentListDetailFiltered : currentListDetailContacts;
+    if (!contacts.length) { alert('No contacts to download.'); return; }
+    const cols = ['first_name','last_name','title','company_name','domain','email','phone','linkedin_url','city','state','vertical','icp_score','icp_rationale','email_source','email_confidence','phone_source','final_completeness_score','enrichment_notes','submitter_name','created_at'];
+    const headers = ['First Name','Last Name','Title','Company','Domain','Email','Phone','LinkedIn','City','State','Vertical','ICP Score','ICP Rationale','Email Source','Email Confidence','Phone Source','Completeness %','Enrichment Notes','Submitted By','Date'];
+    const csv = [headers.join(','), ...contacts.map(c =>
+      cols.map(k => '"'+(c[k]||'').toString().replace(/"/g,'""')+'"').join(',')
+    )].join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = (currentListDetailName || 'list').replace(/[^a-z0-9]/gi,'_') + '_contacts.csv';
+    a.click();
   }
 
   const PIPEDRIVE_KEY = '2fada79568e20083cf472cd5b307e9e12d171a1d';
