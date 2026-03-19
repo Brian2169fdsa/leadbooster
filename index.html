@@ -198,6 +198,35 @@
     .chip.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
     .chip:hover:not(.active) { border-color: var(--text-dim); color: var(--text); }
 
+    /* Call Queue */
+    .cq-layout { display:grid;grid-template-columns:360px 1fr;gap:16px;height:calc(100vh - 220px); }
+    .cq-left { display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:12px; }
+    .cq-right { background:#fff;border:1px solid var(--border);border-radius:12px;overflow-y:auto;padding:24px; }
+    .cq-card { padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s; }
+    .cq-card:hover { background:var(--surface); }
+    .cq-card.active { background:var(--accent-light);border-left:3px solid var(--accent); }
+    .cq-icp-badge { width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:var(--mono);flex-shrink:0; }
+    .cq-icp-badge.high { background:var(--green-light);color:var(--green); }
+    .cq-icp-badge.mid { background:var(--accent-light);color:var(--accent); }
+    .cq-icp-badge.low { background:var(--surface);color:var(--text-dim); }
+    .cq-name { font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .cq-meta { font-size:11px;color:var(--text-dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .cq-info-card { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1; }
+    .cq-info-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:6px; }
+    .cq-info-value { font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;word-break:break-all; }
+    .cq-call-btn { display:block;width:100%;padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;font-family:var(--font);transition:background 0.15s; }
+    .cq-call-btn:hover { background:var(--accent-mid); }
+    .cq-call-btn.green { background:var(--green); }
+    .cq-call-btn.green:hover { background:#15803d; }
+    .cq-stage-btn { padding:7px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.15s;white-space:nowrap; }
+    .cq-stage-btn:hover { border-color:var(--accent);color:var(--accent); }
+    .cq-stage-btn.active { background:var(--accent);color:#fff;border-color:var(--accent); }
+    .cq-stage-btn.won { background:var(--green);color:#fff;border-color:var(--green); }
+    .cq-stage-btn.lost { background:var(--red);color:#fff;border-color:var(--red); }
+    .pd-action-btn { padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.15s;display:inline-flex;align-items:center;gap:6px; }
+    .pd-action-btn:hover { background:var(--surface);border-color:var(--text-dim); }
+    @media(max-width:900px) { .cq-layout { grid-template-columns:1fr;height:auto; } .cq-left { max-height:400px; } }
+
     /* Upload area */
     .upload-area {
       border: 2px dashed var(--border); border-radius: 10px;
@@ -1169,6 +1198,7 @@
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
     <button class="mode-tab" onclick="setMode('scraper')" id="tab-scraper">🕷 Scraper</button>
     <button class="mode-tab" onclick="setMode('lists')" id="tab-lists">📋 My Lists</button>
+    <button class="mode-tab" onclick="setMode('callqueue')" id="tab-callqueue">📞 Call Queue</button>
     <button class="mode-tab" onclick="setMode('credits')" id="tab-credits">Credits</button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">Feedback</button>
     <!-- Hidden tabs — do not delete, just hidden -->
@@ -2325,68 +2355,49 @@
 
     <!-- LIST DETAIL VIEW (hidden by default) -->
     <div id="lists-detail-view" style="display:none;">
-      <!-- BACK + DOWNLOAD BAR -->
+      <!-- TOP BAR -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
-        <button onclick="closeListDetail()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;font-family:var(--font);padding:0;">&larr; Back to My Lists</button>
+        <button onclick="closeListDetail()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;font-family:var(--font);padding:0;">← Back to My Lists</button>
         <div style="display:flex;gap:10px;align-items:center;">
           <span id="lists-detail-count" style="font-size:13px;color:var(--text-dim);"></span>
-          <button onclick="downloadListDetailCSV()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">&darr; Download CSV</button>
+          <button onclick="downloadListDetailCSV()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">↓ Download CSV</button>
         </div>
       </div>
-      <!-- LIST TITLE + META -->
+      <!-- TITLE + STAT PILLS -->
       <div style="margin-bottom:16px;">
-        <div id="lists-detail-title" style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;"></div>
-        <div id="lists-detail-meta" style="font-size:13px;color:var(--text-dim);"></div>
+        <div id="lists-detail-title" style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;"></div>
+        <div id="lists-detail-stats" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       </div>
       <!-- FILTER BAR -->
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
         <input type="text" id="ld-search" placeholder="Search name, company, email..." oninput="filterListDetail()" style="flex:2;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;"/>
-        <select id="ld-filter-icp" onchange="filterListDetail()" style="flex:1;min-width:130px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+        <select id="ld-filter-icp" onchange="filterListDetail()" style="padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
           <option value="0">All ICP Scores</option>
           <option value="80">ICP 80+</option>
           <option value="70">ICP 70+</option>
           <option value="60">ICP 60+</option>
           <option value="50">ICP 50+</option>
         </select>
-        <select id="ld-filter-email" onchange="filterListDetail()" style="flex:1;min-width:130px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+        <select id="ld-filter-email" onchange="filterListDetail()" style="padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
           <option value="all">All Contacts</option>
           <option value="email">Has Email</option>
           <option value="phone">Has Phone</option>
-          <option value="both">Has Email + Phone</option>
+          <option value="both">Email + Phone</option>
         </select>
-        <select id="ld-sort" onchange="filterListDetail()" style="flex:1;min-width:130px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+        <select id="ld-sort" onchange="filterListDetail()" style="padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
           <option value="icp">Sort: ICP Score</option>
           <option value="name">Sort: Name</option>
           <option value="company">Sort: Company</option>
-          <option value="date">Sort: Date</option>
         </select>
       </div>
-      <!-- RESULTS COUNT -->
-      <div id="ld-filter-count" style="font-size:12px;color:var(--text-dim);margin-bottom:8px;"></div>
-      <!-- SCROLLABLE TABLE -->
-      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:calc(100vh - 280px);overflow-y:auto;">
-        <table style="width:100%;border-collapse:collapse;min-width:1100px;">
-          <thead style="position:sticky;top:0;z-index:10;">
-            <tr style="background:#1E3348;">
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">First</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Last</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Title</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Company</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Domain</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Phone</th>
-              <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">LinkedIn</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Vertical</th>
-              <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">ICP</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email Source</th>
-              <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Complete%</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Date</th>
-            </tr>
-          </thead>
-          <tbody id="lists-detail-tbody">
-            <tr><td colspan="13" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading...</td></tr>
-          </tbody>
-        </table>
+      <div id="ld-filter-count" style="font-size:12px;color:var(--text-dim);margin-bottom:12px;"></div>
+      <!-- CONTACT CARDS -->
+      <div id="lists-detail-cards" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <!-- PAGINATION -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:12px 0;">
+        <button onclick="ldPrevPage()" id="ld-prev-btn" style="padding:7px 18px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);">← Prev</button>
+        <span id="ld-page-label" style="font-size:12px;color:var(--text-dim);font-weight:600;"></span>
+        <button onclick="ldNextPage()" id="ld-next-btn" style="padding:7px 18px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);">Next →</button>
       </div>
     </div>
 
@@ -2589,6 +2600,68 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     </div>
     <!-- RESULTS -->
     <div id="scraper-results" style="display:none;"></div>
+  </div>
+
+  <!-- ==================== CALL QUEUE MODE ==================== -->
+  <div id="mode-callqueue" class="mode-content hidden">
+    <!-- Filter bar -->
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+      <input type="text" id="cq-search" placeholder="Search name or company..." oninput="filterCallQueue()" style="flex:2;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;"/>
+      <select id="cq-icp-filter" onchange="filterCallQueue()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+        <option value="0">All ICP</option>
+        <option value="80">ICP 80+</option>
+        <option value="70">ICP 70+</option>
+        <option value="60">ICP 60+</option>
+        <option value="50">ICP 50+</option>
+      </select>
+      <select id="cq-vertical-filter" onchange="filterCallQueue()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+        <option value="">All Verticals</option>
+        <option value="construction">Construction</option>
+        <option value="behavioral_health">Behavioral Health</option>
+        <option value="medical_transport">Medical Transport</option>
+        <option value="b2b_professional_services">B2B Professional Services</option>
+        <option value="health_wellness">Health &amp; Wellness</option>
+        <option value="home_services">Home Services</option>
+        <option value="financial_services">Financial Services</option>
+        <option value="insurance">Insurance</option>
+        <option value="legal_services">Legal Services</option>
+        <option value="accounting_tax">Accounting &amp; Tax</option>
+        <option value="real_estate">Real Estate</option>
+        <option value="technology_saas">Technology / SaaS</option>
+        <option value="manufacturing">Manufacturing</option>
+        <option value="logistics_transportation">Logistics</option>
+        <option value="staffing_professional_svcs">Staffing</option>
+        <option value="marketing_advertising">Marketing</option>
+        <option value="wholesale_distribution">Wholesale</option>
+        <option value="construction_engineering">Construction Eng.</option>
+        <option value="healthcare_services">Healthcare Svcs</option>
+        <option value="auto_dealerships">Auto Dealerships</option>
+      </select>
+      <button id="cq-phone-only" onclick="toggleCqPhoneOnly()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;background:var(--surface);color:var(--text-dim);cursor:pointer;font-family:var(--font);white-space:nowrap;">📞 Has Phone</button>
+      <span id="cq-count" style="font-size:13px;color:var(--text-dim);margin-left:auto;font-weight:600;white-space:nowrap;"></span>
+    </div>
+    <div class="cq-layout">
+      <!-- LEFT panel -->
+      <div class="cq-left">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">Contacts</div>
+        </div>
+        <div id="cq-contact-list" style="flex:1;overflow-y:auto;"></div>
+        <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <button onclick="cqPrevPage()" id="cq-prev" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;cursor:pointer;font-family:var(--font);">← Prev</button>
+          <span id="cq-page-info" style="font-size:11px;color:var(--text-dim);"></span>
+          <button onclick="cqNextPage()" id="cq-next" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;cursor:pointer;font-family:var(--font);">Next →</button>
+        </div>
+      </div>
+      <!-- RIGHT panel -->
+      <div class="cq-right">
+        <div id="cq-detail-panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;color:var(--text-dim);">
+          <div style="font-size:48px;margin-bottom:16px;">📞</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;">Select a contact to start calling</div>
+          <div style="font-size:13px;max-width:300px;line-height:1.6;">Filter by ICP, vertical, or phone availability. Click any contact to see their full details, call them, and manage their Pipedrive deal.</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ==================== CREDITS MODE ==================== -->
@@ -2872,7 +2945,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       endRebeccaVideo();
     }
     currentMode = mode;
-    ['dashboard','single','bulk','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits','lists','scraper'].forEach(m => {
+    ['dashboard','single','bulk','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits','lists','scraper','callqueue'].forEach(m => {
       const el = document.getElementById('mode-' + m);
       if (el) el.classList.toggle('hidden', m !== mode);
       const tab = document.getElementById('tab-' + m);
@@ -2888,6 +2961,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     if (mode === 'credits') loadCredits();
     if (mode === 'feedback') { showFbHome(); }
     if (mode === 'lists') { typeof loadLists === 'function' && loadLists(); }
+    if (mode === 'callqueue') { typeof loadCallQueue === 'function' && loadCallQueue(); }
   }
 
   // ==================== CHIP SELECT ====================
@@ -5065,17 +5139,21 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
   let currentListDetailName = '';
   let currentListDetailTag = '';
 
+  const LD_PER_PAGE = 25;
+  let ldCurrentPage = 0;
+
   async function openListDetail(encodedTag, encodedName) {
     const listTag = decodeURIComponent(encodedTag);
     const listName = decodeURIComponent(encodedName);
     currentListDetailTag = listTag;
     currentListDetailName = listName;
+    ldCurrentPage = 0;
     document.getElementById('lists-detail-view').style.display = 'block';
     document.getElementById('lists-main-content').style.display = 'none';
     const titleEl = document.getElementById('lists-detail-title');
     if (titleEl) titleEl.textContent = listName;
-    const tbody = document.getElementById('lists-detail-tbody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading contacts...</td></tr>';
+    const cardsEl = document.getElementById('lists-detail-cards');
+    if (cardsEl) cardsEl.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading contacts...</div>';
     // Reset filters
     const ldSearch = document.getElementById('ld-search');
     const ldIcp = document.getElementById('ld-filter-icp');
@@ -5089,17 +5167,10 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       const contacts = await sbProxy('lb_contacts', 'GET',
         'list_tag=eq.' + encodeURIComponent(listTag) + '&order=icp_score.desc.nullslast&limit=500');
       currentListDetailContacts = contacts || [];
-      const meta = document.getElementById('lists-detail-meta');
-      const emailCount = currentListDetailContacts.filter(c => c.email).length;
-      const phoneCount = currentListDetailContacts.filter(c => c.phone).length;
-      const withIcp = currentListDetailContacts.filter(c => c.icp_score);
-      const avgIcp = withIcp.length ? (withIcp.reduce((s,c) => s+(c.icp_score||0), 0) / withIcp.length).toFixed(1) : '\u2014';
-      if (meta) meta.textContent = currentListDetailContacts.length + ' contacts \u00B7 Email: ' + emailCount +
-        ' (' + Math.round(emailCount/Math.max(currentListDetailContacts.length,1)*100) + '%) \u00B7 Phone: ' + phoneCount +
-        ' (' + Math.round(phoneCount/Math.max(currentListDetailContacts.length,1)*100) + '%) \u00B7 Avg ICP: ' + avgIcp;
+      renderDetailStats(currentListDetailContacts);
       filterListDetail();
     } catch(e) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--red);font-size:13px;">Failed to load: ' + e.message + '</td></tr>';
+      if (cardsEl) cardsEl.innerHTML = '<div style="padding:40px;text-align:center;color:var(--red);font-size:13px;">Failed to load: ' + e.message + '</div>';
     }
   }
 
@@ -5127,47 +5198,114 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       return 0;
     });
     currentListDetailFiltered = filtered;
-    const countEl = document.getElementById('ld-filter-count');
-    if (countEl) countEl.textContent = filtered.length + ' of ' + currentListDetailContacts.length + ' contacts shown';
-    const countTop = document.getElementById('lists-detail-count');
-    if (countTop) countTop.textContent = filtered.length + ' contacts';
-    renderListDetailTable(filtered);
+    ldCurrentPage = 0;
+    renderListDetailCards(filtered);
   }
 
-  function renderListDetailTable(contacts) {
-    const tbody = document.getElementById('lists-detail-tbody');
-    if (!tbody) return;
+  function renderDetailStats(contacts) {
+    const el = document.getElementById('lists-detail-stats');
+    if (!el) return;
+    const total = contacts.length;
+    const withEmail = contacts.filter(c => c.email).length;
+    const withPhone = contacts.filter(c => c.phone).length;
+    const withLi = contacts.filter(c => c.linkedin_url).length;
+    const withIcp = contacts.filter(c => c.icp_score != null);
+    const avgIcp = withIcp.length ? (withIcp.reduce((s,c) => s+(c.icp_score||0), 0) / withIcp.length).toFixed(1) : '—';
+    const elite = contacts.filter(c => (c.icp_score||0) >= 80).length;
+    const pills = [
+      {l: total+' contacts', bg:'#EFF6FF', c:'#1D4ED8'},
+      {l: withEmail+' emails ('+Math.round(withEmail/Math.max(total,1)*100)+'%)', bg:'#F0FDF4', c:'#15803D'},
+      {l: withPhone+' phones ('+Math.round(withPhone/Math.max(total,1)*100)+'%)', bg:'#FEF3C7', c:'#92400E'},
+      {l: withLi+' LinkedIn', bg:'#EDE9FE', c:'#5B21B6'},
+      {l: 'Avg ICP '+avgIcp, bg:'#F5F6F8', c:'#475569'},
+      {l: elite+' elite (80+)', bg:'#DCFCE7', c:'#15803D'},
+    ];
+    el.innerHTML = pills.map(p =>
+      '<span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:'+p.bg+';color:'+p.c+';">'+p.l+'</span>'
+    ).join('');
+  }
+
+  function renderListDetailCards(contacts) {
+    const container = document.getElementById('lists-detail-cards');
+    if (!container) return;
     if (!contacts || !contacts.length) {
-      tbody.innerHTML = '<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">No contacts match your filters.</td></tr>';
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">No contacts match your filters.</div>';
+      updateLdPagination(0);
       return;
     }
-    tbody.innerHTML = contacts.map((c, i) => {
-      const rowBg = i % 2 === 0 ? '#fff' : '#F5F6F8';
-      const icp = c.icp_score !== null && c.icp_score !== undefined ? c.icp_score : '—';
-      const icpBg = (c.icp_score||0) >= 80 ? '#DCFCE7' : (c.icp_score||0) >= 60 ? '#DBEAFE' : '#F5F6F8';
-      const icpColor = (c.icp_score||0) >= 80 ? '#15803D' : (c.icp_score||0) >= 60 ? '#1D4ED8' : '#94A3B8';
-      const completeness = c.final_completeness_score ? Math.round(c.final_completeness_score) + '%' : '—';
+    const total = contacts.length;
+    const start = ldCurrentPage * LD_PER_PAGE;
+    const page = contacts.slice(start, start + LD_PER_PAGE);
+    updateLdPagination(total);
+    container.innerHTML = page.map(c => {
+      const icp = c.icp_score != null ? c.icp_score : null;
+      const icpBg = icp >= 80 ? '#DCFCE7' : icp >= 60 ? '#DBEAFE' : '#F5F6F8';
+      const icpColor = icp >= 80 ? '#15803D' : icp >= 60 ? '#1D4ED8' : '#94A3B8';
+      const firstName = c.first_name || (c.name||'').split(' ')[0] || '';
+      const lastName = c.last_name || (c.name||'').split(' ').slice(1).join(' ') || '';
+      const fullName = (firstName+' '+lastName).trim() || c.name || '—';
+      const title = c.title || c.position || '—';
+      const company = c.company || c.company_name || '—';
+      const domain = c.domain || '';
+      const email = c.email || '';
+      const phone = c.phone || '';
+      const linkedin = c.linkedin_url || '';
+      const vertical = (c.vertical||'').replace(/_/g,' ');
+      const emailSrc = c.email_source || '';
+      const complete = c.final_completeness_score;
       const date = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
-      const li = c.linkedin_url ? '<a href="'+c.linkedin_url+'" target="_blank" style="color:var(--accent);text-decoration:none;font-size:16px;">🔗</a>' : '<span style="color:#CBD5E1;">—</span>';
-      const emailDisplay = c.email ? '<span style="color:#1D4ED8;">' + c.email + '</span>' : '<span style="color:#CBD5E1;">—</span>';
-      const phoneDisplay = c.phone || '<span style="color:#CBD5E1;">—</span>';
-      const titleDisplay = c.title || c.position || '—';
-      const td = (val, style) => '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;'+(style||'color:var(--text);">')+(val||'<span style="color:#CBD5E1;">—</span>')+'</td>';
-      return '<tr style="background:'+rowBg+';" onmouseover="this.style.background=\'#EEF1F5\'" onmouseout="this.style.background=\''+rowBg+'\'">' +
-        td(c.first_name) + td(c.last_name) +
-        td(titleDisplay,'font-size:12px;color:var(--text-mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;') +
-        td(c.company_name,'font-size:12px;font-weight:600;color:var(--text);') +
-        td(c.domain,'font-size:11px;color:var(--text-dim);') +
-        '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;">' + emailDisplay + '</td>' +
-        '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;color:var(--text);">' + phoneDisplay + '</td>' +
-        '<td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F0F0F0;">' + li + '</td>' +
-        td((c.vertical||'').replace(/_/g,' '),'font-size:11px;color:var(--text-dim);') +
-        '<td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F0F0F0;"><span style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;background:'+icpBg+';color:'+icpColor+';">'+icp+'</span></td>' +
-        td(c.email_source,'font-size:11px;color:var(--text-dim);') +
-        td(completeness,'font-size:12px;text-align:center;color:var(--text-mid);') +
-        td(date,'font-size:11px;color:var(--text-dim);') +
-      '</tr>';
+      return '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.06)\'" onmouseout="this.style.boxShadow=\'none\'">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+          '<div style="width:42px;height:42px;border-radius:8px;background:'+icpBg+';color:'+icpColor+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-family:var(--mono);flex-shrink:0;">'+(icp != null ? icp : '—')+'</div>'+
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+fullName+'</div>'+
+            '<div style="font-size:12px;color:var(--text-mid);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+title+' · '+company+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;flex-shrink:0;">'+
+            '<div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:var(--surface);color:var(--text-dim);white-space:nowrap;">'+vertical+'</div>'+
+            '<div style="font-size:10px;color:var(--text-dim);margin-top:4px;">'+date+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">'+
+          (email ? '<a href="mailto:'+email+'" style="font-size:12px;color:#1D4ED8;text-decoration:none;font-weight:500;">✉ '+email+'</a>' : '<span style="font-size:12px;color:#CBD5E1;">No email</span>')+
+          (phone ? '<a href="tel:'+phone+'" style="font-size:12px;color:var(--green);text-decoration:none;font-weight:600;">📞 '+phone+'</a>' : '<span style="font-size:12px;color:#CBD5E1;">No phone</span>')+
+          (linkedin ? '<a href="'+linkedin+'" target="_blank" style="font-size:12px;color:#0A66C2;text-decoration:none;font-weight:600;">🔗 LinkedIn</a>' : '')+
+          (domain ? '<span style="font-size:11px;color:var(--text-dim);font-family:var(--mono);">'+domain+'</span>' : '')+
+          (emailSrc && emailSrc !== 'none' ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#FEF3C7;color:#92400E;">'+emailSrc+'</span>' : '')+
+          (complete != null ? '<span style="font-size:11px;color:var(--text-dim);margin-left:auto;">'+complete+'% complete</span>' : '')+
+        '</div>'+
+      '</div>';
     }).join('');
+  }
+
+  function updateLdPagination(total) {
+    const start = ldCurrentPage * LD_PER_PAGE;
+    const pageLabel = document.getElementById('ld-page-label');
+    const prevBtn = document.getElementById('ld-prev-btn');
+    const nextBtn = document.getElementById('ld-next-btn');
+    const countEl = document.getElementById('ld-filter-count');
+    const detailCount = document.getElementById('lists-detail-count');
+    if (pageLabel) pageLabel.textContent = 'Page '+(ldCurrentPage+1)+' of '+Math.max(1,Math.ceil(total/LD_PER_PAGE));
+    if (prevBtn) prevBtn.disabled = ldCurrentPage === 0;
+    if (nextBtn) nextBtn.disabled = start+LD_PER_PAGE >= total;
+    if (countEl) countEl.textContent = total > 0 ? (start+1)+'–'+Math.min(start+LD_PER_PAGE,total)+' of '+total+' contacts' : '0 contacts';
+    if (detailCount) detailCount.textContent = total+' contacts';
+  }
+
+  function ldPrevPage() {
+    if (ldCurrentPage > 0) {
+      ldCurrentPage--;
+      renderListDetailCards(currentListDetailFiltered);
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  }
+
+  function ldNextPage() {
+    if ((ldCurrentPage+1)*LD_PER_PAGE < currentListDetailFiltered.length) {
+      ldCurrentPage++;
+      renderListDetailCards(currentListDetailFiltered);
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
   }
 
   function closeListDetail() {
@@ -7473,6 +7611,268 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       if (btn) { btn.disabled = false; btn.textContent = 'Save to My Lists'; }
     }
   }
+
+  // ==================== CALL QUEUE ====================
+  const PD_SYNC_WEBHOOK = 'https://manageai2026.app.n8n.cloud/webhook/lb-pipedrive-sync';
+  const PD_OWNERS = {'tony@manageai.io':23575760,'jeff@manageai.io':24313585,'brian@manageai.io':23575760};
+  let cqAllContacts = [];
+  let cqFiltered = [];
+  let cqPage = 0;
+  let cqPhoneOnly = false;
+  let cqActiveId = null;
+  const CQ_PER_PAGE = 50;
+
+  async function loadCallQueue() {
+    const listEl = document.getElementById('cq-contact-list');
+    if (!listEl) return;
+    listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);">Loading contacts...</div>';
+    try {
+      const data = await sbProxy('lb_contacts','GET',
+        'select=id,first_name,last_name,name,title,company,email,phone,linkedin_url,vertical,icp_score,icp_rationale,enrichment_notes,email_source,employee_count,annual_revenue,final_completeness_score,list_tag,submitter_email,domain&order=icp_score.desc.nullslast&limit=500');
+      cqAllContacts = (data||[]).map(c => {
+        const fn = c.first_name||(c.name||'').split(' ')[0]||'';
+        const ln = c.last_name||(c.name||'').split(' ').slice(1).join(' ')||'';
+        return {...c, first_name:fn, last_name:ln, display_name:(fn+' '+ln).trim()||c.name||'Unknown'};
+      });
+      filterCallQueue();
+    } catch(e) {
+      listEl.innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px;">Failed: '+e.message+'</div>';
+    }
+  }
+
+  function filterCallQueue() {
+    const search = (document.getElementById('cq-search')?.value||'').toLowerCase();
+    const minIcp = parseInt(document.getElementById('cq-icp-filter')?.value||'0');
+    const vertical = document.getElementById('cq-vertical-filter')?.value||'';
+    cqFiltered = cqAllContacts.filter(c => {
+      if (cqPhoneOnly && !c.phone) return false;
+      if (search) {
+        const s = (c.display_name+' '+(c.company||'')+' '+(c.title||'')).toLowerCase();
+        if (!s.includes(search)) return false;
+      }
+      if (minIcp > 0 && (c.icp_score||0) < minIcp) return false;
+      if (vertical && c.vertical !== vertical) return false;
+      return true;
+    });
+    cqPage = 0;
+    renderCqList();
+  }
+
+  function toggleCqPhoneOnly() {
+    cqPhoneOnly = !cqPhoneOnly;
+    const btn = document.getElementById('cq-phone-only');
+    if (btn) {
+      btn.style.background = cqPhoneOnly ? 'var(--green)' : 'var(--surface)';
+      btn.style.color = cqPhoneOnly ? '#fff' : 'var(--text-dim)';
+      btn.style.borderColor = cqPhoneOnly ? 'var(--green)' : 'var(--border)';
+      btn.textContent = cqPhoneOnly ? '📞 Has Phone ✓' : '📞 Has Phone';
+    }
+    filterCallQueue();
+  }
+
+  function renderCqList() {
+    const listEl = document.getElementById('cq-contact-list');
+    const countEl = document.getElementById('cq-count');
+    if (!listEl) return;
+    const total = cqFiltered.length;
+    const start = cqPage * CQ_PER_PAGE;
+    const page = cqFiltered.slice(start, start + CQ_PER_PAGE);
+    if (countEl) countEl.textContent = total+' contacts';
+    if (!page.length) {
+      listEl.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:13px;">No contacts match filters</div>';
+      return;
+    }
+    listEl.innerHTML = page.map(c => {
+      const score = c.icp_score||0;
+      const cls = score>=75?'high':score>=50?'mid':'low';
+      const hasPhone = c.phone&&c.phone.trim();
+      const isActive = c.id === cqActiveId;
+      return '<div class="cq-card'+(isActive?' active':'')+'" id="cqc-'+c.id+'" onclick="loadCqContact(\''+c.id+'\')">'+
+        '<div style="display:flex;align-items:center;gap:10px;">'+
+          '<div class="cq-icp-badge '+cls+'">'+score+'</div>'+
+          '<div style="flex:1;min-width:0;">'+
+            '<div class="cq-name">'+c.display_name+'</div>'+
+            '<div class="cq-meta">'+(c.title||'—')+' · '+(c.company||'—')+'</div>'+
+          '</div>'+
+          (hasPhone?'<div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;" title="Has phone"></div>':'')+
+        '</div>'+
+      '</div>';
+    }).join('');
+    const pi = document.getElementById('cq-page-info');
+    const pb = document.getElementById('cq-prev');
+    const nb = document.getElementById('cq-next');
+    if (pi) pi.textContent = (start+1)+'–'+Math.min(start+CQ_PER_PAGE,total)+' of '+total;
+    if (pb) pb.disabled = cqPage===0;
+    if (nb) nb.disabled = start+CQ_PER_PAGE>=total;
+  }
+
+  function loadCqContact(id) {
+    cqActiveId = id;
+    document.querySelectorAll('.cq-card').forEach(c => c.classList.remove('active'));
+    const card = document.getElementById('cqc-'+id);
+    if (card) card.classList.add('active');
+    const contact = cqAllContacts.find(c => c.id===id);
+    if (!contact) return;
+    const panel = document.getElementById('cq-detail-panel');
+    if (!panel) return;
+    const score = contact.icp_score||0;
+    const scoreColor = score>=75?'var(--green)':score>=50?'var(--accent)':'var(--text-dim)';
+    const scoreBg = score>=75?'var(--green-light)':score>=50?'var(--accent-light)':'var(--surface)';
+    const hasPhone = contact.phone&&contact.phone.trim();
+    const hasEmail = contact.email&&contact.email.trim();
+    const hasLi = contact.linkedin_url&&contact.linkedin_url.trim();
+    const blurb = contact.icp_rationale||contact.enrichment_notes||'No AI briefing available for this contact.';
+    const savedNotes = sessionStorage.getItem('cq-notes-'+id)||'';
+    panel.innerHTML =
+      '<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">'+
+          '<div>'+
+            '<div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;">'+contact.display_name+'</div>'+
+            '<div style="font-size:14px;color:var(--text-mid);">'+(contact.title||'—')+' · '+(contact.company||'—')+'</div>'+
+          '</div>'+
+          '<div style="display:flex;gap:8px;flex-shrink:0;">'+
+            '<div style="padding:6px 14px;border-radius:8px;font-size:15px;font-weight:800;font-family:var(--mono);background:'+scoreBg+';color:'+scoreColor+';">'+score+'</div>'+
+            '<div style="padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;background:var(--surface);color:var(--text-dim);">'+(contact.vertical||'').replace(/_/g,' ')+'</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">'+
+        '<div class="cq-info-card">'+
+          '<div class="cq-info-label">Phone</div>'+
+          '<div class="cq-info-value">'+(hasPhone?contact.phone:'Not on file')+'</div>'+
+          (hasPhone?'<a href="tel:'+contact.phone+'" class="cq-call-btn green">📞 Call Now</a>':'<div style="padding:10px;text-align:center;font-size:12px;color:var(--text-dim);background:var(--surface);border-radius:8px;">No phone</div>')+
+        '</div>'+
+        '<div class="cq-info-card">'+
+          '<div class="cq-info-label">Email</div>'+
+          '<div class="cq-info-value" style="font-size:12px;">'+(hasEmail?contact.email:'Not on file')+'</div>'+
+          (hasEmail?'<a href="mailto:'+contact.email+'" class="cq-call-btn">✉ Send Email</a>':'<div style="padding:10px;text-align:center;font-size:12px;color:var(--text-dim);background:var(--surface);border-radius:8px;">No email</div>')+
+        '</div>'+
+        '<div class="cq-info-card">'+
+          '<div class="cq-info-label">LinkedIn</div>'+
+          '<div class="cq-info-value">Profile</div>'+
+          (hasLi?'<a href="'+contact.linkedin_url+'" target="_blank" class="cq-call-btn">🔗 View Profile</a>':'<div style="padding:10px;text-align:center;font-size:12px;color:var(--text-dim);background:var(--surface);border-radius:8px;">No LinkedIn</div>')+
+        '</div>'+
+      '</div>'+
+      '<div style="background:var(--accent-light);border:1px solid #BFDBFE;border-radius:10px;padding:16px 18px;margin-bottom:20px;">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">🧠 Why Call This Person</div>'+
+        '<div style="font-size:13px;color:var(--text);line-height:1.7;">'+blurb+'</div>'+
+        (contact.employee_count?'<div style="margin-top:10px;font-size:12px;color:var(--text-mid);">👥 '+contact.employee_count.toLocaleString()+' employees'+(contact.annual_revenue?' · 💰 $'+(contact.annual_revenue/1000000).toFixed(1)+'M revenue':'')+'</div>':'')+
+      '</div>'+
+      '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:20px;">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Pipedrive</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">'+
+          ['Lead In','Qualified','Demo Scheduled','Proposal Sent','Closed Won','Closed Lost'].map(stage =>
+            '<button class="cq-stage-btn'+(stage==='Closed Won'?' won':'')+(stage==='Closed Lost'?' lost':'')+'" onclick="updatePdStage(\''+id+'\',\''+stage+'\',this)">'+stage+'</button>'
+          ).join('')+
+        '</div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+          '<button class="pd-action-btn" onclick="toggleCqNote(\''+id+'\')">📝 Add Note</button>'+
+          '<button class="pd-action-btn" onclick="toggleCqActivity(\''+id+'\')">📅 Log Activity</button>'+
+          '<button class="pd-action-btn" style="background:var(--accent);color:#fff;border-color:var(--accent);" onclick="createPdDeal(\''+id+'\')">+ Create Deal</button>'+
+        '</div>'+
+        '<div id="cq-note-form-'+id+'" style="display:none;margin-top:12px;">'+
+          '<textarea id="cq-note-text-'+id+'" placeholder="Type your note..." style="width:100%;height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);resize:none;outline:none;box-sizing:border-box;"></textarea>'+
+          '<button onclick="savePdNote(\''+id+'\')" style="margin-top:8px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">Save Note</button>'+
+        '</div>'+
+        '<div id="cq-activity-form-'+id+'" style="display:none;margin-top:12px;">'+
+          '<div style="display:flex;gap:8px;margin-bottom:8px;">'+
+            ['Call','Email','Meeting'].map(t =>
+              '<button onclick="setCqActivityType(this)" data-type="'+t+'" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);background:'+(t==='Call'?'var(--accent)':'#fff')+';color:'+(t==='Call'?'#fff':'var(--text-dim)')+';">'+t+'</button>'
+            ).join('')+
+          '</div>'+
+          '<textarea id="cq-activity-text-'+id+'" placeholder="Activity notes..." style="width:100%;height:60px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);resize:none;outline:none;box-sizing:border-box;"></textarea>'+
+          '<button onclick="logPdActivity(\''+id+'\')" style="margin-top:8px;padding:8px 20px;background:var(--nav);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">Log Activity</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Call Notes</div>'+
+        '<textarea id="cq-call-notes-'+id+'" oninput="saveCqNotes(\''+id+'\')" placeholder="Call notes — saved to your session..." style="width:100%;height:100px;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);resize:vertical;outline:none;box-sizing:border-box;line-height:1.6;">'+savedNotes+'</textarea>'+
+      '</div>';
+  }
+
+  async function firePdSync(payload) {
+    try {
+      const resp = await fetch(PD_SYNC_WEBHOOK, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({...payload,owner_email:window._currentUser?.email||'tony@manageai.io'})
+      });
+      return await resp.json();
+    } catch(e) { console.error('PD sync error:', e.message); return null; }
+  }
+
+  async function updatePdStage(contactId, stageName, btnEl) {
+    const contact = cqAllContacts.find(c => c.id===contactId);
+    if (!contact) return;
+    const container = btnEl?.closest('div');
+    if (container) { container.querySelectorAll('.cq-stage-btn').forEach(b => b.classList.remove('active')); btnEl.classList.add('active'); }
+    const orig = btnEl?.textContent;
+    if (btnEl) btnEl.textContent = '...';
+    await firePdSync({action:'update_stage',contact_id:contactId,contact_name:contact.display_name,email:contact.email||'',stage_name:stageName});
+    if (btnEl) btnEl.textContent = orig;
+  }
+
+  async function createPdDeal(contactId) {
+    const contact = cqAllContacts.find(c => c.id===contactId);
+    if (!contact) return;
+    const btn = event?.target;
+    if (btn) { btn.textContent='Creating...'; btn.disabled=true; }
+    const result = await firePdSync({action:'create_deal',contact_id:contactId,contact_name:contact.display_name,company:contact.company||'',email:contact.email||'',phone:contact.phone||'',title:contact.title||'',vertical:contact.vertical||'',icp_score:contact.icp_score||0,list_tag:contact.list_tag||''});
+    if (btn) {
+      btn.textContent = result ? '✓ Deal Created' : '+ Create Deal';
+      btn.style.background = result ? 'var(--green)' : 'var(--accent)';
+      setTimeout(() => { btn.textContent='+ Create Deal'; btn.disabled=false; btn.style.background='var(--accent)'; }, 3000);
+    }
+  }
+
+  async function savePdNote(contactId) {
+    const contact = cqAllContacts.find(c => c.id===contactId);
+    const text = document.getElementById('cq-note-text-'+contactId)?.value?.trim();
+    if (!contact||!text) return;
+    await firePdSync({action:'add_note',contact_id:contactId,contact_name:contact.display_name,email:contact.email||'',note_text:text});
+    const noteEl = document.getElementById('cq-note-text-'+contactId);
+    if (noteEl) noteEl.value = '';
+    document.getElementById('cq-note-form-'+contactId).style.display='none';
+  }
+
+  let cqActivityType = 'Call';
+  function setCqActivityType(btn) {
+    cqActivityType = btn.dataset.type;
+    btn.closest('div').querySelectorAll('button').forEach(b => { b.style.background='#fff'; b.style.color='var(--text-dim)'; });
+    btn.style.background='var(--accent)'; btn.style.color='#fff';
+  }
+
+  async function logPdActivity(contactId) {
+    const contact = cqAllContacts.find(c => c.id===contactId);
+    const note = document.getElementById('cq-activity-text-'+contactId)?.value?.trim();
+    if (!contact) return;
+    await firePdSync({action:'log_activity',contact_id:contactId,contact_name:contact.display_name,email:contact.email||'',activity_type:cqActivityType,activity_note:note||''});
+    const actEl = document.getElementById('cq-activity-text-'+contactId);
+    if (actEl) actEl.value='';
+    document.getElementById('cq-activity-form-'+contactId).style.display='none';
+  }
+
+  function toggleCqNote(id) {
+    const f = document.getElementById('cq-note-form-'+id);
+    const a = document.getElementById('cq-activity-form-'+id);
+    if (a) a.style.display='none';
+    if (f) f.style.display = f.style.display==='none'?'block':'none';
+  }
+
+  function toggleCqActivity(id) {
+    const f = document.getElementById('cq-activity-form-'+id);
+    const n = document.getElementById('cq-note-form-'+id);
+    if (n) n.style.display='none';
+    if (f) f.style.display = f.style.display==='none'?'block':'none';
+  }
+
+  function saveCqNotes(id) {
+    const el = document.getElementById('cq-call-notes-'+id);
+    if (el) sessionStorage.setItem('cq-notes-'+id, el.value);
+  }
+
+  function cqPrevPage() { if (cqPage>0) { cqPage--; renderCqList(); } }
+  function cqNextPage() { if ((cqPage+1)*CQ_PER_PAGE<cqFiltered.length) { cqPage++; renderCqList(); } }
 
 </script>
 </div>
