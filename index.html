@@ -5132,40 +5132,38 @@ Turner Construction, turnerconstruction.com"
     }
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 20000);
       const response = await fetch(
-        'https://api.elevenlabs.io/v1/text-to-speech/9BWtsMINqrJLrRacOk9x',
+        'https://manageai2026.app.n8n.cloud/webhook/lb-tts',
         {
           method: 'POST',
           signal: controller.signal,
           headers: {
-            'xi-api-key': 'sk_d116f2fc93501914e2bd7485c2ff3269f07c12e0939eddb7',
-            'Content-Type': 'application/json',
-            'Accept': 'audio/mpeg'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             text: text,
-            model_id: 'eleven_turbo_v2_5',
-            voice_settings: {
-              stability: 0.45,
-              similarity_boost: 0.80,
-              style: 0.2,
-              use_speaker_boost: true
-            }
+            voice_id: '9BWtsMINqrJLrRacOk9x'
           })
         }
       );
       clearTimeout(timeout);
       if (!response.ok) {
         const errBody = await response.text();
-        console.warn('ElevenLabs HTTP error:', response.status, errBody);
-        throw new Error('ElevenLabs ' + response.status);
+        console.warn('TTS proxy error:', response.status, errBody);
+        throw new Error('TTS proxy ' + response.status);
       }
-      const blob = await response.blob();
-      console.log('ElevenLabs blob size:', blob.size, 'type:', blob.type);
-      if (blob.size < 100) {
-        throw new Error('ElevenLabs returned empty audio');
+      const data = await response.json();
+      if (!data.audio_base64 || data.audio_base64.length < 100) {
+        throw new Error('TTS proxy returned empty audio');
       }
+      const binaryStr = atob(data.audio_base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: 'audio/mpeg' });
+      console.log('TTS proxy blob size:', blob.size);
       const objectUrl = URL.createObjectURL(blob);
       const audio = new Audio();
       audio.preload = 'auto';
@@ -5183,17 +5181,16 @@ Turner Construction, turnerconstruction.com"
         };
         audio.src = objectUrl;
         audio.load();
-        // Fallback if canplaythrough never fires
         setTimeout(() => {
           if (audio.readyState >= 3) {
             audio.play().then(resolve).catch(reject);
           }
         }, 2000);
       });
-      console.log('ElevenLabs audio playing successfully');
+      console.log('ElevenLabs audio playing via n8n proxy');
       return;
     } catch(e) {
-      console.warn('ElevenLabs failed, using browser TTS:', e.message);
+      console.warn('ElevenLabs TTS failed, using browser TTS:', e.message);
     }
     // Browser TTS fallback - try to get neutral voice
     if ('speechSynthesis' in window) {
