@@ -3301,6 +3301,8 @@ Turner Construction, turnerconstruction.com"
 <script>
   // ==================== CONFIG ====================
   const WEBHOOK = "https://manageai2026.app.n8n.cloud/webhook/lb-discovery";
+  window.speechSynthesis.speak = function() {};
+  window.speechSynthesis.cancel = function() {};
   const WEBHOOK_TERRITORY = "https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2";
   const MAX_COMPANIES = 150;
 
@@ -4994,18 +4996,17 @@ Turner Construction, turnerconstruction.com"
   let rebeckaFbWaveInterval = null;
 
   function activateFeedbackOrb() {
-    // Unlock audio context immediately on user gesture
-    if (!window._audioCtxUnlocked) {
+    // Unlock AudioContext on user gesture — must happen here
+    if (!window._audioCtx || window._audioCtx.state === 'closed') {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const buf = ctx.createBuffer(1, 1, 22050);
-        const src = ctx.createBufferSource();
+        window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const buf = window._audioCtx.createBuffer(1, 1, 22050);
+        const src = window._audioCtx.createBufferSource();
         src.buffer = buf;
-        src.connect(ctx.destination);
+        src.connect(window._audioCtx.destination);
         src.start(0);
-        window._audioCtx = ctx;
         window._audioCtxUnlocked = true;
-      } catch(e) {}
+      } catch(e) { console.warn('AudioContext init failed:', e); }
     }
     const card = document.getElementById('feedback-card');
     const photoSection = document.getElementById('feedback-photo-section');
@@ -5136,44 +5137,29 @@ Turner Construction, turnerconstruction.com"
   async function rebeckaFbSpeak(text) {
     setFbOrbState('speaking');
     const responseEl = document.getElementById('rebecka-fb-response');
-    if (responseEl) {
-      responseEl.textContent = text;
-      responseEl.style.display = 'block';
-    }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    if (responseEl) { responseEl.textContent = text; responseEl.style.display = 'block'; }
     try {
-      // Ensure AudioContext is unlocked
+      // Ensure AudioContext is alive and resumed
       if (!window._audioCtx || window._audioCtx.state === 'closed') {
         window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (window._audioCtx.state === 'suspended') {
         await window._audioCtx.resume();
       }
-      const resp = await fetch(
-        'https://manageai2026.app.n8n.cloud/webhook/lb-tts',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: text,
-            voice_id: '9BWtsMINqrJLrRacOk9x'
-          })
-        }
-      );
+      // Call ElevenLabs via n8n proxy
+      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, voice_id: '9BWtsMINqrJLrRacOk9x' })
+      });
       if (!resp.ok) throw new Error('TTS proxy ' + resp.status);
       const data = await resp.json();
-      if (!data.audio_base64 || data.audio_base64.length < 100) {
-        throw new Error('Empty audio');
-      }
-      // Decode base64 to ArrayBuffer
+      if (!data.audio_base64 || data.audio_base64.length < 100) throw new Error('Empty audio');
+      // Decode base64 → ArrayBuffer
       const binary = atob(data.audio_base64);
       const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      // Decode MP3 via AudioContext (bypasses autoplay block)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      // Decode MP3 and play via AudioContext — no gesture required
       const audioBuffer = await window._audioCtx.decodeAudioData(bytes.buffer);
       const source = window._audioCtx.createBufferSource();
       source.buffer = audioBuffer;
@@ -5181,31 +5167,10 @@ Turner Construction, turnerconstruction.com"
       source.onended = () => setFbOrbState('idle');
       source.start(0);
       console.log('Aria playing via AudioContext — duration:', audioBuffer.duration.toFixed(1) + 's');
-      return;
     } catch(e) {
-      console.error('ElevenLabs AudioContext failed:', e.message);
-    }
-    // Last resort browser TTS — try to pick neutral voice
-    if ('speechSynthesis' in window) {
-      const speak = () => {
-        const voices = window.speechSynthesis.getVoices();
-        const u = new SpeechSynthesisUtterance(text);
-        const preferred =
-          voices.find(v => v.name === 'Samantha') ||
-          voices.find(v => v.name === 'Google US English') ||
-          voices.find(v => v.name === 'Microsoft Zira Desktop') ||
-          voices.find(v => v.lang === 'en-US' && !v.name.match(/david|james|mark|george|zira|cortana/i));
-        if (preferred) u.voice = preferred;
-        u.rate = 0.92;
-        u.pitch = 1.05;
-        u.onend = () => setFbOrbState('idle');
-        window.speechSynthesis.speak(u);
-      };
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) speak();
-      else { window.speechSynthesis.onvoiceschanged = speak; }
-    } else {
-      setTimeout(() => setFbOrbState('idle'), 3000);
+      console.error('ElevenLabs failed:', e.message);
+      // Silent fallback — no browser TTS
+      setTimeout(() => setFbOrbState('idle'), 2000);
     }
   }
 
