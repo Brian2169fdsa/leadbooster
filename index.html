@@ -5016,6 +5016,7 @@ Turner Construction, turnerconstruction.com"
       name: name || 'Team member',
       email: email || 'unknown@manageai.io',
       category: category || 'general_feedback',
+      rating: 0,
       message: message,
       reference: reference || '',
       submitted_at: new Date().toISOString()
@@ -5039,6 +5040,7 @@ Turner Construction, turnerconstruction.com"
         name: payload.name,
         email: payload.email,
         category: payload.category,
+        rating: payload.rating,
         message: payload.message,
         reference: payload.reference,
         submitted_at: payload.submitted_at
