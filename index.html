@@ -2309,87 +2309,119 @@
 
   <!-- ==================== MY LISTS MODE ==================== -->
   <div id="mode-lists" class="mode-content hidden">
-    <div class="card">
-      <div class="card-title">📋 My Lists</div>
-      <div class="card-sub">Track every bulk upload, territory search, and single company run.</div>
-      <div id="lists-table-container" style="margin-top:20px;">
-        <div style="text-align:center;padding:40px;color:var(--text-dim);">Loading lists...</div>
+
+    <!-- HEADER -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:var(--text);">My Lists</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-top:2px;" id="lists-subtitle">Your lead runs</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);">
+        <span>My Lists</span>
+        <label style="position:relative;display:inline-block;width:44px;height:24px;">
+          <input type="checkbox" id="lists-toggle" onchange="toggleListsView()" style="opacity:0;width:0;height:0;">
+          <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#CBD5E1;border-radius:24px;transition:.3s;" id="lists-toggle-slider"></span>
+        </label>
+        <span>All Lists</span>
       </div>
     </div>
 
-    <!-- SECTION B — Upload a New List -->
-    <div class="card">
-      <div class="card-title">Upload a New List</div>
-      <div class="card-sub">Quick shortcut to launch a bulk run from here.</div>
-
-      <div class="row-2">
-        <div class="field">
-          <label>List Name</label>
-          <input type="text" id="ml-list-name" placeholder="e.g. Jeff's Phoenix Leads" />
-        </div>
-        <div class="field">
-          <label>Vertical</label>
-          <select id="ml-vertical">
-            <option value="">Select Vertical</option>
-            <option value="accounting_tax">Accounting &amp; Tax</option>
-            <option value="auto_dealerships">Auto Dealerships</option>
-            <option value="b2b_professional_services">B2B Professional Services</option>
-            <option value="behavioral_health">Behavioral Health</option>
-            <option value="construction">Construction</option>
-            <option value="construction_engineering">Construction &amp; Engineering</option>
-            <option value="financial_services">Financial Svcs (Non-Bank)</option>
-            <option value="health_wellness">Health &amp; Wellness</option>
-            <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-            <option value="home_services">Home Services</option>
-            <option value="insurance">Insurance</option>
-            <option value="legal_services">Legal Services</option>
-            <option value="logistics_transportation">Logistics &amp; Transportation</option>
-            <option value="manufacturing">Manufacturing</option>
-            <option value="marketing_advertising">Marketing &amp; Advertising</option>
-            <option value="medical_transport">Medical Transport</option>
-            <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-            <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-            <option value="technology_saas">Technology / SaaS</option>
-            <option value="wholesale_distribution">Wholesale Distribution</option>
-          </select>
-        </div>
+    <!-- KPI STRIP -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+      <div class="card" style="padding:16px;border-left:4px solid var(--accent);">
+        <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;">Total Lists</div>
+        <div id="lists-kpi-total" style="font-size:28px;font-weight:700;color:var(--text);margin-top:4px;">—</div>
       </div>
-
-      <div class="field">
-        <label>Pipedrive Owner</label>
-        <select id="ml-owner">
-          <option value="tony">Tony Hanak</option>
-          <option value="brian">Brian Reinhart</option>
-          <option value="jeff">Jeff Merritt</option>
-        </select>
+      <div class="card" style="padding:16px;border-left:4px solid var(--green);">
+        <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;">Contacts Found</div>
+        <div id="lists-kpi-contacts" style="font-size:28px;font-weight:700;color:var(--text);margin-top:4px;">—</div>
       </div>
-
-      <div class="upload-area" id="ml-drop-zone" onclick="document.getElementById('ml-csv-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="event.preventDefault();this.classList.remove('drag');var f=event.dataTransfer.files[0];if(f){lastUploadedFileName=f.name;handleBulkFile(f,'ml-paste',updateMlCount);}">
-        <input type="file" id="ml-csv-input" class="upload-input" accept=".csv,.xls,.xlsx" onchange="if(this.files[0]){lastUploadedFileName=this.files[0].name;handleBulkFile(this.files[0],'ml-paste',updateMlCount);}" />
-        <div class="upload-icon">📄</div>
-        <div class="upload-title">Drop file here or click to browse</div>
-        <div class="upload-sub">CSV, XLS, or XLSX — any column order, any format</div>
+      <div class="card" style="padding:16px;border-left:4px solid var(--amber);">
+        <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;">Avg Email Hit</div>
+        <div id="lists-kpi-email" style="font-size:28px;font-weight:700;color:var(--text);margin-top:4px;">—</div>
       </div>
-
-      <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px;">
-        <div style="flex:1;height:1px;background:var(--border);"></div>
-        <span style="font-size:11px;font-weight:700;color:var(--text-dim);">OR PASTE BELOW</span>
-        <div style="flex:1;height:1px;background:var(--border);"></div>
+      <div class="card" style="padding:16px;border-left:4px solid #8B5CF6;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;">Avg ICP Score</div>
+        <div id="lists-kpi-icp" style="font-size:28px;font-weight:700;color:var(--text);margin-top:4px;">—</div>
       </div>
-
-      <div class="field">
-        <label>Company List</label>
-        <textarea id="ml-paste" placeholder="Company Name, domain.com — one per line" oninput="updateMlCount()"></textarea>
-      </div>
-
-      <div class="limit-bar">
-        <div class="limit-label">Companies</div>
-        <div class="limit-track"><div class="limit-fill" id="ml-fill" style="width:0%"></div></div>
-        <div class="limit-count ok" id="ml-count">0 / 150</div>
-      </div>
-
-      <button class="btn-primary" onclick="runMyListUpload()">Run It</button>
     </div>
+
+    <!-- FILTER BAR -->
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <input type="text" id="lists-search" placeholder="Search list name or company..." oninput="filterLists()" style="flex:2;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;"/>
+      <select id="lists-filter-vertical" onchange="filterLists()" style="flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+        <option value="">All Verticals</option>
+        <option value="accounting_tax">Accounting &amp; Tax</option>
+        <option value="auto_dealerships">Auto Dealerships</option>
+        <option value="b2b_professional_services">B2B Professional Services</option>
+        <option value="behavioral_health">Behavioral Health</option>
+        <option value="construction">Construction</option>
+        <option value="construction_engineering">Construction &amp; Engineering</option>
+        <option value="financial_services">Financial Svcs (Non-Bank)</option>
+        <option value="health_wellness">Health &amp; Wellness</option>
+        <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
+        <option value="home_services">Home Services</option>
+        <option value="insurance">Insurance</option>
+        <option value="legal_services">Legal Services</option>
+        <option value="logistics_transportation">Logistics &amp; Transportation</option>
+        <option value="manufacturing">Manufacturing</option>
+        <option value="marketing_advertising">Marketing &amp; Advertising</option>
+        <option value="medical_transport">Medical Transport</option>
+        <option value="real_estate">Real Estate &amp; Property Mgmt</option>
+        <option value="staffing_professional_svcs">Staffing / Professional Svcs</option>
+        <option value="technology_saas">Technology / SaaS</option>
+        <option value="wholesale_distribution">Wholesale Distribution</option>
+      </select>
+      <select id="lists-filter-date" onchange="filterLists()" style="flex:1;min-width:140px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="0">All time</option>
+      </select>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#1E3348;">
+            <th style="padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">List Name</th>
+            <th style="padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Vertical</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Mode</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Co's</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Found</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Email%</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Phone%</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">ICP</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">PD</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Status</th>
+            <th style="padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Date</th>
+            <th style="padding:11px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="lists-table-body">
+          <tr><td colspan="12" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+      <div id="lists-page-info" style="font-size:12px;color:var(--text-dim);"></div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="listsPagePrev()" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;cursor:pointer;font-family:var(--font);">← Prev</button>
+        <button onclick="listsPageNext()" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;cursor:pointer;font-family:var(--font);">Next →</button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="lists-empty" style="display:none;text-align:center;padding:60px 20px;">
+      <div style="font-size:48px;margin-bottom:16px;">📋</div>
+      <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">No lists yet</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">Run your first bulk upload from the Rebecka tab</div>
+      <button onclick="setMode('rebecca')" class="btn-primary">Go to Rebecka →</button>
+    </div>
+
   </div>
 
   <!-- ==================== CREDITS MODE ==================== -->
@@ -2609,7 +2641,7 @@
     if (mode === 'precall') loadPrecallBriefs();
     if (mode === 'credits') loadCredits();
     if (mode === 'feedback') { typeof initFeedbackForm === 'function' && initFeedbackForm(); }
-    if (mode === 'lists') { typeof loadMyLists === 'function' && loadMyLists(); }
+    if (mode === 'lists') { typeof loadLists === 'function' && loadLists(); }
   }
 
   // ==================== CHIP SELECT ====================
@@ -4430,120 +4462,289 @@
   async function loadFeedbackHistory() {
     const container = document.getElementById('fb-history');
     if (!container) return;
+    container.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;">Loading...</div>';
     try {
-      const rows = await sbProxy('lb_feedback', 'GET', 'order=submitted_at.desc&limit=20');
-      if (!rows || !rows.length) { container.textContent = 'No feedback yet.'; return; }
-      container.innerHTML = rows.map(r => {
-        const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '';
-        const st = FB_STATUS_DISPLAY[r.status] || FB_STATUS_DISPLAY['new'];
-        const badgeHtml = '<span onclick="cycleFeedbackStatus(\'' + r.id + '\',' + JSON.stringify(r).replace(/'/g, "\\'") + ')" ' +
-          'style="display:inline-block;cursor:pointer;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;' +
-          'background:' + st.bg + ';color:' + st.color + ';user-select:none;" title="Click to advance status">' +
-          st.emoji + ' ' + st.label + '</span>';
-        return '<div style="padding:10px 0;border-bottom:1px solid var(--border);">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-          '<div><strong>' + (r.name || 'Anonymous') + '</strong> ' + badgeHtml + '</div>' +
-          '<span style="font-size:11px;color:var(--text-dim);">' + date + '</span></div>' +
-          (r.category ? '<div style="font-size:11px;color:var(--accent);margin:2px 0;">' + r.category.replace(/_/g, ' ') + '</div>' : '') +
-          '<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.5;">' + (r.message || '').substring(0, 200) + '</div>' +
-          '</div>';
-      }).join('');
-    } catch(e) {
-      container.textContent = 'Could not load feedback history.';
-    }
-  }
-
-  // ==================== REBECKA — Executive Sales Assistant ====================
-  // ==================== MY LISTS TAB ====================
-  const LISTS_STATUS_DISPLAY = {
-    processing: { emoji: '⏳', label: 'Processing', bg: '#DBEAFE', color: '#1E40AF' },
-    enriched:   { emoji: '✅', label: 'Enriched',   bg: '#FEF3C7', color: '#92400E' },
-    delivered:  { emoji: '📬', label: 'Delivered',  bg: '#DCFCE7', color: '#166534' },
-    failed:     { emoji: '❌', label: 'Failed',     bg: '#FEE2E2', color: '#991B1B' }
-  };
-
-  async function loadMyLists() {
-    const container = document.getElementById('lists-table-container');
-    if (!container) return;
-    try {
-      const rows = await sbProxy('lb_lists', 'GET', 'order=created_at.desc&limit=20');
+      const rows = await sbProxy('lb_feedback', 'GET', 'order=submitted_at.desc&limit=50');
       if (!rows || !rows.length) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);">' +
-          '<div style="font-size:32px;margin-bottom:8px;">📋</div>' +
-          '<div style="font-size:14px;font-weight:600;">No lists yet</div>' +
-          '<div style="font-size:12px;margin-top:4px;">Run your first bulk upload from the Rebecka tab</div></div>';
+        container.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;">No feedback yet.</div>';
         return;
       }
-      let html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
-      html += '<thead><tr style="background:var(--surface);border-bottom:2px solid var(--border);">' +
-        '<th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--text-mid);">List Name</th>' +
-        '<th style="padding:10px 8px;text-align:center;">Mode</th>' +
-        '<th style="padding:10px 8px;text-align:left;">Vertical</th>' +
-        '<th style="padding:10px 8px;text-align:center;">Companies</th>' +
-        '<th style="padding:10px 8px;text-align:center;">Found</th>' +
-        '<th style="padding:10px 8px;text-align:center;">Status</th>' +
-        '<th style="padding:10px 8px;text-align:left;">Date</th>' +
-        '<th style="padding:10px 8px;text-align:center;">Actions</th></tr></thead><tbody>';
-      rows.forEach(r => {
-        const st = LISTS_STATUS_DISPLAY[r.status] || LISTS_STATUS_DISPLAY['processing'];
-        const badge = '<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:' + st.bg + ';color:' + st.color + ';">' + st.emoji + ' ' + st.label + '</span>';
-        const modeIcon = { single: '🏢', bulk: '📦', territory: '🗺️' }[r.mode] || '📋';
-        const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
-        const vert = (r.vertical || '').replace(/_/g, ' ');
-        const viewBtn = r.list_tag
-          ? '<button onclick="setMode(\'analysis\');setTimeout(()=>{const el=document.getElementById(\'filter-tag\');if(el){el.value=\'' + (r.list_tag||'').replace(/'/g, "\\'") + '\';typeof loadAnalysisTab===\'function\'&&loadAnalysisTab();}},200)" style="font-size:11px;padding:4px 10px;border:1px solid var(--accent);color:var(--accent);background:none;border-radius:6px;cursor:pointer;font-family:var(--font);font-weight:600;">View</button>'
-          : '';
-        html += '<tr style="border-bottom:1px solid var(--border);">' +
-          '<td style="padding:10px 12px;font-weight:600;color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (r.list_name || 'Untitled') + '</td>' +
-          '<td style="padding:10px 8px;text-align:center;">' + modeIcon + '</td>' +
-          '<td style="padding:10px 8px;color:var(--text-mid);font-size:11px;">' + vert + '</td>' +
-          '<td style="padding:10px 8px;text-align:center;font-weight:600;">' + (r.company_count || 0) + '</td>' +
-          '<td style="padding:10px 8px;text-align:center;font-weight:600;color:var(--green);">' + (r.contacts_found || '—') + '</td>' +
-          '<td style="padding:10px 8px;text-align:center;">' + badge + '</td>' +
-          '<td style="padding:10px 8px;font-size:11px;color:var(--text-dim);">' + date + '</td>' +
-          '<td style="padding:10px 8px;text-align:center;">' + viewBtn + '</td></tr>';
-      });
-      html += '</tbody></table></div>';
-      container.innerHTML = html;
+      const statusNext = { new:'in_progress', in_progress:'complete', complete:'closed', closed:'new' };
+      const statusLabel = { new:'🆕 New', in_progress:'⏳ In Progress', complete:'✅ Complete', closed:'🔒 Closed' };
+      const statusStyle = {
+        new:'background:#F1F5F9;color:#64748B;',
+        in_progress:'background:#FEF3C7;color:#B45309;',
+        complete:'background:#DCFCE7;color:#15803D;',
+        closed:'background:#DBEAFE;color:#1D4ED8;'
+      };
+      container.innerHTML = rows.map(r => {
+        const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+        const status = r.status || 'new';
+        const sStyle = statusStyle[status] || statusStyle.new;
+        const sLabel = statusLabel[status] || status;
+        return '<div id="fb-ticket-'+r.id+'" style="border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden;">' +
+          '<div style="padding:14px 16px;background:var(--surface);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;cursor:pointer;" onclick="toggleFbTicket(\''+r.id+'\')">' +
+            '<div style="flex:1;">' +
+              '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+                '<span style="font-size:13px;font-weight:700;color:var(--text);">'+(r.name||'Unknown')+'</span>' +
+                '<span style="font-size:11px;color:var(--text-dim);">'+date+'</span>' +
+                '<span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#EFF6FF;color:#1D4ED8;">'+(r.category||'general').replace(/_/g,' ')+'</span>' +
+              '</div>' +
+              '<div style="font-size:13px;color:var(--text-mid);margin-top:4px;line-height:1.4;">'+(r.message||'').substring(0,120)+((r.message||'').length>120?'…':'')+'</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">' +
+              '<button onclick="event.stopPropagation();advanceFbStatus(\''+r.id+'\',\''+status+'\',\''+((r.name||'').replace(/'/g,'\\\''))+'\',\''+((r.email||'').replace(/'/g,'\\\''))+'\',\''+(r.category||'')+'\',\''+encodeURIComponent(r.message||'')+'\')" '+
+                'style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;border:none;cursor:pointer;'+sStyle+'">'+sLabel+'</button>' +
+              '<span style="color:var(--text-dim);font-size:16px;">▾</span>' +
+            '</div>' +
+          '</div>' +
+          '<div id="fb-ticket-body-'+r.id+'" style="display:none;padding:16px;border-top:1px solid var(--border);background:#fff;">' +
+            '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:16px;white-space:pre-wrap;">'+(r.message||'')+'</div>' +
+            '<div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;">From: '+(r.email||'')+(r.reference?' · Ref: '+r.reference:'')+'</div>' +
+            '<div id="fb-comments-'+r.id+'" style="margin-bottom:12px;"></div>' +
+            '<div style="display:flex;gap:8px;">' +
+              '<input type="text" id="fb-comment-input-'+r.id+'" placeholder="Add a comment..." ' +
+                'style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;" ' +
+                'onkeydown="if(event.key===\'Enter\')addFbComment(\''+r.id+'\')"/>' +
+              '<button onclick="addFbComment(\''+r.id+'\')" ' +
+                'style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Send</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
     } catch(e) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);">Could not load lists: ' + e.message + '</div>';
+      container.innerHTML = '<div style="color:var(--red);font-size:13px;padding:20px 0;">Failed to load feedback.</div>';
     }
   }
 
-  function updateMlCount() {
-    var parsed = parseSmartBulk(document.getElementById('ml-paste')?.value || '');
-    var count = Math.min(parsed.length, MAX_COMPANIES);
-    var pct = Math.min((count / MAX_COMPANIES) * 100, 100);
-    var el = document.getElementById('ml-count');
-    var fill = document.getElementById('ml-fill');
-    if (el) el.textContent = count + ' / ' + MAX_COMPANIES;
-    if (fill) fill.style.width = pct + '%';
+  function toggleFbTicket(id) {
+    const body = document.getElementById('fb-ticket-body-'+id);
+    if (!body) return;
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) loadFbComments(id);
   }
 
-  async function runMyListUpload() {
-    var listName = document.getElementById('ml-list-name')?.value?.trim() || '';
-    var vertical = document.getElementById('ml-vertical')?.value || '';
-    var ownerKey = document.getElementById('ml-owner')?.value || 'tony';
-    var pasteVal = document.getElementById('ml-paste')?.value || '';
-    var parsed = parseSmartBulk(pasteVal);
-    if (!parsed.length) { alert('Please add at least one company.'); return; }
-    if (!vertical) { alert('Please select a vertical.'); return; }
+  async function loadFbComments(feedbackId) {
+    const container = document.getElementById('fb-comments-'+feedbackId);
+    if (!container) return;
+    try {
+      const comments = await sbProxy('lb_feedback_comments', 'GET',
+        'feedback_id=eq.'+feedbackId+'&order=created_at.asc&limit=50');
+      if (!comments || !comments.length) {
+        container.innerHTML = '<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">No comments yet.</div>';
+        return;
+      }
+      container.innerHTML = comments.map(c => {
+        const cDate = c.created_at ? new Date(c.created_at).toLocaleString() : '';
+        const isMe = c.author_email === (window._currentUser?.email||'');
+        return '<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';margin-bottom:8px;">' +
+          '<div style="max-width:80%;background:'+(isMe?'var(--accent)':'var(--surface)')+';color:'+(isMe?'#fff':'var(--text)')+';padding:8px 12px;border-radius:8px;font-size:13px;line-height:1.4;">'+(c.message||'')+'</div>' +
+          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">'+(c.author_name||c.author_email||'')+' · '+cDate+'</div>' +
+        '</div>';
+      }).join('');
+    } catch(e) {
+      container.innerHTML = '<div style="font-size:12px;color:var(--red);">Could not load comments.</div>';
+    }
+  }
 
-    var rbPaste = document.getElementById('rb-bulk-paste');
-    var rbVert = document.getElementById('rb-bulk-vertical');
-    var rbListName = document.getElementById('rb-bulk-list-name');
-    var rbOwner = document.getElementById('rb-bulk-owner');
-    if (rbPaste) rbPaste.value = pasteVal;
-    if (rbVert) rbVert.value = vertical;
-    if (rbListName) rbListName.value = listName;
-    if (rbOwner) rbOwner.value = ownerKey;
+  async function addFbComment(feedbackId) {
+    const input = document.getElementById('fb-comment-input-'+feedbackId);
+    if (!input) return;
+    const message = input.value.trim();
+    if (!message) return;
+    input.value = '';
+    try {
+      await sbProxy('lb_feedback_comments', 'POST', '', {
+        feedback_id: feedbackId,
+        author_name: window._currentUser?.name || 'Team',
+        author_email: window._currentUser?.email || '',
+        message: message,
+        created_at: new Date().toISOString()
+      });
+      loadFbComments(feedbackId);
+    } catch(e) {
+      alert('Failed to add comment: ' + e.message);
+    }
+  }
 
-    await rebeccaFireBulk();
+  async function advanceFbStatus(id, currentStatus, name, email, category, encodedMessage) {
+    const statusNext = { new:'in_progress', in_progress:'complete', complete:'closed', closed:'new' };
+    const newStatus = statusNext[currentStatus] || 'in_progress';
+    const message = decodeURIComponent(encodedMessage);
+    try {
+      await sbProxy('lb_feedback', 'PATCH', 'id=eq.'+id, {
+        status: newStatus,
+        status_updated_at: new Date().toISOString(),
+        status_updated_by: window._currentUser?.email || ''
+      });
+      fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          feedback_id: id, name: name, email: email, category: category,
+          message: message, old_status: currentStatus, new_status: newStatus,
+          updated_by: window._currentUser?.email || '',
+          updated_at: new Date().toISOString()
+        })
+      }).catch(e => console.warn('[Feedback] Status webhook error:', e.message));
+      loadFeedbackHistory();
+    } catch(e) {
+      alert('Failed to update status: ' + e.message);
+    }
+  }
 
-    document.getElementById('ml-paste').value = '';
-    document.getElementById('ml-list-name').value = '';
-    updateMlCount();
-    setTimeout(loadMyLists, 1000);
+  // ==================== MY LISTS ====================
+  let allListsData = [];
+  let listsFiltered = [];
+  let listsPage = 0;
+  const LISTS_PER_PAGE = 15;
+  let listsShowAll = false;
+
+  async function loadLists() {
+    const tbody = document.getElementById('lists-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="12" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading...</td></tr>';
+    try {
+      const userEmail = window._currentUser?.email || '';
+      const filter = listsShowAll
+        ? 'order=created_at.desc&limit=200'
+        : 'order=created_at.desc&limit=200&submitter_email=eq.' + encodeURIComponent(userEmail);
+      const rows = await sbProxy('lb_lists', 'GET', filter);
+      allListsData = rows || [];
+      updateListsKPIs();
+      filterLists();
+      const sub = document.getElementById('lists-subtitle');
+      if (sub) sub.textContent = listsShowAll
+        ? 'All team lead runs'
+        : 'Lead runs submitted by ' + (window._currentUser?.name || userEmail);
+    } catch(e) {
+      tbody.innerHTML = '<tr><td colspan="12" style="padding:40px;text-align:center;color:var(--red);font-size:13px;">Failed to load lists.</td></tr>';
+    }
+  }
+
+  function updateListsKPIs() {
+    const data = allListsData;
+    document.getElementById('lists-kpi-total').textContent = data.length;
+    const totalContacts = data.reduce((s,r) => s + (r.contacts_found||0), 0);
+    document.getElementById('lists-kpi-contacts').textContent = totalContacts.toLocaleString();
+    const withEmail = data.filter(r => r.contacts_found > 0);
+    const avgEmail = withEmail.length
+      ? Math.round(withEmail.reduce((s,r) => s + ((r.contacts_with_email||0)/(r.contacts_found||1)*100), 0) / withEmail.length)
+      : 0;
+    document.getElementById('lists-kpi-email').textContent = avgEmail + '%';
+    const withICP = data.filter(r => r.avg_icp_score);
+    const avgICP = withICP.length
+      ? (withICP.reduce((s,r) => s + parseFloat(r.avg_icp_score||0), 0) / withICP.length).toFixed(1)
+      : '—';
+    document.getElementById('lists-kpi-icp').textContent = avgICP;
+  }
+
+  function filterLists() {
+    const search = (document.getElementById('lists-search')?.value||'').toLowerCase();
+    const vertical = document.getElementById('lists-filter-vertical')?.value||'';
+    const days = parseInt(document.getElementById('lists-filter-date')?.value||'30');
+    const cutoff = days > 0 ? new Date(Date.now() - days*86400000) : null;
+    listsFiltered = allListsData.filter(r => {
+      if (search && !(r.list_name||'').toLowerCase().includes(search)) return false;
+      if (vertical && r.vertical !== vertical) return false;
+      if (cutoff && new Date(r.created_at) < cutoff) return false;
+      return true;
+    });
+    listsPage = 0;
+    renderListsTable();
+  }
+
+  function renderListsTable() {
+    const tbody = document.getElementById('lists-table-body');
+    const empty = document.getElementById('lists-empty');
+    if (!tbody) return;
+    if (!listsFiltered.length) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = 'block';
+      document.getElementById('lists-page-info').textContent = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    const start = listsPage * LISTS_PER_PAGE;
+    const page = listsFiltered.slice(start, start + LISTS_PER_PAGE);
+    const total = listsFiltered.length;
+    document.getElementById('lists-page-info').textContent =
+      'Showing ' + (start+1) + '–' + Math.min(start+LISTS_PER_PAGE, total) + ' of ' + total;
+    const statusColors = { processing:'background:#DBEAFE;color:#1D4ED8;', enriched:'background:#FEF3C7;color:#B45309;', delivered:'background:#DCFCE7;color:#15803D;', failed:'background:#FEE2E2;color:#DC2626;' };
+    const modeLabels = { bulk:'Bulk', single:'Single', territory:'Territory' };
+    const modeColors = { bulk:'background:#EFF6FF;color:#1D4ED8;', single:'background:#F0FDF4;color:#15803D;', territory:'background:#FDF4FF;color:#7E22CE;' };
+    tbody.innerHTML = page.map((r, i) => {
+      const emailPct = r.contacts_found > 0 ? Math.round((r.contacts_with_email||0)/r.contacts_found*100) : 0;
+      const phonePct = r.contacts_found > 0 ? Math.round((r.contacts_with_phone||0)/r.contacts_found*100) : 0;
+      const emailColor = emailPct > 60 ? 'color:var(--green);font-weight:700;' : emailPct > 30 ? 'color:var(--amber);font-weight:700;' : 'color:var(--red);font-weight:700;';
+      const phoneColor = phonePct > 40 ? 'color:var(--green);font-weight:700;' : phonePct > 20 ? 'color:var(--amber);font-weight:700;' : 'color:var(--text-dim);';
+      const icpColor = (r.avg_icp_score||0) > 70 ? 'color:var(--green);font-weight:700;' : (r.avg_icp_score||0) > 50 ? 'color:var(--amber);font-weight:700;' : 'color:var(--text-dim);';
+      const rowBg = i % 2 === 0 ? '#FFFFFF' : '#F5F6F8';
+      const statusStyle = statusColors[r.status] || 'background:#F5F6F8;color:var(--text-dim);';
+      const modeStyle = modeColors[r.mode] || '';
+      const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+      const listName = (r.list_name||'Unnamed').length > 32 ? (r.list_name||'Unnamed').substring(0,32)+'...' : (r.list_name||'Unnamed');
+      return '<tr style="background:'+rowBg+';border-bottom:1px solid var(--border);">' +
+        '<td style="padding:10px 14px;font-size:13px;font-weight:600;color:var(--text);" title="'+(r.list_name||'')+'">'+listName+'</td>' +
+        '<td style="padding:10px 14px;font-size:12px;color:var(--text-mid);">'+(r.vertical||'—').replace(/_/g,' ')+'</td>' +
+        '<td style="padding:10px 14px;text-align:center;"><span style="padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;'+modeStyle+'">'+(modeLabels[r.mode]||r.mode||'—')+'</span></td>' +
+        '<td style="padding:10px 14px;text-align:center;font-size:13px;color:var(--text);">'+(r.company_count||'—')+'</td>' +
+        '<td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:700;color:var(--text);">'+(r.contacts_found||0)+'</td>' +
+        '<td style="padding:10px 14px;text-align:center;font-size:13px;'+emailColor+'">'+emailPct+'%</td>' +
+        '<td style="padding:10px 14px;text-align:center;font-size:13px;'+phoneColor+'">'+phonePct+'%</td>' +
+        '<td style="padding:10px 14px;text-align:center;font-size:13px;'+icpColor+'">'+(r.avg_icp_score?parseFloat(r.avg_icp_score).toFixed(1):'—')+'</td>' +
+        '<td style="padding:10px 14px;text-align:center;font-size:16px;">'+(r.pipedrive_synced?'<span style="color:var(--green);">✓</span>':'<span style="color:var(--red);">✗</span>')+'</td>' +
+        '<td style="padding:10px 14px;text-align:center;"><span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;'+statusStyle+'">'+(r.status||'—')+'</span></td>' +
+        '<td style="padding:10px 14px;font-size:12px;color:var(--text-mid);">'+date+'</td>' +
+        '<td style="padding:10px 14px;text-align:center;">' +
+          '<div style="display:flex;gap:4px;justify-content:center;">' +
+          '<button onclick="listsDownloadCSV(\''+encodeURIComponent(r.list_tag||'')+'\')" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">↓ CSV</button>' +
+          '<button onclick="listsRerun(\''+r.id+'\')" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">▶ Re-run</button>' +
+          '</div></td></tr>';
+    }).join('');
+  }
+
+  function listsPagePrev() { if (listsPage > 0) { listsPage--; renderListsTable(); } }
+  function listsPageNext() { if ((listsPage+1)*LISTS_PER_PAGE < listsFiltered.length) { listsPage++; renderListsTable(); } }
+  function toggleListsView() {
+    listsShowAll = document.getElementById('lists-toggle')?.checked || false;
+    const slider = document.getElementById('lists-toggle-slider');
+    if (slider) slider.style.background = listsShowAll ? 'var(--accent)' : '#CBD5E1';
+    loadLists();
+  }
+
+  async function listsDownloadCSV(encodedTag) {
+    const listTag = decodeURIComponent(encodedTag);
+    if (!listTag) return;
+    try {
+      const contacts = await sbProxy('lb_contacts', 'GET', 'list_tag=eq.'+encodeURIComponent(listTag)+'&order=created_at.desc&limit=500');
+      if (!contacts || !contacts.length) { alert('No contacts found for this list.'); return; }
+      const cols = ['first_name','last_name','title','company_name','domain','email','phone','linkedin_url','vertical','icp_score','email_source','created_at'];
+      const csv = [cols.join(','), ...contacts.map(c =>
+        cols.map(k => '"'+(c[k]||'').toString().replace(/"/g,'""')+'"').join(',')
+      )].join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = (listTag||'list').substring(0,50) + '_contacts.csv';
+      a.click();
+    } catch(e) { alert('Download failed: ' + e.message); }
+  }
+
+  function listsRerun(listId) {
+    const row = allListsData.find(r => r.id === listId);
+    if (!row) return;
+    setMode('rebecca');
+    setTimeout(() => {
+      const modal = document.getElementById('rb-bulk-modal');
+      if (modal) {
+        modal.style.display = 'block';
+        const vSel = document.getElementById('rb-bulk-vertical');
+        if (vSel && row.vertical) vSel.value = row.vertical;
+        const lName = document.getElementById('rb-bulk-list-name');
+        if (lName) lName.value = (row.list_name||'') + ' (Re-run)';
+      }
+    }, 300);
   }
 
   const PIPEDRIVE_KEY = '2fada79568e20083cf472cd5b307e9e12d171a1d';
