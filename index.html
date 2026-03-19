@@ -1155,6 +1155,7 @@
     <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard" style="display:none;">Dashboard</button>
     <button class="mode-tab" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
+    <button class="mode-tab" onclick="setMode('lists')" id="tab-lists">📋 My Lists</button>
     <button class="mode-tab" onclick="setMode('credits')" id="tab-credits">Credits</button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">Feedback</button>
     <!-- Hidden tabs — do not delete, just hidden -->
@@ -2306,6 +2307,17 @@
 
   </div>
 
+  <!-- ==================== MY LISTS MODE ==================== -->
+  <div id="mode-lists" class="mode-content hidden">
+    <div class="card">
+      <div class="card-title">📋 My Lists</div>
+      <div class="card-sub">Track every bulk upload, territory search, and single company run.</div>
+      <div id="lists-table-container" style="margin-top:20px;">
+        <div style="text-align:center;padding:40px;color:var(--text-dim);">Loading lists...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== CREDITS MODE ==================== -->
   <div id="mode-credits" class="mode-content hidden">
 
@@ -2432,10 +2444,10 @@
             ondrop="handleFbFileDrop(event)">
             <div style="font-size:24px;margin-bottom:6px;">&#128206;</div>
             <div style="font-size:12px;color:var(--text-dim);">Click to attach or drag and drop</div>
-            <div style="font-size:11px;color:#94A3B8;margin-top:4px;">PNG, JPG, GIF, PDF — max 5 MB</div>
+            <div style="font-size:11px;color:#94A3B8;margin-top:4px;">PNG, JPG, GIF, PDF, Word Doc — max 5 MB</div>
             <div id="fb-file-name" style="font-size:12px;color:var(--accent);margin-top:8px;display:none;font-weight:600;"></div>
           </div>
-          <input type="file" id="fb-file-input" accept="image/*,.pdf" style="display:none" onchange="handleFbFileSelect(this)" />
+          <input type="file" id="fb-file-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleFbFileSelect(this)" />
         </div>
 
         <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
@@ -2508,7 +2520,7 @@
       endRebeccaVideo();
     }
     currentMode = mode;
-    ['dashboard','single','bulk','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits'].forEach(m => {
+    ['dashboard','single','bulk','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits','lists'].forEach(m => {
       const el = document.getElementById('mode-' + m);
       if (el) el.classList.toggle('hidden', m !== mode);
       const tab = document.getElementById('tab-' + m);
@@ -2523,6 +2535,7 @@
     if (mode === 'precall') loadPrecallBriefs();
     if (mode === 'credits') loadCredits();
     if (mode === 'feedback') { typeof initFeedbackForm === 'function' && initFeedbackForm(); }
+    if (mode === 'lists') { typeof loadMyLists === 'function' && loadMyLists(); }
   }
 
   // ==================== CHIP SELECT ====================
@@ -4301,20 +4314,64 @@
     }
   }
 
+  const FB_STATUS_FLOW = ['new', 'in_progress', 'complete', 'closed'];
+  const FB_STATUS_DISPLAY = {
+    new:         { emoji: '🆕', label: 'New',         bg: '#F1F5F9', color: '#475569' },
+    in_progress: { emoji: '⏳', label: 'In Progress', bg: '#FEF3C7', color: '#92400E' },
+    complete:    { emoji: '✅', label: 'Complete',     bg: '#DCFCE7', color: '#166534' },
+    closed:      { emoji: '🔒', label: 'Closed',       bg: '#DBEAFE', color: '#1E40AF' }
+  };
+
+  async function cycleFeedbackStatus(feedbackId, row) {
+    const current = row.status || 'new';
+    const idx = FB_STATUS_FLOW.indexOf(current);
+    const next = FB_STATUS_FLOW[(idx + 1) % FB_STATUS_FLOW.length];
+    try {
+      await sbProxy('lb_feedback', 'PATCH', 'id=eq.' + feedbackId, {
+        status: next,
+        status_updated_at: new Date().toISOString(),
+        status_updated_by: window._currentUser?.email || 'unknown'
+      });
+      fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          feedback_id: feedbackId,
+          name: row.name || '',
+          email: row.email || '',
+          category: row.category || '',
+          message: row.message || '',
+          old_status: current,
+          new_status: next,
+          updated_by: window._currentUser?.email || 'unknown',
+          updated_at: new Date().toISOString()
+        })
+      }).catch(e => console.warn('[Feedback] Status webhook error:', e.message));
+      loadFeedbackHistory();
+    } catch(e) {
+      console.error('[Feedback] Status update failed:', e.message);
+    }
+  }
+
   async function loadFeedbackHistory() {
     const container = document.getElementById('fb-history');
     if (!container) return;
     try {
-      const rows = await sbProxy('lb_feedback', 'GET', 'order=submitted_at.desc&limit=5');
+      const rows = await sbProxy('lb_feedback', 'GET', 'order=submitted_at.desc&limit=20');
       if (!rows || !rows.length) { container.textContent = 'No feedback yet.'; return; }
       container.innerHTML = rows.map(r => {
         const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '';
+        const st = FB_STATUS_DISPLAY[r.status] || FB_STATUS_DISPLAY['new'];
+        const badgeHtml = '<span onclick="cycleFeedbackStatus(\'' + r.id + '\',' + JSON.stringify(r).replace(/'/g, "\\'") + ')" ' +
+          'style="display:inline-block;cursor:pointer;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;' +
+          'background:' + st.bg + ';color:' + st.color + ';user-select:none;" title="Click to advance status">' +
+          st.emoji + ' ' + st.label + '</span>';
         return '<div style="padding:10px 0;border-bottom:1px solid var(--border);">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-          '<strong>' + (r.name || 'Anonymous') + '</strong>' +
+          '<div><strong>' + (r.name || 'Anonymous') + '</strong> ' + badgeHtml + '</div>' +
           '<span style="font-size:11px;color:var(--text-dim);">' + date + '</span></div>' +
           (r.category ? '<div style="font-size:11px;color:var(--accent);margin:2px 0;">' + r.category.replace(/_/g, ' ') + '</div>' : '') +
-          '<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.5;">' + (r.message || '') + '</div>' +
+          '<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.5;">' + (r.message || '').substring(0, 200) + '</div>' +
           '</div>';
       }).join('');
     } catch(e) {
@@ -4323,6 +4380,62 @@
   }
 
   // ==================== REBECKA — Executive Sales Assistant ====================
+  // ==================== MY LISTS TAB ====================
+  const LISTS_STATUS_DISPLAY = {
+    processing: { emoji: '⏳', label: 'Processing', bg: '#DBEAFE', color: '#1E40AF' },
+    enriched:   { emoji: '✅', label: 'Enriched',   bg: '#FEF3C7', color: '#92400E' },
+    delivered:  { emoji: '📬', label: 'Delivered',  bg: '#DCFCE7', color: '#166534' },
+    failed:     { emoji: '❌', label: 'Failed',     bg: '#FEE2E2', color: '#991B1B' }
+  };
+
+  async function loadMyLists() {
+    const container = document.getElementById('lists-table-container');
+    if (!container) return;
+    try {
+      const rows = await sbProxy('lb_lists', 'GET', 'order=created_at.desc&limit=20');
+      if (!rows || !rows.length) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);">' +
+          '<div style="font-size:32px;margin-bottom:8px;">📋</div>' +
+          '<div style="font-size:14px;font-weight:600;">No lists yet</div>' +
+          '<div style="font-size:12px;margin-top:4px;">Run your first bulk upload from the Rebecka tab</div></div>';
+        return;
+      }
+      let html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+      html += '<thead><tr style="background:var(--surface);border-bottom:2px solid var(--border);">' +
+        '<th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--text-mid);">List Name</th>' +
+        '<th style="padding:10px 8px;text-align:center;">Mode</th>' +
+        '<th style="padding:10px 8px;text-align:left;">Vertical</th>' +
+        '<th style="padding:10px 8px;text-align:center;">Companies</th>' +
+        '<th style="padding:10px 8px;text-align:center;">Found</th>' +
+        '<th style="padding:10px 8px;text-align:center;">Status</th>' +
+        '<th style="padding:10px 8px;text-align:left;">Date</th>' +
+        '<th style="padding:10px 8px;text-align:center;">Actions</th></tr></thead><tbody>';
+      rows.forEach(r => {
+        const st = LISTS_STATUS_DISPLAY[r.status] || LISTS_STATUS_DISPLAY['processing'];
+        const badge = '<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:' + st.bg + ';color:' + st.color + ';">' + st.emoji + ' ' + st.label + '</span>';
+        const modeIcon = { single: '🏢', bulk: '📦', territory: '🗺️' }[r.mode] || '📋';
+        const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
+        const vert = (r.vertical || '').replace(/_/g, ' ');
+        const viewBtn = r.list_tag
+          ? '<button onclick="setMode(\'analysis\');setTimeout(()=>{const el=document.getElementById(\'filter-tag\');if(el){el.value=\'' + (r.list_tag||'').replace(/'/g, "\\'") + '\';typeof loadAnalysisTab===\'function\'&&loadAnalysisTab();}},200)" style="font-size:11px;padding:4px 10px;border:1px solid var(--accent);color:var(--accent);background:none;border-radius:6px;cursor:pointer;font-family:var(--font);font-weight:600;">View</button>'
+          : '';
+        html += '<tr style="border-bottom:1px solid var(--border);">' +
+          '<td style="padding:10px 12px;font-weight:600;color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (r.list_name || 'Untitled') + '</td>' +
+          '<td style="padding:10px 8px;text-align:center;">' + modeIcon + '</td>' +
+          '<td style="padding:10px 8px;color:var(--text-mid);font-size:11px;">' + vert + '</td>' +
+          '<td style="padding:10px 8px;text-align:center;font-weight:600;">' + (r.company_count || 0) + '</td>' +
+          '<td style="padding:10px 8px;text-align:center;font-weight:600;color:var(--green);">' + (r.contacts_found || '—') + '</td>' +
+          '<td style="padding:10px 8px;text-align:center;">' + badge + '</td>' +
+          '<td style="padding:10px 8px;font-size:11px;color:var(--text-dim);">' + date + '</td>' +
+          '<td style="padding:10px 8px;text-align:center;">' + viewBtn + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    } catch(e) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);">Could not load lists: ' + e.message + '</div>';
+    }
+  }
+
   const PIPEDRIVE_KEY = '2fada79568e20083cf472cd5b307e9e12d171a1d';
   // ==================== TAVUS VIDEO SESSION ====================
   // Tavus Replica ID - set in Vercel environment as TAVUS_REPLICA_ID
@@ -5596,16 +5709,19 @@
     m.style.display = m.style.display === 'none' ? 'block' : 'none';
   }
 
+  let lastUploadedFileName = null;
+
   function handleRbDrop(event) {
     event.preventDefault();
     document.getElementById('rb-drop-zone').style.borderColor = '#e2e8f0';
     var file = event.dataTransfer.files[0];
-    if (file) handleBulkFile(file, 'rb-bulk-paste', updateRbBulkCount);
+    if (file) { lastUploadedFileName = file.name; handleBulkFile(file, 'rb-bulk-paste', updateRbBulkCount); }
   }
 
   function handleRbCsvFile(event) {
     var file = event.target.files[0];
     if (!file) return;
+    lastUploadedFileName = file.name;
     handleBulkFile(file, 'rb-bulk-paste', updateRbBulkCount);
   }
 
@@ -5637,6 +5753,25 @@
       domain: p.domain,
       vertical: vertical
     })).filter(l => l.company_name);
+
+    // Log to lb_lists
+    try {
+      await sbProxy('lb_lists', 'POST', '', {
+        list_name: listName || 'Bulk Run ' + new Date().toLocaleDateString(),
+        mode: 'bulk',
+        vertical: vertical,
+        company_count: leads.length,
+        companies: leads,
+        file_name: lastUploadedFileName || null,
+        submitter_name: ownerName,
+        submitter_email: window._currentUser?.email || 'tony@manageai.io',
+        pipedrive_owner: ownerName,
+        status: 'processing',
+        list_tag: listTag,
+        created_at: new Date().toISOString()
+      });
+    } catch(e) { console.warn('[Lists] Insert failed:', e.message); }
+    lastUploadedFileName = null;
 
     if (leads.length > 0) showPipelineCard(leads[0].company_name, leads[0].domain, vertical, 'bulk', { list_tag: listTag });
 
@@ -5681,6 +5816,24 @@
     document.getElementById('rb-single-modal').style.display = 'none';
     const listName = document.getElementById('rb-single-list-name')?.value?.trim() || '';
     const listTag = buildListTag_fromValue(listName, 'Rebecka Single');
+
+    // Log to lb_lists
+    try {
+      await sbProxy('lb_lists', 'POST', '', {
+        list_name: listName || company,
+        mode: 'single',
+        vertical: vertical,
+        company_count: 1,
+        companies: [{ company_name: company, domain: domain }],
+        submitter_name: ownerName,
+        submitter_email: window._currentUser?.email || 'tony@manageai.io',
+        pipedrive_owner: ownerName,
+        status: 'processing',
+        list_tag: listTag,
+        created_at: new Date().toISOString()
+      });
+    } catch(e) { console.warn('[Lists] Insert failed:', e.message); }
+
     showPipelineCard(company, domain, vertical, 'single', { list_tag: listTag });
     await fireWebhook(company, domain, vertical, '', ownerName, window._currentUser?.email || 'tony@manageai.io', listTag, 'rebecca_single', ownerName);
   }
@@ -5747,6 +5900,25 @@
     document.getElementById('rb-territory-modal').style.display = 'none';
     const listName = document.getElementById('rb-territory-list-name')?.value?.trim() || '';
     const listTag = buildListTag_fromValue(listName, city + ' ' + state + ' Territory');
+
+    // Log to lb_lists
+    try {
+      await sbProxy('lb_lists', 'POST', '', {
+        list_name: listName || city + ' ' + state + ' Territory',
+        mode: 'territory',
+        vertical: vertical,
+        city: city,
+        state: state,
+        company_count: qty,
+        submitter_name: ownerName,
+        submitter_email: window._currentUser?.email || 'tony@manageai.io',
+        pipedrive_owner: ownerName,
+        status: 'processing',
+        list_tag: listTag,
+        created_at: new Date().toISOString()
+      });
+    } catch(e) { console.warn('[Lists] Insert failed:', e.message); }
+
     showPipelineCard(city + ' ' + state + ' (' + qty + ' co)', '', vertical, 'territory', { city: city, state: state, qty: qty, list_tag: listTag });
 
     try {
