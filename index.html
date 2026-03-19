@@ -1537,7 +1537,7 @@
           <div class="hit-rate-track"><div class="hit-rate-fill linkedin" id="d-linkedin-bar" style="width:0%"></div></div>
           <div class="hit-rate-pct" id="d-linkedin-pct2">—</div>
         </div>
-        <div style="margin-top:18px;">
+        <div style="margin-top:18px;" id="d-source-wins">
           <div class="dash-section-title">Source Win Rates</div>
           <div class="source-row">
             <div class="source-pill hunter">Hunter</div>
@@ -2505,74 +2505,153 @@
 
   <!-- ==================== FEEDBACK MODE ==================== -->
   <div id="mode-feedback" class="mode-content hidden">
-    <div class="card">
-      <div class="card-title">System Feedback</div>
-      <div class="card-sub">Help us improve Lead Booster Pro. Your feedback goes directly to the ManageAI team.</div>
 
-      <div style="margin-top:20px;">
-        <div class="field" style="margin-bottom:16px;">
-          <label>Your Name</label>
-          <input type="text" id="fb-name" placeholder="Your name" />
-        </div>
+    <!-- VIEW 1: HOME -->
+    <div id="fb-view-home">
 
-        <div class="field" style="margin-bottom:16px;">
-          <label>Email</label>
-          <input type="email" id="fb-email" placeholder="you@company.com" />
-        </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Category</label>
-          <select id="fb-category" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);background:#fff;outline:none;">
-            <option value="">Select a category…</option>
-            <option value="data_quality">Data Quality</option>
-            <option value="feature_request">Feature Request</option>
-            <option value="bug_report">Bug Report</option>
-            <option value="general_feedback">General Feedback</option>
-          </select>
-        </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Message <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— required</span></label>
-          <textarea id="fb-message" rows="5" placeholder="Describe your feedback, bug, or feature request..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
-        </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Reference <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional (ticket #, URL, company name)</span></label>
-          <input type="text" id="fb-reference" placeholder="e.g. ticket #1234 or https://..." />
-        </div>
-
-        <div class="field" style="margin-bottom:16px;">
-          <label>Attachment <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional, attach a screenshot or file (max 5 MB)</span></label>
-          <div id="fb-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color 0.2s;"
-            onclick="document.getElementById('fb-file-input').click()"
-            ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-            ondragleave="this.style.borderColor='var(--border)'"
-            ondrop="handleFbFileDrop(event)">
-            <div style="font-size:24px;margin-bottom:6px;">&#128206;</div>
-            <div style="font-size:12px;color:var(--text-dim);">Click to attach or drag and drop</div>
-            <div style="font-size:11px;color:#94A3B8;margin-top:4px;">PNG, JPG, GIF, PDF, Word Doc — max 5 MB</div>
-            <div id="fb-file-name" style="font-size:12px;color:var(--accent);margin-top:8px;display:none;font-weight:600;"></div>
+      <!-- OPEN TICKETS SECTION -->
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div>
+            <div class="card-title" style="margin-bottom:0;">Open Tickets</div>
+            <div class="card-sub">Feedback awaiting action</div>
           </div>
-          <input type="file" id="fb-file-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleFbFileSelect(this)" />
+          <span id="fb-open-count" style="background:var(--accent);color:#fff;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;">0</span>
         </div>
+        <div id="fb-open-list">
+          <div style="text-align:center;padding:20px;color:var(--green);font-weight:600;">&#10004;&#65039; No open tickets — all caught up!</div>
+        </div>
+      </div>
 
-        <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
-          Feedback sent — thank you! Brian will review it shortly.
+      <!-- RECENT FEEDBACK SECTION -->
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div>
+            <div class="card-title" style="margin-bottom:0;">Recent Feedback</div>
+            <div class="card-sub">All submissions — click any to view or comment</div>
+          </div>
         </div>
-        <div id="fb-error" style="display:none;background:var(--red-light);color:var(--red);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
-          Something went wrong. Please try again.
+        <div id="fb-recent-list">
+          <div style="text-align:center;padding:20px;color:var(--text-dim);font-size:13px;">Loading...</div>
         </div>
+      </div>
 
-        <button class="btn-primary" onclick="submitFeedback()" id="btn-feedback" style="min-width:180px;">
-          Send Feedback
+      <!-- SUBMIT BUTTON -->
+      <div style="text-align:center;padding:10px 0 20px;">
+        <button onclick="showFbForm()" class="btn-primary" style="padding:12px 32px;font-size:14px;">
+          + Submit New Feedback
         </button>
       </div>
     </div>
 
-    <!-- Recent feedback -->
-    <div class="card" style="margin-top:20px;">
-      <div class="card-title">Recent Feedback</div>
-      <div id="fb-history" style="margin-top:12px;font-size:13px;color:var(--text-dim);">Loading...</div>
+    <!-- VIEW 2: SUBMIT FORM -->
+    <div id="fb-view-form" style="display:none;">
+      <div style="margin-bottom:16px;">
+        <button onclick="showFbHome()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;font-family:var(--font);padding:0;">
+          &larr; Back to Feedback
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-title">Submit Feedback</div>
+        <div class="card-sub">Your feedback goes directly to the ManageAI team.</div>
+        <div style="margin-top:20px;">
+          <div class="field" style="margin-bottom:16px;">
+            <label>Your Name</label>
+            <input type="text" id="fb-name" placeholder="Your name" />
+          </div>
+
+          <div class="field" style="margin-bottom:16px;">
+            <label>Email</label>
+            <input type="email" id="fb-email" placeholder="you@company.com" />
+          </div>
+
+          <div class="field" style="margin-bottom:16px;">
+            <label>Category</label>
+            <select id="fb-category" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);background:#fff;outline:none;">
+              <option value="">Select a category…</option>
+              <option value="data_quality">Data Quality</option>
+              <option value="feature_request">Feature Request</option>
+              <option value="bug_report">Bug Report</option>
+              <option value="general_feedback">General Feedback</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin-bottom:16px;">
+            <label>Message <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— required</span></label>
+            <textarea id="fb-message" rows="5" placeholder="Describe your feedback, bug, or feature request..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
+          </div>
+
+          <div class="field" style="margin-bottom:16px;">
+            <label>Reference <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional (ticket #, URL, company name)</span></label>
+            <input type="text" id="fb-reference" placeholder="e.g. ticket #1234 or https://..." />
+          </div>
+
+          <div class="field" style="margin-bottom:16px;">
+            <label>Attachment <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional, attach a screenshot or file (max 5 MB)</span></label>
+            <div id="fb-drop-zone" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color 0.2s;"
+              onclick="document.getElementById('fb-file-input').click()"
+              ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+              ondragleave="this.style.borderColor='var(--border)'"
+              ondrop="handleFbFileDrop(event)">
+              <div style="font-size:24px;margin-bottom:6px;">&#128206;</div>
+              <div style="font-size:12px;color:var(--text-dim);">Click to attach or drag and drop</div>
+              <div style="font-size:11px;color:#94A3B8;margin-top:4px;">PNG, JPG, GIF, PDF, Word Doc — max 5 MB</div>
+              <div id="fb-file-name" style="font-size:12px;color:var(--accent);margin-top:8px;display:none;font-weight:600;"></div>
+            </div>
+            <input type="file" id="fb-file-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleFbFileSelect(this)" />
+          </div>
+
+          <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
+            Feedback sent — thank you! Brian will review it shortly.
+          </div>
+          <div id="fb-error" style="display:none;background:var(--red-light);color:var(--red);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
+            Something went wrong. Please try again.
+          </div>
+
+          <button class="btn-primary" onclick="submitFeedback()" id="btn-feedback" style="min-width:180px;">
+            Send Feedback
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: TICKET DETAIL -->
+    <div id="fb-view-ticket" style="display:none;">
+
+      <!-- TOP BAR -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <button onclick="showFbHome()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;font-family:var(--font);padding:0;">
+          &larr; Back to Feedback
+        </button>
+        <div id="fb-ticket-status-btns" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- TICKET HEADER -->
+      <div class="card" style="margin-bottom:16px;">
+        <div id="fb-ticket-header"></div>
+      </div>
+
+      <!-- TICKET MESSAGE -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:12px;">Message</div>
+        <div id="fb-ticket-body"></div>
+      </div>
+
+      <!-- COMMENTS -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Comments</div>
+        <div id="fb-comments-thread" style="max-height:400px;overflow-y:auto;margin-bottom:16px;padding-right:4px;"></div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="fb-comment-input"
+            placeholder="Add a comment..."
+            onkeydown="if(event.key==='Enter')addFbComment(this.getAttribute('data-ticket-id'))"
+            style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;"/>
+          <button id="fb-comment-send"
+            style="padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2640,7 +2719,7 @@
     if (mode === 'analysis') loadAnalysisTab();
     if (mode === 'precall') loadPrecallBriefs();
     if (mode === 'credits') loadCredits();
-    if (mode === 'feedback') { typeof initFeedbackForm === 'function' && initFeedbackForm(); }
+    if (mode === 'feedback') { showFbHome(); }
     if (mode === 'lists') { typeof loadLists === 'function' && loadLists(); }
   }
 
@@ -3335,20 +3414,45 @@
   }
 
   function renderSourceWins(contacts) {
-    const wins = { hunter: 0, apollo: 0, pdl: 0, website: 0 };
+    const wins = { hunter: 0, apollo: 0, pdl: 0, snovio: 0, rocketreach: 0, website: 0 };
     contacts.forEach(c => {
-      const enr = c.enrichment || {};
-      const src = (c.email_source || enr.email_source || '').toLowerCase();
+      const src = (c.email_source || '').toLowerCase();
       if (src.includes('hunter')) wins.hunter++;
       else if (src.includes('apollo')) wins.apollo++;
       else if (src.includes('pdl') || src.includes('people')) wins.pdl++;
+      else if (src.includes('snov')) wins.snovio++;
+      else if (src.includes('rocket')) wins.rocketreach++;
       else if (src.includes('web') || src.includes('site')) wins.website++;
     });
     const maxWin = Math.max(...Object.values(wins), 1);
-    ['hunter','apollo','pdl','website'].forEach(s => {
-      setBar('d-' + s + '-bar', Math.round((wins[s] / maxWin) * 100));
-      safeSet('d-' + s + '-num', wins[s]);
-    });
+    const sourceMap = [
+      { key: 'hunter', label: 'Hunter', color: '#F59E0B' },
+      { key: 'apollo', label: 'Apollo', color: '#8B5CF6' },
+      { key: 'pdl', label: 'PDL', color: '#06B6D4' },
+      { key: 'snovio', label: 'Snov.io', color: '#EC4899' },
+      { key: 'rocketreach', label: 'RocketReach', color: '#EF4444' },
+      { key: 'website', label: 'Website', color: '#16A34A' }
+    ];
+    const container = document.getElementById('d-source-wins');
+    if (!container) {
+      ['hunter','apollo','pdl','website'].forEach(s => {
+        setBar('d-' + s + '-bar', Math.round((wins[s] / maxWin) * 100));
+        safeSet('d-' + s + '-num', wins[s]);
+      });
+      return;
+    }
+    container.innerHTML = sourceMap.map(s => {
+      const pct = Math.round((wins[s.key] / maxWin) * 100);
+      return '<div style="margin-bottom:10px;">' +
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">' +
+          '<span style="font-weight:600;color:var(--text);">' + s.label + '</span>' +
+          '<span style="color:var(--text-dim);">' + wins[s.key] + '</span>' +
+        '</div>' +
+        '<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + s.color + ';border-radius:4px;transition:width 0.5s;"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
   }
 
   function renderScoreDist(contacts) {
@@ -4317,7 +4421,7 @@
     }
   }
 
-  // ==================== FEEDBACK — Classic Form ====================
+  // ==================== FEEDBACK — 3-View System ====================
   let fbAttachmentBase64 = null;
   let fbAttachmentName = '';
 
@@ -4334,7 +4438,7 @@
   }
 
   function processFbAttachment(file) {
-    if (file.size > 5 * 1024 * 1024) { alert('File too large — max 5 MB.'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('File too large \u2014 max 5 MB.'); return; }
     fbAttachmentName = file.name;
     var label = document.getElementById('fb-file-name');
     if (label) { label.textContent = file.name; label.style.display = 'block'; }
@@ -4349,7 +4453,211 @@
     const emailEl = document.getElementById('fb-email');
     if (nameEl && user.name) nameEl.value = user.name;
     if (emailEl && user.email) emailEl.value = user.email;
-    loadFeedbackHistory();
+  }
+
+  // View switching
+  function showFbHome() {
+    document.getElementById('fb-view-home').style.display = 'block';
+    document.getElementById('fb-view-form').style.display = 'none';
+    document.getElementById('fb-view-ticket').style.display = 'none';
+    loadFbHome();
+  }
+
+  function showFbForm() {
+    document.getElementById('fb-view-home').style.display = 'none';
+    document.getElementById('fb-view-form').style.display = 'block';
+    document.getElementById('fb-view-ticket').style.display = 'none';
+    initFeedbackForm();
+  }
+
+  function showFbTicket() {
+    document.getElementById('fb-view-home').style.display = 'none';
+    document.getElementById('fb-view-form').style.display = 'none';
+    document.getElementById('fb-view-ticket').style.display = 'block';
+  }
+
+  // Load home view
+  async function loadFbHome() {
+    try {
+      const rows = await sbProxy('lb_feedback', 'GET', 'order=submitted_at.desc&limit=50');
+      const open = (rows||[]).filter(r => !r.status || r.status === 'new' || r.status === 'in_progress');
+      const recent = (rows||[]).slice(0, 10);
+      const badge = document.getElementById('fb-open-count');
+      if (badge) badge.textContent = open.length;
+      renderFbCardList('fb-open-list', open,
+        '<div style="text-align:center;padding:20px;color:var(--green);font-weight:600;">\u2705 No open tickets \u2014 all caught up!</div>');
+      renderFbCardList('fb-recent-list', recent,
+        '<div style="text-align:center;padding:20px;color:var(--text-dim);">No feedback yet.</div>');
+    } catch(e) {
+      console.error('[Feedback] loadFbHome error:', e);
+    }
+  }
+
+  function renderFbCardList(containerId, rows, emptyHtml) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!rows || !rows.length) { el.innerHTML = emptyHtml; return; }
+    const statusLabel = { new:'\uD83C\uDD95 New', in_progress:'\u23F3 In Progress', complete:'\u2705 Complete', closed:'\uD83D\uDD12 Closed' };
+    const statusStyle = {
+      new:'background:#F1F5F9;color:#64748B;',
+      in_progress:'background:#FEF3C7;color:#B45309;',
+      complete:'background:#DCFCE7;color:#15803D;',
+      closed:'background:#DBEAFE;color:#1D4ED8;'
+    };
+    const catColors = {
+      feature_request:'background:#EFF6FF;color:#1D4ED8;',
+      bug_report:'background:#FEE2E2;color:#DC2626;',
+      data_quality:'background:#FEF3C7;color:#B45309;',
+      general_feedback:'background:#F0FDF4;color:#15803D;',
+      general:'background:#F0FDF4;color:#15803D;'
+    };
+    el.innerHTML = rows.map(r => {
+      const status = r.status || 'new';
+      const sStyle = statusStyle[status] || statusStyle.new;
+      const sLabel = statusLabel[status] || status;
+      const cStyle = catColors[r.category] || 'background:#F5F6F8;color:#475569;';
+      const date = r.submitted_at
+        ? new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+        : '';
+      const msg = (r.message||'').substring(0,80) + ((r.message||'').length > 80 ? '\u2026' : '');
+      return '<div onclick="openFbTicket(\''+r.id+'\')" style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;cursor:pointer;background:#fff;transition:background 0.15s;" onmouseover="this.style.background=\'#EEF1F5\'" onmouseout="this.style.background=\'#fff\'">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">' +
+          '<div style="flex:1;">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">' +
+              '<span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;'+cStyle+'">'+(r.category||'general')+'</span>' +
+              '<span style="font-size:13px;font-weight:700;color:var(--text);">'+(r.name||'Unknown')+'</span>' +
+              '<span style="font-size:11px;color:var(--text-dim);">'+date+'</span>' +
+            '</div>' +
+            '<div style="font-size:13px;color:var(--text-mid);line-height:1.4;">'+msg+'</div>' +
+          '</div>' +
+          '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">' +
+            '<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;'+sStyle+'">'+sLabel+'</span>' +
+            '<span style="font-size:12px;color:var(--accent);font-weight:600;">View \u2192</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Open a specific ticket
+  async function openFbTicket(id) {
+    try {
+      const rows = await sbProxy('lb_feedback', 'GET', 'id=eq.'+id+'&limit=1');
+      const r = rows?.[0];
+      if (!r) return;
+      window._currentFbTicket = r;
+      const statusLabel = { new:'\uD83C\uDD95 New', in_progress:'\u23F3 In Progress', complete:'\u2705 Complete', closed:'\uD83D\uDD12 Closed' };
+      const statusKeys = ['new','in_progress','complete','closed'];
+      const currentStatus = r.status || 'new';
+      const statusBtns = document.getElementById('fb-ticket-status-btns');
+      if (statusBtns) {
+        statusBtns.innerHTML = statusKeys.map(s => {
+          const active = s === currentStatus;
+          return '<button onclick="updateFbTicketStatus(\''+id+'\',\''+s+'\')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid '+(active?'var(--accent)':'var(--border)')+';background:'+(active?'var(--accent)':'#fff')+';color:'+(active?'#fff':'var(--text-mid)')+';transition:all 0.15s;font-family:var(--font);">'+(statusLabel[s])+'</button>';
+        }).join('');
+      }
+      const header = document.getElementById('fb-ticket-header');
+      if (header) {
+        const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+        header.innerHTML =
+          '<div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;">'+(r.name||'Unknown')+'</div>' +
+          '<div style="font-size:13px;color:var(--text-dim);margin-bottom:10px;">'+(r.email||'')+'</div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<span style="padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;background:#EFF6FF;color:#1D4ED8;">'+(r.category||'general')+'</span>' +
+            '<span style="font-size:12px;color:var(--text-dim);">'+date+'</span>' +
+            (r.reference ? '<span style="font-size:12px;color:var(--text-dim);">Ref: '+r.reference+'</span>' : '') +
+          '</div>';
+      }
+      const body = document.getElementById('fb-ticket-body');
+      if (body) {
+        body.innerHTML = '<div style="font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap;">'+(r.message||'')+'</div>';
+      }
+      const commentInput = document.getElementById('fb-comment-input');
+      if (commentInput) commentInput.setAttribute('data-ticket-id', id);
+      const sendBtn = document.getElementById('fb-comment-send');
+      if (sendBtn) sendBtn.setAttribute('onclick', 'addFbComment(\''+id+'\')');
+      showFbTicket();
+      loadFbComments(id);
+    } catch(e) {
+      console.error('[Feedback] openFbTicket error:', e);
+    }
+  }
+
+  async function updateFbTicketStatus(id, newStatus) {
+    const r = window._currentFbTicket;
+    if (!r) return;
+    const oldStatus = r.status || 'new';
+    try {
+      await sbProxy('lb_feedback', 'PATCH', 'id=eq.'+id, {
+        status: newStatus,
+        status_updated_at: new Date().toISOString(),
+        status_updated_by: window._currentUser?.email || ''
+      });
+      fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          feedback_id: id,
+          name: r.name,
+          email: r.email,
+          category: r.category,
+          message: r.message,
+          old_status: oldStatus,
+          new_status: newStatus,
+          updated_by: window._currentUser?.email || '',
+          updated_at: new Date().toISOString()
+        })
+      }).catch(() => {});
+      window._currentFbTicket.status = newStatus;
+      openFbTicket(id);
+    } catch(e) {
+      alert('Failed to update status: ' + e.message);
+    }
+  }
+
+  async function loadFbComments(feedbackId) {
+    const container = document.getElementById('fb-comments-thread');
+    if (!container) return;
+    container.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px 0;">Loading comments...</div>';
+    try {
+      const comments = await sbProxy('lb_feedback_comments', 'GET',
+        'feedback_id=eq.'+feedbackId+'&order=created_at.asc&limit=100');
+      if (!comments || !comments.length) {
+        container.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px 0;text-align:center;">No comments yet \u2014 be the first to add one.</div>';
+        return;
+      }
+      container.innerHTML = comments.map(c => {
+        const isMe = c.author_email === (window._currentUser?.email||'');
+        const cDate = c.created_at ? new Date(c.created_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+        return '<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';margin-bottom:12px;">' +
+          '<div style="max-width:75%;background:'+(isMe?'#4A8FD6':'#F5F6F8')+';color:'+(isMe?'#fff':'var(--text)')+';padding:10px 14px;border-radius:'+(isMe?'12px 12px 2px 12px':'12px 12px 12px 2px')+';font-size:13px;line-height:1.5;">'+(c.message||'')+'</div>' +
+          '<div style="font-size:11px;color:var(--text-dim);margin-top:3px;">'+(c.author_name||c.author_email||'')+' \u00B7 '+cDate+'</div>' +
+        '</div>';
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    } catch(e) {
+      container.innerHTML = '<div style="color:var(--red);font-size:13px;">Could not load comments.</div>';
+    }
+  }
+
+  async function addFbComment(feedbackId) {
+    const input = document.getElementById('fb-comment-input');
+    if (!input) return;
+    const message = input.value.trim();
+    if (!message) return;
+    input.value = '';
+    try {
+      await sbProxy('lb_feedback_comments', 'POST', '', {
+        feedback_id: feedbackId,
+        author_name: window._currentUser?.name || 'Team',
+        author_email: window._currentUser?.email || '',
+        message: message,
+        created_at: new Date().toISOString()
+      });
+      loadFbComments(feedbackId);
+    } catch(e) {
+      alert('Failed to post comment: ' + e.message);
+    }
   }
 
   async function submitFeedback() {
@@ -4381,7 +4689,6 @@
     }
 
     try {
-      // 1. Send to webhook
       const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4389,7 +4696,6 @@
       });
       if (!resp.ok) throw new Error('Webhook returned ' + resp.status);
 
-      // 2. Insert directly into Supabase lb_feedback table
       const sbPayload = {
         name: payload.name,
         email: payload.email,
@@ -4410,8 +4716,7 @@
       fbAttachmentName = '';
       var fileLabel = document.getElementById('fb-file-name');
       if (fileLabel) { fileLabel.style.display = 'none'; fileLabel.textContent = ''; }
-      // 3. Reload recent feedback to show the new entry
-      loadFeedbackHistory();
+      setTimeout(() => { showFbHome(); }, 1500);
     } catch(e) {
       console.error('[Feedback] Submit failed:', e.message);
       if (errorEl) errorEl.style.display = 'block';
@@ -4420,179 +4725,8 @@
     }
   }
 
-  const FB_STATUS_FLOW = ['new', 'in_progress', 'complete', 'closed'];
-  const FB_STATUS_DISPLAY = {
-    new:         { emoji: '🆕', label: 'New',         bg: '#F1F5F9', color: '#475569' },
-    in_progress: { emoji: '⏳', label: 'In Progress', bg: '#FEF3C7', color: '#92400E' },
-    complete:    { emoji: '✅', label: 'Complete',     bg: '#DCFCE7', color: '#166534' },
-    closed:      { emoji: '🔒', label: 'Closed',       bg: '#DBEAFE', color: '#1E40AF' }
-  };
-
-  async function cycleFeedbackStatus(feedbackId, row) {
-    const current = row.status || 'new';
-    const idx = FB_STATUS_FLOW.indexOf(current);
-    const next = FB_STATUS_FLOW[(idx + 1) % FB_STATUS_FLOW.length];
-    try {
-      await sbProxy('lb_feedback', 'PATCH', 'id=eq.' + feedbackId, {
-        status: next,
-        status_updated_at: new Date().toISOString(),
-        status_updated_by: window._currentUser?.email || 'unknown'
-      });
-      fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          feedback_id: feedbackId,
-          name: row.name || '',
-          email: row.email || '',
-          category: row.category || '',
-          message: row.message || '',
-          old_status: current,
-          new_status: next,
-          updated_by: window._currentUser?.email || 'unknown',
-          updated_at: new Date().toISOString()
-        })
-      }).catch(e => console.warn('[Feedback] Status webhook error:', e.message));
-      loadFeedbackHistory();
-    } catch(e) {
-      console.error('[Feedback] Status update failed:', e.message);
-    }
-  }
-
-  async function loadFeedbackHistory() {
-    const container = document.getElementById('fb-history');
-    if (!container) return;
-    container.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;">Loading...</div>';
-    try {
-      const rows = await sbProxy('lb_feedback', 'GET', 'order=submitted_at.desc&limit=50');
-      if (!rows || !rows.length) {
-        container.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:20px 0;">No feedback yet.</div>';
-        return;
-      }
-      const statusNext = { new:'in_progress', in_progress:'complete', complete:'closed', closed:'new' };
-      const statusLabel = { new:'🆕 New', in_progress:'⏳ In Progress', complete:'✅ Complete', closed:'🔒 Closed' };
-      const statusStyle = {
-        new:'background:#F1F5F9;color:#64748B;',
-        in_progress:'background:#FEF3C7;color:#B45309;',
-        complete:'background:#DCFCE7;color:#15803D;',
-        closed:'background:#DBEAFE;color:#1D4ED8;'
-      };
-      container.innerHTML = rows.map(r => {
-        const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-        const status = r.status || 'new';
-        const sStyle = statusStyle[status] || statusStyle.new;
-        const sLabel = statusLabel[status] || status;
-        return '<div id="fb-ticket-'+r.id+'" style="border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden;">' +
-          '<div style="padding:14px 16px;background:var(--surface);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;cursor:pointer;" onclick="toggleFbTicket(\''+r.id+'\')">' +
-            '<div style="flex:1;">' +
-              '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-                '<span style="font-size:13px;font-weight:700;color:var(--text);">'+(r.name||'Unknown')+'</span>' +
-                '<span style="font-size:11px;color:var(--text-dim);">'+date+'</span>' +
-                '<span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#EFF6FF;color:#1D4ED8;">'+(r.category||'general').replace(/_/g,' ')+'</span>' +
-              '</div>' +
-              '<div style="font-size:13px;color:var(--text-mid);margin-top:4px;line-height:1.4;">'+(r.message||'').substring(0,120)+((r.message||'').length>120?'…':'')+'</div>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">' +
-              '<button onclick="event.stopPropagation();advanceFbStatus(\''+r.id+'\',\''+status+'\',\''+((r.name||'').replace(/'/g,'\\\''))+'\',\''+((r.email||'').replace(/'/g,'\\\''))+'\',\''+(r.category||'')+'\',\''+encodeURIComponent(r.message||'')+'\')" '+
-                'style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;border:none;cursor:pointer;'+sStyle+'">'+sLabel+'</button>' +
-              '<span style="color:var(--text-dim);font-size:16px;">▾</span>' +
-            '</div>' +
-          '</div>' +
-          '<div id="fb-ticket-body-'+r.id+'" style="display:none;padding:16px;border-top:1px solid var(--border);background:#fff;">' +
-            '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:16px;white-space:pre-wrap;">'+(r.message||'')+'</div>' +
-            '<div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;">From: '+(r.email||'')+(r.reference?' · Ref: '+r.reference:'')+'</div>' +
-            '<div id="fb-comments-'+r.id+'" style="margin-bottom:12px;"></div>' +
-            '<div style="display:flex;gap:8px;">' +
-              '<input type="text" id="fb-comment-input-'+r.id+'" placeholder="Add a comment..." ' +
-                'style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;" ' +
-                'onkeydown="if(event.key===\'Enter\')addFbComment(\''+r.id+'\')"/>' +
-              '<button onclick="addFbComment(\''+r.id+'\')" ' +
-                'style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">Send</button>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-      }).join('');
-    } catch(e) {
-      container.innerHTML = '<div style="color:var(--red);font-size:13px;padding:20px 0;">Failed to load feedback.</div>';
-    }
-  }
-
-  function toggleFbTicket(id) {
-    const body = document.getElementById('fb-ticket-body-'+id);
-    if (!body) return;
-    const isOpen = body.style.display !== 'none';
-    body.style.display = isOpen ? 'none' : 'block';
-    if (!isOpen) loadFbComments(id);
-  }
-
-  async function loadFbComments(feedbackId) {
-    const container = document.getElementById('fb-comments-'+feedbackId);
-    if (!container) return;
-    try {
-      const comments = await sbProxy('lb_feedback_comments', 'GET',
-        'feedback_id=eq.'+feedbackId+'&order=created_at.asc&limit=50');
-      if (!comments || !comments.length) {
-        container.innerHTML = '<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">No comments yet.</div>';
-        return;
-      }
-      container.innerHTML = comments.map(c => {
-        const cDate = c.created_at ? new Date(c.created_at).toLocaleString() : '';
-        const isMe = c.author_email === (window._currentUser?.email||'');
-        return '<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';margin-bottom:8px;">' +
-          '<div style="max-width:80%;background:'+(isMe?'var(--accent)':'var(--surface)')+';color:'+(isMe?'#fff':'var(--text)')+';padding:8px 12px;border-radius:8px;font-size:13px;line-height:1.4;">'+(c.message||'')+'</div>' +
-          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">'+(c.author_name||c.author_email||'')+' · '+cDate+'</div>' +
-        '</div>';
-      }).join('');
-    } catch(e) {
-      container.innerHTML = '<div style="font-size:12px;color:var(--red);">Could not load comments.</div>';
-    }
-  }
-
-  async function addFbComment(feedbackId) {
-    const input = document.getElementById('fb-comment-input-'+feedbackId);
-    if (!input) return;
-    const message = input.value.trim();
-    if (!message) return;
-    input.value = '';
-    try {
-      await sbProxy('lb_feedback_comments', 'POST', '', {
-        feedback_id: feedbackId,
-        author_name: window._currentUser?.name || 'Team',
-        author_email: window._currentUser?.email || '',
-        message: message,
-        created_at: new Date().toISOString()
-      });
-      loadFbComments(feedbackId);
-    } catch(e) {
-      alert('Failed to add comment: ' + e.message);
-    }
-  }
-
-  async function advanceFbStatus(id, currentStatus, name, email, category, encodedMessage) {
-    const statusNext = { new:'in_progress', in_progress:'complete', complete:'closed', closed:'new' };
-    const newStatus = statusNext[currentStatus] || 'in_progress';
-    const message = decodeURIComponent(encodedMessage);
-    try {
-      await sbProxy('lb_feedback', 'PATCH', 'id=eq.'+id, {
-        status: newStatus,
-        status_updated_at: new Date().toISOString(),
-        status_updated_by: window._currentUser?.email || ''
-      });
-      fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          feedback_id: id, name: name, email: email, category: category,
-          message: message, old_status: currentStatus, new_status: newStatus,
-          updated_by: window._currentUser?.email || '',
-          updated_at: new Date().toISOString()
-        })
-      }).catch(e => console.warn('[Feedback] Status webhook error:', e.message));
-      loadFeedbackHistory();
-    } catch(e) {
-      alert('Failed to update status: ' + e.message);
-    }
-  }
+  // Backwards compat redirect
+  function loadFeedbackHistory() { loadFbHome(); }
 
   // ==================== MY LISTS ====================
   let allListsData = [];
@@ -5499,20 +5633,22 @@
       description: 'People match + company data',
       fetchCredits: async () => {
         try {
-          const r = await fetch('https://api.apollo.io/api/v1/auth/health', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
-            body: JSON.stringify({ api_key: 'q54-425S9MpJYWrWR3NK6A' })
-          });
+          const r = await fetch('/api/apollo-credits');
           const d = await r.json();
-          const isHealthy = d.is_logged_in || d.user?.id;
-          return { remaining: null,
-            label: isHealthy ? 'Connected & Active' : 'Check credentials',
-            detail: isHealthy ? 'apollo.io/settings/credits for quota' : 'API key may need refresh',
-            status: isHealthy ? 'healthy' : 'unknown',
+          if (d.healthy) {
+            return { remaining: null, label: '\u2705 Connected & Active',
+              detail: 'View quota at apollo.io/settings/credits',
+              status: 'healthy',
+              link: 'https://app.apollo.io/#/settings/credits/subscription' };
+          }
+          return { remaining: null, label: '\u26A0\uFE0F Check credentials',
+            detail: 'API key may need refresh',
+            status: 'unknown',
             link: 'https://app.apollo.io/#/settings/credits/subscription' };
         } catch(e) {
-          return { remaining: null, label: 'Active \u2014 credits not exposed via API',
-            detail: 'Check apollo.io dashboard for quota', status: 'healthy',
+          return { remaining: null, label: 'Check dashboard',
+            detail: 'apollo.io/settings/credits',
+            status: 'unknown',
             link: 'https://app.apollo.io/#/settings/credits/subscription' };
         }
       }
@@ -5532,17 +5668,27 @@
       id: 'snovio', name: 'Snov.io', icon: '\u{1F4E7}', color: '#EC4899',
       description: 'Email finder fallback',
       fetchCredits: async () => {
-        return { remaining: null, label: 'Token auth active',
-          detail: 'Credits checked via weekly monitor email',
-          status: 'healthy', link: 'https://app.snov.io/account' };
+        try {
+          const r = await fetch('/api/snov-credits');
+          const d = await r.json();
+          const remaining = d.remaining;
+          if (remaining !== null && remaining !== undefined) {
+            return { remaining, label: 'credits remaining',
+              detail: 'Monthly reset',
+              status: remaining > 100 ? 'healthy' : remaining > 20 ? 'low' : 'critical' };
+          }
+        } catch(e) {}
+        return { remaining: null, label: 'Active \u2014 check dashboard',
+          detail: 'Visit app.snov.io/account for balance',
+          status: 'unknown', link: 'https://app.snov.io/account' };
       }
     },
     {
       id: 'builtwith', name: 'BuiltWith', icon: '\u{1F527}', color: '#3B82F6',
       description: 'Tech stack detection',
       fetchCredits: async () => {
-        return { remaining: null, label: 'Active',
-          detail: 'Check builtwith.com/account for quota',
+        return { remaining: null, label: '\u2705 Active \u2014 API key on file',
+          detail: 'builtwith.com/account for quota',
           status: 'healthy',
           link: 'https://builtwith.com/account' };
       }
@@ -5551,6 +5697,16 @@
       id: 'anthropic', name: 'Anthropic (Claude)', icon: '\u{1F9E0}', color: '#1E293B',
       description: 'AI extraction, ICP scoring, research',
       fetchCredits: async () => {
+        try {
+          const r = await fetch('/api/anthropic-credits');
+          const d = await r.json();
+          if (d.raw) {
+            return { remaining: null, label: 'Usage-based \u2014 Active',
+              detail: 'View spend at console.anthropic.com',
+              status: 'healthy',
+              link: 'https://console.anthropic.com/settings/billing' };
+          }
+        } catch(e) {}
         return { remaining: null, label: 'Usage-based billing',
           detail: 'Check Anthropic console for spend',
           status: 'healthy',
