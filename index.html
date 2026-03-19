@@ -2928,137 +2928,70 @@
 
   <!-- ==================== FEEDBACK MODE ==================== -->
   <div id="mode-feedback" class="mode-content hidden">
-    <div style="max-width:560px;margin:0 auto;padding:40px 20px;">
-      <div id="feedback-card">
-        <!-- PHOTO SECTION — shown first -->
-        <div id="feedback-photo-section">
-          <div style="width:120px;height:120px;border-radius:50%;
-          margin:0 auto 20px;overflow:hidden;border:3px solid #4A8FD6;
-          box-shadow:0 0 0 5px rgba(74,143,214,0.12);cursor:pointer;"
-          onclick="activateFeedbackOrb()">
-            <img
-              src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp"
-              style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
-              onerror="this.style.display='none'" />
-          </div>
-          <div style="font-size:18px;font-weight:800;color:#1E293B;
-          margin-bottom:3px;">Rebecka</div>
-          <div style="font-size:12px;color:#4A8FD6;font-weight:600;
-          margin-bottom:4px;">AI Sales Assistant &middot; ManageAI</div>
-          <div style="display:inline-flex;align-items:center;gap:5px;
-          background:#DCFCE7;border-radius:20px;padding:3px 12px;
-          margin-bottom:20px;">
-            <div style="width:6px;height:6px;border-radius:50%;
-            background:#16A34A;animation:neuralIdle 2s infinite;"></div>
-            <span style="font-size:11px;font-weight:700;color:#16A34A;">
-              Online</span>
-          </div>
-          <div style="font-size:13px;color:#475569;line-height:1.7;
-          margin-bottom:28px;">
-            Got feedback? Found a bug? Have an idea?<br>
-            Just tell me — I'll handle the rest.
-          </div>
-          <button onclick="activateFeedbackOrb()"
-            style="padding:13px 32px;background:#4A8FD6;color:#fff;
-            border:none;border-radius:10px;font-size:14px;font-weight:700;
-            cursor:pointer;font-family:var(--font);
-            box-shadow:0 4px 12px rgba(74,143,214,0.3);">
-            &#x1F4AC; Let's have a chat
-          </button>
+    <div class="card">
+      <div class="card-title">System Feedback</div>
+      <div class="card-sub">Help us improve Lead Booster Pro. Your feedback goes directly to the ManageAI team.</div>
+
+      <div style="margin-top:20px;">
+        <div class="field" style="margin-bottom:16px;">
+          <label>Your Name</label>
+          <input type="text" id="fb-name" placeholder="Your name" />
         </div>
-        <!-- ORB SECTION — shown after click -->
-        <div id="feedback-orb-section">
-          <!-- Neural orb -->
-          <div class="rebecka-neural-orb" id="rebecka-feedback-orb"
-            onclick="feedbackOrbToggle()" style="cursor:pointer;margin-bottom:16px;">
-            <svg style="position:absolute;inset:-30px;width:calc(100% + 60px);
-            height:calc(100% + 60px);overflow:visible;pointer-events:none;"
-            viewBox="0 0 240 240">
-              <circle class="neural-node" cx="30" cy="60" r="3" style="--nx:4px;--ny:-5px;animation-delay:0s"/>
-              <circle class="neural-node" cx="210" cy="80" r="2.5" style="--nx:-3px;--ny:4px;animation-delay:0.8s"/>
-              <circle class="neural-node" cx="50" cy="180" r="3" style="--nx:5px;--ny:3px;animation-delay:1.6s"/>
-              <circle class="neural-node" cx="195" cy="170" r="2.5" style="--nx:-4px;--ny:-3px;animation-delay:0.4s"/>
-              <circle class="neural-node" cx="120" cy="15" r="2" style="--nx:2px;--ny:-4px;animation-delay:1.2s"/>
-              <circle class="neural-node" cx="25" cy="125" r="2.5" style="--nx:-3px;--ny:3px;animation-delay:2s"/>
-              <circle class="neural-node" cx="215" cy="130" r="2" style="--nx:4px;--ny:4px;animation-delay:0.6s"/>
-              <circle class="neural-node" cx="120" cy="225" r="3" style="--nx:-3px;--ny:5px;animation-delay:1.4s"/>
-              <line class="neural-line" x1="120" y1="120" x2="30" y2="60" style="animation-delay:0s"/>
-              <line class="neural-line" x1="120" y1="120" x2="210" y2="80" style="animation-delay:0.5s"/>
-              <line class="neural-line" x1="120" y1="120" x2="50" y2="180" style="animation-delay:1s"/>
-              <line class="neural-line" x1="120" y1="120" x2="195" y2="170" style="animation-delay:1.5s"/>
-              <line class="neural-line" x1="120" y1="120" x2="120" y2="15" style="animation-delay:0.3s"/>
-              <line class="neural-line" x1="120" y1="120" x2="25" y2="125" style="animation-delay:0.8s"/>
-              <line class="neural-line" x1="120" y1="120" x2="215" y2="130" style="animation-delay:1.3s"/>
-              <line class="neural-line" x1="120" y1="120" x2="120" y2="225" style="animation-delay:0.6s"/>
-              <line class="neural-line" x1="30" y1="60" x2="120" y2="15" style="animation-delay:2s"/>
-              <line class="neural-line" x1="210" y1="80" x2="215" y2="130" style="animation-delay:1.8s"/>
-              <line class="neural-line" x1="50" y1="180" x2="120" y2="225" style="animation-delay:1.2s"/>
-              <line class="neural-line" x1="195" y1="170" x2="120" y2="225" style="animation-delay:0.9s"/>
-            </svg>
-            <div class="neural-ring neural-ring-1"></div>
-            <div class="neural-ring neural-ring-2"></div>
-            <div class="neural-ring neural-ring-3"></div>
-            <div class="neural-core state-idle" id="rebecka-fb-core"></div>
-          </div>
-          <!-- Waveform -->
-          <div class="rebecka-wave" id="rebecka-fb-wave">
-            <div class="rebecka-wave-bar" style="height:4px;"></div>
-            <div class="rebecka-wave-bar" style="height:8px;"></div>
-            <div class="rebecka-wave-bar" style="height:16px;"></div>
-            <div class="rebecka-wave-bar" style="height:22px;"></div>
-            <div class="rebecka-wave-bar" style="height:12px;"></div>
-            <div class="rebecka-wave-bar" style="height:20px;"></div>
-            <div class="rebecka-wave-bar" style="height:8px;"></div>
-            <div class="rebecka-wave-bar" style="height:14px;"></div>
-            <div class="rebecka-wave-bar" style="height:18px;"></div>
-            <div class="rebecka-wave-bar" style="height:6px;"></div>
-          </div>
-          <!-- Status -->
-          <div id="rebecka-fb-status"
-            style="font-size:12px;font-weight:600;color:#64748B;
-            margin:8px 0 4px;min-height:18px;">
-            Click the orb to talk</div>
-          <!-- Transcript -->
-          <div id="rebecka-fb-transcript"
-            style="font-size:13px;color:#334155;text-align:center;
-            max-width:400px;margin:0 auto;line-height:1.6;min-height:20px;">
-          </div>
-          <!-- Response -->
-          <div id="rebecka-fb-response"
-            style="display:none;font-size:13px;color:#475569;
-            text-align:center;max-width:400px;margin:10px auto 0;
-            line-height:1.7;padding:14px 18px;
-            background:#F8FAFC;
-            border:1px solid #E2E6EC;
-            border-radius:12px;">
-          </div>
-          <!-- Submit when done -->
-          <div id="rebecka-fb-done"
-            style="display:none;margin-top:14px;text-align:center;">
-            <button onclick="rebeckaFbFinish()"
-              style="padding:9px 22px;background:#16A34A;color:#fff;
-              border:none;border-radius:8px;font-size:12px;font-weight:700;
-              cursor:pointer;font-family:var(--font);">
-              &#x2705; Submit Feedback
-            </button>
+
+        <div class="field" style="margin-bottom:16px;">
+          <label>Email</label>
+          <input type="email" id="fb-email" placeholder="you@company.com" />
+        </div>
+
+        <div class="field" style="margin-bottom:16px;">
+          <label>Category</label>
+          <select id="fb-category" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);background:#fff;outline:none;">
+            <option value="">Select a category…</option>
+            <option value="data_quality">Data Quality</option>
+            <option value="feature_request">Feature Request</option>
+            <option value="bug_report">Bug Report</option>
+            <option value="general">General Feedback</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-bottom:16px;">
+          <label>Rating</label>
+          <div id="fb-stars" style="display:flex;gap:6px;cursor:pointer;font-size:24px;user-select:none;">
+            <span class="fb-star" data-val="1" onclick="setFbRating(1)">&#9734;</span>
+            <span class="fb-star" data-val="2" onclick="setFbRating(2)">&#9734;</span>
+            <span class="fb-star" data-val="3" onclick="setFbRating(3)">&#9734;</span>
+            <span class="fb-star" data-val="4" onclick="setFbRating(4)">&#9734;</span>
+            <span class="fb-star" data-val="5" onclick="setFbRating(5)">&#9734;</span>
           </div>
         </div>
-        <!-- Success -->
-        <div id="feedback-success" style="display:none;">
-          <div style="font-size:36px;margin-bottom:14px;">&#x2705;</div>
-          <div style="font-size:16px;font-weight:700;color:#1E293B;
-          margin-bottom:8px;">Got it — thanks!</div>
-          <div style="font-size:13px;color:#475569;margin-bottom:22px;">
-            Rebecka has sent your feedback to Brian and Dan.</div>
-          <button onclick="resetFeedbackOrb()"
-            style="padding:8px 20px;background:#F1F5F9;
-            color:#475569;border:1px solid #E2E6EC;
-            border-radius:8px;font-size:12px;cursor:pointer;
-            font-family:var(--font);">
-            Send more feedback
-          </button>
+
+        <div class="field" style="margin-bottom:16px;">
+          <label>Message <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— required</span></label>
+          <textarea id="fb-message" rows="5" placeholder="Describe your feedback, bug, or feature request..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
         </div>
+
+        <div class="field" style="margin-bottom:16px;">
+          <label>Reference <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11px;">— optional (ticket #, URL, company name)</span></label>
+          <input type="text" id="fb-reference" placeholder="e.g. ticket #1234 or https://..." />
+        </div>
+
+        <div id="fb-success" style="display:none;background:var(--green-light);color:var(--green);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
+          Feedback sent — thank you! Brian will review it shortly.
+        </div>
+        <div id="fb-error" style="display:none;background:var(--red-light);color:var(--red);padding:14px 16px;border-radius:9px;font-size:13px;font-weight:600;margin-bottom:16px;">
+          Something went wrong. Please try again.
+        </div>
+
+        <button class="btn-primary" onclick="submitFeedback()" id="btn-feedback" style="min-width:180px;">
+          Send Feedback
+        </button>
       </div>
+    </div>
+
+    <!-- Recent feedback -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">Recent Feedback</div>
+      <div id="fb-history" style="margin-top:12px;font-size:13px;color:var(--text-dim);">Loading...</div>
     </div>
   </div>
 
@@ -3351,7 +3284,7 @@ Turner Construction, turnerconstruction.com"
     if (mode === 'analysis') loadAnalysisTab();
     if (mode === 'precall') loadPrecallBriefs();
     if (mode === 'credits') loadCredits();
-    if (mode === 'feedback') { loadRecentFeedback && loadRecentFeedback(); }
+    if (mode === 'feedback') { typeof initFeedbackForm === 'function' && initFeedbackForm(); }
   }
 
   // ==================== CHIP SELECT ====================
@@ -4996,242 +4929,89 @@ Turner Construction, turnerconstruction.com"
     }
   }
 
-  // ==================== FEEDBACK — Rebecka Neural Orb Interface ====================
-  let rebeckaFbMessages = [];
-  let rebeckaFbState = 'idle';
-  let rebeckaFbRecognition = null;
-  let rebeckaFbWaveInterval = null;
+  // ==================== FEEDBACK — Classic Form ====================
+  let fbRating = 0;
 
-  function activateFeedbackOrb() {
-    // Unlock AudioContext on user gesture — must happen here
-    if (!window._audioCtx || window._audioCtx.state === 'closed') {
-      try {
-        window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const buf = window._audioCtx.createBuffer(1, 1, 22050);
-        const src = window._audioCtx.createBufferSource();
-        src.buffer = buf;
-        src.connect(window._audioCtx.destination);
-        src.start(0);
-        window._audioCtxUnlocked = true;
-      } catch(e) { console.warn('AudioContext init failed:', e); }
-    }
-    const card = document.getElementById('feedback-card');
-    const photoSection = document.getElementById('feedback-photo-section');
-    const orbSection = document.getElementById('feedback-orb-section');
-    if (!card || !photoSection || !orbSection) return;
-    card.classList.add('orb-mode');
-    photoSection.style.opacity = '0';
-    photoSection.style.transform = 'scale(0.8)';
-    setTimeout(() => {
-      photoSection.style.display = 'none';
-      orbSection.style.display = 'block';
-      orbSection.style.opacity = '0';
-      setTimeout(() => {
-        orbSection.style.transition = 'opacity 0.4s ease';
-        orbSection.style.opacity = '1';
-      }, 50);
-    }, 350);
-    rebeckaFbMessages = [];
-    setTimeout(() => {
-      const user = window._currentUser || {};
-      const name = (user.name || '').split(' ')[0] || 'there';
-      const hour = new Date().getHours();
-      const g = hour < 12 ? 'Good morning' :
-        hour < 17 ? 'Good afternoon' : 'Good evening';
-      rebeckaFbSpeak(g + ' ' + name +
-        '! What\'s on your mind? Tell me what\'s working, ' +
-        'what\'s broken, or any ideas you have.');
-    }, 100);
+  function setFbRating(n) {
+    fbRating = n;
+    document.querySelectorAll('.fb-star').forEach(s => {
+      s.textContent = parseInt(s.dataset.val) <= n ? '\u2605' : '\u2606';
+      s.style.color = parseInt(s.dataset.val) <= n ? '#F59E0B' : '#CBD5E1';
+    });
   }
 
-  function setFbOrbState(state) {
-    rebeckaFbState = state;
-    const core = document.getElementById('rebecka-fb-core');
-    const status = document.getElementById('rebecka-fb-status');
-    if (core) { core.className = 'neural-core state-' + state; }
-    const stateMap = {
-      idle:      { text: 'Click the orb to talk', color: '#64748B' },
-      listening: { text: '\uD83C\uDF99 Listening...', color: '#4A8FD6' },
-      thinking:  { text: '\u23F3 Thinking...', color: '#4A8FD6' },
-      speaking:  { text: '\uD83D\uDD0A Speaking', color: '#4A8FD6' }
-    };
-    const s = stateMap[state] || stateMap.idle;
-    if (status) { status.textContent = s.text; status.style.color = s.color; }
-    rebeckaFbAnimateWave(state !== 'idle');
-  }
-
-  function rebeckaFbAnimateWave(active) {
-    const bars = document.querySelectorAll('#rebecka-fb-wave .rebecka-wave-bar');
-    if (rebeckaFbWaveInterval) clearInterval(rebeckaFbWaveInterval);
-    const colors = { listening: '#4A8FD6', thinking: '#4A8FD6', speaking: '#4A8FD6' };
-    if (!active) {
-      bars.forEach((b,i) => {
-        b.style.height = [4,8,16,22,12,20,8,14,18,6][i] + 'px';
-        b.style.background = '#CBD5E1';
-      });
-      return;
-    }
-    const color = colors[rebeckaFbState] || '#4A8FD6';
-    bars.forEach(b => b.style.background = color);
-    rebeckaFbWaveInterval = setInterval(() => {
-      bars.forEach(b => { b.style.height = (4 + Math.random() * 24) + 'px'; });
-    }, 110);
-  }
-
-  function feedbackOrbToggle() {
-    if (rebeckaFbState === 'listening') {
-      if (rebeckaFbRecognition) rebeckaFbRecognition.stop();
-    } else if (rebeckaFbState === 'idle') {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { return; }
-      rebeckaFbRecognition = new SR();
-      rebeckaFbRecognition.continuous = false;
-      rebeckaFbRecognition.interimResults = true;
-      rebeckaFbRecognition.lang = 'en-US';
-      rebeckaFbRecognition.onstart = () => setFbOrbState('listening');
-      rebeckaFbRecognition.onresult = (e) => {
-        let final = '', interim = '';
-        for (const r of e.results) {
-          if (r.isFinal) final += r[0].transcript;
-          else interim += r[0].transcript;
-        }
-        const t = document.getElementById('rebecka-fb-transcript');
-        if (t) t.textContent = final || interim;
-      };
-      rebeckaFbRecognition.onend = () => {
-        const t = document.getElementById('rebecka-fb-transcript');
-        const text = t?.textContent?.trim();
-        if (text) rebeckaFbProcess(text);
-        else setFbOrbState('idle');
-      };
-      rebeckaFbRecognition.onerror = () => setFbOrbState('idle');
-      rebeckaFbRecognition.start();
-    }
-  }
-
-  async function rebeckaFbProcess(text) {
-    setFbOrbState('thinking');
-    const responseEl = document.getElementById('rebecka-fb-response');
-    if (responseEl) responseEl.style.display = 'none';
+  function initFeedbackForm() {
     const user = window._currentUser || {};
-    rebeckaFbMessages.push({ role: 'user', content: text });
-    const doneBtn = document.getElementById('rebecka-fb-done');
-    if (doneBtn && rebeckaFbMessages.length >= 2) doneBtn.style.display = 'block';
-    try {
-      const resp = await fetch(
-        'https://manageai2026.app.n8n.cloud/webhook/lb-rebecca-chat',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: text,
-            messages: rebeckaFbMessages.slice(-8),
-            user_name: user.name || 'Team member',
-            user_email: user.email || 'unknown@manageai.io'
-          })
-        }
-      );
-      if (!resp.ok) throw new Error('Chat proxy returned ' + resp.status);
-      const data = await resp.json();
-      const reply = data.reply || data.content?.[0]?.text || "Got it — anything else before I send this to Brian and Dan?";
-      rebeckaFbMessages.push({ role: 'assistant', content: reply });
-      rebeckaFbSpeak(reply);
-    } catch(e) {
-      console.error('[Rebecka] Chat failed:', e.message);
-      rebeckaFbSpeak("Got it! Anything else you want to add before I send this?");
-    }
+    const nameEl = document.getElementById('fb-name');
+    const emailEl = document.getElementById('fb-email');
+    if (nameEl && user.name) nameEl.value = user.name;
+    if (emailEl && user.email) emailEl.value = user.email;
+    loadFeedbackHistory();
   }
 
-  async function rebeckaFbSpeak(text) {
-    setFbOrbState('speaking');
-    const responseEl = document.getElementById('rebecka-fb-response');
-    if (responseEl) { responseEl.textContent = text; responseEl.style.display = 'block'; }
+  async function submitFeedback() {
+    const name = document.getElementById('fb-name')?.value?.trim();
+    const email = document.getElementById('fb-email')?.value?.trim();
+    const category = document.getElementById('fb-category')?.value;
+    const message = document.getElementById('fb-message')?.value?.trim();
+    const reference = document.getElementById('fb-reference')?.value?.trim();
+    const successEl = document.getElementById('fb-success');
+    const errorEl = document.getElementById('fb-error');
+    const btn = document.getElementById('btn-feedback');
+    if (successEl) successEl.style.display = 'none';
+    if (errorEl) errorEl.style.display = 'none';
+    if (!message) { alert('Please enter a message.'); return; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
     try {
-      // Ensure AudioContext exists and is running
-      if (!window._audioCtx || window._audioCtx.state === 'closed') {
-        window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (window._audioCtx.state === 'suspended') {
-        await window._audioCtx.resume();
-      }
-      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-tts', {
+      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text, voice_id: '21m00Tcm4TlvDq8ikWAM' })
+        body: JSON.stringify({
+          name: name || 'Team member',
+          email: email || 'unknown@manageai.io',
+          category: category || 'general',
+          rating: fbRating,
+          message: message,
+          reference: reference || '',
+          submitted_at: new Date().toISOString()
+        })
       });
-      if (!resp.ok) throw new Error('TTS proxy returned ' + resp.status);
-      const data = await resp.json();
-      if (!data.audio_base64 || data.audio_base64.length < 100) throw new Error('Empty audio from proxy');
-      // Decode base64 to bytes
-      const binary = atob(data.audio_base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      // Decode MP3 via AudioContext — plays without needing active gesture
-      const audioBuffer = await window._audioCtx.decodeAudioData(bytes.buffer);
-      const source = window._audioCtx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(window._audioCtx.destination);
-      source.onended = () => setFbOrbState('idle');
-      source.start(0);
-      console.log('[Rebecka] Aria playing via AudioContext, duration:', audioBuffer.duration.toFixed(1) + 's');
+      if (!resp.ok) throw new Error('Webhook returned ' + resp.status);
+      if (successEl) successEl.style.display = 'block';
+      document.getElementById('fb-message').value = '';
+      document.getElementById('fb-reference').value = '';
+      document.getElementById('fb-category').value = '';
+      setFbRating(0);
+      loadFeedbackHistory();
     } catch(e) {
-      console.error('[Rebecka] ElevenLabs failed:', e.message);
-      // No browser TTS fallback — just reset orb state
-      setTimeout(() => setFbOrbState('idle'), 1500);
+      console.error('[Feedback] Submit failed:', e.message);
+      if (errorEl) errorEl.style.display = 'block';
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Send Feedback'; }
     }
   }
 
-  async function rebeckaFbFinish() {
-    const user = window._currentUser || {};
-    const userMessages = rebeckaFbMessages
-      .filter(m => m.role === 'user')
-      .map(m => m.content)
-      .join(' | ');
+  async function loadFeedbackHistory() {
+    const container = document.getElementById('fb-history');
+    if (!container) return;
     try {
-      await fetch(
-        'https://manageai2026.app.n8n.cloud/webhook/lb-feedback',
-        {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            name: user.name || 'Team member',
-            email: user.email || 'unknown@manageai.io',
-            message: userMessages,
-            full_conversation: rebeckaFbMessages,
-            category: 'conversational',
-            submitted_at: new Date().toISOString()
-          })
-        }
-      );
-    } catch(e) {}
-    const orbSection = document.getElementById('feedback-orb-section');
-    const successSection = document.getElementById('feedback-success');
-    if (orbSection) orbSection.style.display = 'none';
-    if (successSection) successSection.style.display = 'block';
-    rebeckaFbSpeak("Sent! Brian and Dan will see that. Anything else?");
-  }
-
-  function resetFeedbackOrb() {
-    const card = document.getElementById('feedback-card');
-    const photoSection = document.getElementById('feedback-photo-section');
-    const orbSection = document.getElementById('feedback-orb-section');
-    const successSection = document.getElementById('feedback-success');
-    if (card) card.classList.remove('orb-mode');
-    if (photoSection) {
-      photoSection.style.display = 'block';
-      photoSection.style.opacity = '1';
-      photoSection.style.transform = 'scale(1)';
+      const rows = await sbProxy('lb_feedback', 'GET', 'order=submitted_at.desc&limit=5');
+      if (!rows || !rows.length) { container.textContent = 'No feedback yet.'; return; }
+      container.innerHTML = rows.map(r => {
+        const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '';
+        const stars = r.rating ? '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating) : '';
+        return '<div style="padding:10px 0;border-bottom:1px solid var(--border);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<strong>' + (r.name || 'Anonymous') + '</strong>' +
+          '<span style="font-size:11px;color:var(--text-dim);">' + date + '</span></div>' +
+          (stars ? '<div style="color:#F59E0B;font-size:14px;">' + stars + '</div>' : '') +
+          (r.category ? '<div style="font-size:11px;color:var(--accent);margin:2px 0;">' + r.category.replace(/_/g, ' ') + '</div>' : '') +
+          '<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.5;">' + (r.message || '') + '</div>' +
+          '</div>';
+      }).join('');
+    } catch(e) {
+      container.textContent = 'Could not load feedback history.';
     }
-    if (orbSection) orbSection.style.display = 'none';
-    if (successSection) successSection.style.display = 'none';
-    const t = document.getElementById('rebecka-fb-transcript');
-    const r = document.getElementById('rebecka-fb-response');
-    const d = document.getElementById('rebecka-fb-done');
-    if (t) t.textContent = '';
-    if (r) r.style.display = 'none';
-    if (d) d.style.display = 'none';
-    rebeckaFbMessages = [];
-    setFbOrbState('idle');
   }
 
   // ==================== REBECKA — Executive Sales Assistant ====================
