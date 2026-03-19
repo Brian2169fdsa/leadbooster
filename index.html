@@ -534,410 +534,6 @@
       display: none;
     }
 
-    @media (max-width: 768px) {
-      /* ===== BODY AND APP SHELL ===== */
-      body {
-        padding-bottom: 70px;
-      }
-
-      /* ===== TOP NAV BAR — hide on mobile ===== */
-      .tab-bar,
-      .tab-nav,
-      #tab-bar,
-      [class*='tab-bar'],
-      [id*='tab-bar'] {
-        display: none !important;
-      }
-
-      /* ===== BOTTOM NAVIGATION BAR ===== */
-      #mobile-bottom-nav {
-        display: flex !important;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 64px;
-        background: #1a2f4e;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        z-index: 9999;
-        align-items: stretch;
-        padding: 0;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-      }
-
-      .mobile-nav-item {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        cursor: pointer;
-        color: rgba(255,255,255,0.5);
-        font-size: 10px;
-        font-weight: 500;
-        letter-spacing: 0.03em;
-        padding: 8px 4px;
-        transition: color 0.15s;
-        -webkit-tap-highlight-color: transparent;
-        border: none;
-        background: none;
-      }
-
-      .mobile-nav-item.active {
-        color: #4a90d9;
-      }
-
-      .mobile-nav-item svg,
-      .mobile-nav-item .nav-icon {
-        width: 22px;
-        height: 22px;
-      }
-
-      /* ===== APP CONTAINER ===== */
-      .app-container,
-      #app-container,
-      .main-content,
-      #main-content {
-        padding: 12px !important;
-        margin: 0 !important;
-      }
-
-      /* ===== HEADER / LOGO BAR ===== */
-      .app-header,
-      #app-header,
-      .header-bar {
-        padding: 12px 16px !important;
-        height: auto !important;
-      }
-
-      .app-header h1,
-      .logo-text {
-        font-size: 16px !important;
-      }
-
-      /* ===== DASHBOARD TAB ===== */
-      .kpi-grid,
-      .kpi-cards,
-      [class*='kpi-grid'],
-      [class*='dash-kpi'] {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 10px !important;
-      }
-
-      .kpi-card,
-      [class*='kpi-card'] {
-        padding: 12px !important;
-        border-radius: 10px !important;
-      }
-
-      .kpi-card .kpi-value,
-      [class*='kpi-value'] {
-        font-size: 22px !important;
-      }
-
-      .kpi-card .kpi-label,
-      [class*='kpi-label'] {
-        font-size: 11px !important;
-      }
-
-      .chart-card,
-      .dash-card,
-      [class*='chart-card'],
-      [class*='dash-card'] {
-        width: 100% !important;
-        margin-bottom: 12px !important;
-        padding: 14px !important;
-        border-radius: 10px !important;
-        overflow-x: hidden !important;
-      }
-
-      .leaderboard-table,
-      table {
-        font-size: 12px !important;
-        width: 100% !important;
-      }
-
-      table td,
-      table th {
-        padding: 8px 6px !important;
-        white-space: nowrap;
-      }
-
-      .table-wrapper,
-      [class*='table-wrap'] {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-      }
-
-      /* ===== FORMS ===== */
-      .form-row,
-      [class*='form-row'] {
-        flex-direction: column !important;
-        gap: 10px !important;
-      }
-
-      input[type='text'],
-      input[type='email'],
-      input[type='number'],
-      select,
-      textarea {
-        width: 100% !important;
-        font-size: 16px !important;
-        padding: 12px 14px !important;
-        border-radius: 10px !important;
-        box-sizing: border-box !important;
-      }
-
-      .btn-primary,
-      .submit-btn,
-      [class*='run-btn'],
-      button[type='submit'] {
-        width: 100% !important;
-        padding: 14px !important;
-        font-size: 15px !important;
-        border-radius: 10px !important;
-      }
-
-      .chip-row,
-      [class*='chip-row'],
-      .vertical-chips {
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-      }
-
-      .chip,
-      [class*='chip'] {
-        font-size: 12px !important;
-        padding: 6px 12px !important;
-      }
-
-      /* ===== HISTORY TAB ===== */
-      .history-row,
-      [class*='history-row'] {
-        flex-direction: column !important;
-        gap: 6px !important;
-        padding: 12px !important;
-      }
-
-      .history-badge,
-      [class*='status-badge'] {
-        align-self: flex-start !important;
-      }
-
-      /* ===== CONTACTS VIEWER ===== */
-      .cv-filters,
-      [class*='cv-filter'] {
-        flex-direction: column !important;
-        gap: 8px !important;
-      }
-
-      .cv-search,
-      [class*='cv-search'] {
-        width: 100% !important;
-      }
-
-      .cv-table-wrap {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        font-size: 12px !important;
-      }
-
-      .contact-card,
-      [class*='contact-card'] {
-        flex-direction: column !important;
-        gap: 8px !important;
-        padding: 12px !important;
-      }
-
-      /* ===== REBECCA TAB — mobile hero layout ===== */
-      #mode-rebecca {
-        padding: 0 !important;
-      }
-
-      .rb-layout,
-      [class*='rb-layout'],
-      #mode-rebecca > div:first-child {
-        flex-direction: column !important;
-        gap: 0 !important;
-      }
-
-      .rb-left,
-      [class*='rb-left'] {
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 12px !important;
-        padding: 12px 16px !important;
-        border-radius: 0 !important;
-        border-bottom: 1px solid #e5e7eb !important;
-        box-shadow: none !important;
-      }
-
-      .rb-photo,
-      [class*='rb-photo'] {
-        width: 52px !important;
-        height: 52px !important;
-        min-width: 52px !important;
-        border-width: 2px !important;
-      }
-
-      .rb-about,
-      .rb-handles,
-      [class*='rb-about'],
-      [class*='rb-handle'],
-      #mode-rebecca .about-section,
-      #mode-rebecca .handles-section {
-        display: none !important;
-      }
-
-      .rb-stats,
-      [class*='rb-stat-row'] {
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 6px !important;
-        flex-wrap: wrap !important;
-        margin: 0 !important;
-      }
-
-      #rb-stat-contacts,
-      #rb-stat-icp,
-      #rb-stat-pipedrive {
-        padding: 4px 10px !important;
-        font-size: 11px !important;
-      }
-
-      .rb-right,
-      [class*='rb-right'] {
-        width: 100% !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-      }
-
-      #rb-messages {
-        height: calc(100vh - 340px) !important;
-        min-height: 300px !important;
-      }
-
-      #rb-input {
-        font-size: 16px !important;
-        padding: 12px 14px !important;
-      }
-
-      #rb-send {
-        width: 48px !important;
-        height: 48px !important;
-        min-width: 48px !important;
-      }
-
-      #rb-video-section {
-        margin-bottom: 0 !important;
-        border-radius: 0 !important;
-      }
-
-      #rb-daily-container {
-        height: 300px !important;
-      }
-      #rb-daily-container iframe {
-        height: 360px !important;
-        top: 6px !important;
-      }
-
-      #rb-pipeline-actions {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
-        padding: 12px !important;
-      }
-
-      #rb-pipeline-actions button {
-        font-size: 12px !important;
-        padding: 10px 12px !important;
-        border-radius: 8px !important;
-        justify-content: center !important;
-      }
-
-      #rb-ptt-btn {
-        width: 80px !important;
-        height: 80px !important;
-      }
-
-      #rb-bulk-modal,
-      #rb-single-modal,
-      #rb-territory-modal {
-        margin: 0 8px !important;
-        border-radius: 12px !important;
-      }
-
-      #rb-suggestions {
-        flex-direction: column !important;
-        align-items: stretch !important;
-      }
-
-      #rb-suggestions button {
-        width: 100% !important;
-        text-align: left !important;
-        padding: 12px 16px !important;
-        font-size: 13px !important;
-      }
-
-      /* ===== ACTIVECAMPAIGN TAB ===== */
-      .ac-columns,
-      [class*='ac-col'] {
-        flex-direction: column !important;
-        gap: 12px !important;
-      }
-
-      .ac-component-grid {
-        grid-template-columns: 1fr !important;
-      }
-
-      /* ===== CURRENT RUN TAB ===== */
-      .run-tracker,
-      [class*='run-tracker'] {
-        padding: 12px !important;
-      }
-
-      .stage-track,
-      [class*='stage-track'] {
-        overflow-x: auto !important;
-      }
-
-      /* ===== FEEDBACK TAB ===== */
-      .star-row,
-      [class*='star-row'] {
-        gap: 12px !important;
-      }
-
-      .star-btn,
-      [class*='star-btn'] {
-        font-size: 28px !important;
-      }
-
-      /* ===== GENERAL SPACING ===== */
-      .card,
-      .panel,
-      [class*='-card'],
-      [class*='-panel'] {
-        border-radius: 10px !important;
-        margin-bottom: 12px !important;
-      }
-
-      h2 {
-        font-size: 18px !important;
-      }
-
-      h3 {
-        font-size: 15px !important;
-      }
-
-      .section-title,
-      [class*='section-title'] {
-        font-size: 13px !important;
-      }
-    }
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -1428,164 +1024,6 @@
         bottom: 80px;
       }
     }
-    /* Neural orb for Rebecka */
-    .rebecka-neural-orb {
-      position: relative;
-      width: 180px;
-      height: 180px;
-      margin: 0 auto;
-    }
-    .neural-core {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: radial-gradient(circle at 38% 32%,
-        #FFFFFF 0%,
-        #EFF6FF 20%,
-        #93C5FD 55%,
-        #4A8FD6 80%,
-        #1E3348 100%);
-      box-shadow:
-        0 0 35px rgba(74,143,214,0.35),
-        0 0 70px rgba(74,143,214,0.15),
-        inset 0 0 25px rgba(255,255,255,0.5);
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
-    }
-    .neural-node {
-      fill: #93C5FD;
-      opacity: 0.7;
-      animation: nodeFloat 4s ease-in-out infinite;
-    }
-    .neural-line {
-      stroke: #BFDBFE;
-      stroke-width: 0.8;
-      opacity: 0;
-      animation: linePulse 3s ease-in-out infinite;
-    }
-    .neural-ring {
-      position: absolute;
-      border-radius: 50%;
-      border: 1px solid rgba(74,143,214,0.15);
-    }
-    .neural-ring-1 { inset: -20px; animation: ringPulse 3s ease-in-out infinite 0s; }
-    .neural-ring-2 { inset: -40px; animation: ringPulse 3s ease-in-out infinite 0.7s; }
-    .neural-ring-3 { inset: -62px; animation: ringPulse 3s ease-in-out infinite 1.4s; }
-    @keyframes nodeFloat {
-      0%,100% { transform: translate(0,0); opacity: 0.5; }
-      50%      { transform: translate(var(--nx,3px),var(--ny,-3px)); opacity: 1; }
-    }
-    @keyframes linePulse {
-      0%,100% { opacity: 0; }
-      40%,60% { opacity: 0.5; }
-    }
-    @keyframes ringPulse {
-      0%,100% { transform: scale(1); opacity: 0.15; }
-      50%      { transform: scale(1.05); opacity: 0.4; }
-    }
-    .neural-core.state-idle {
-      animation: neuralIdle 3s ease-in-out infinite;
-      background: radial-gradient(circle at 38% 32%,
-        #FFFFFF 0%,
-        #EFF6FF 20%,
-        #93C5FD 55%,
-        #4A8FD6 80%,
-        #1E3348 100%);
-      box-shadow:
-        0 0 35px rgba(74,143,214,0.3),
-        0 0 70px rgba(74,143,214,0.12),
-        inset 0 0 25px rgba(255,255,255,0.5);
-    }
-    .neural-core.state-listening {
-      animation: neuralListen 0.65s ease-in-out infinite;
-      background: radial-gradient(circle at 38% 32%,
-        #FFFFFF 0%,
-        #DBEAFE 15%,
-        #60A5FA 50%,
-        #4A8FD6 75%,
-        #1D4ED8 100%);
-      box-shadow:
-        0 0 50px rgba(74,143,214,0.6),
-        0 0 100px rgba(74,143,214,0.3),
-        inset 0 0 20px rgba(255,255,255,0.4);
-    }
-    .neural-core.state-speaking {
-      animation: neuralSpeak 0.3s ease-in-out infinite;
-      background: radial-gradient(circle at 38% 32%,
-        #FFFFFF 0%,
-        #DBEAFE 15%,
-        #60A5FA 45%,
-        #4A8FD6 70%,
-        #1E40AF 100%);
-      box-shadow:
-        0 0 55px rgba(74,143,214,0.7),
-        0 0 110px rgba(74,143,214,0.35),
-        inset 0 0 20px rgba(255,255,255,0.4);
-    }
-    .neural-core.state-thinking {
-      animation: neuralThink 1.2s ease-in-out infinite;
-      background: radial-gradient(circle at 38% 32%,
-        #FFFFFF 0%,
-        #EFF6FF 20%,
-        #93C5FD 50%,
-        #4A8FD6 75%,
-        #1E3348 100%);
-      box-shadow:
-        0 0 45px rgba(74,143,214,0.5),
-        0 0 90px rgba(74,143,214,0.2),
-        inset 0 0 20px rgba(255,255,255,0.4);
-    }
-    @keyframes neuralIdle {
-      0%,100% { transform: scale(1); }
-      50%      { transform: scale(1.03); }
-    }
-    @keyframes neuralListen {
-      0%,100% { transform: scale(1); }
-      50%      { transform: scale(1.07); }
-    }
-    @keyframes neuralSpeak {
-      0%,100% { transform: scale(1) scaleX(1); }
-      33%      { transform: scale(1.05) scaleX(1.04); }
-      66%      { transform: scale(0.97) scaleX(0.98); }
-    }
-    @keyframes neuralThink {
-      0%,100% { transform: scale(1) rotate(0deg); }
-      50%      { transform: scale(1.04) rotate(3deg); }
-    }
-    .rebecka-wave {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      height: 28px;
-    }
-    .rebecka-wave-bar {
-      width: 3px;
-      border-radius: 2px;
-      background: #CBD5E1;
-      transition: height 0.12s ease, background 0.3s ease;
-    }
-    #feedback-card {
-      background: #FFFFFF;
-      border: 1px solid #E2E6EC;
-      border-radius: 16px;
-      padding: 40px;
-      text-align: center;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      max-width: 480px;
-      margin: 0 auto;
-      transition: box-shadow 0.3s ease;
-    }
-    #feedback-card.orb-mode {
-      background: #FFFFFF;
-      border-color: #E2E6EC;
-      box-shadow: 0 4px 24px rgba(74,143,214,0.12);
-    }
-    #feedback-photo-section {
-      transition: all 0.4s ease;
-    }
-    #feedback-orb-section {
-      display: none;
-    }
   </style>
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
 </head>
@@ -1790,6 +1228,14 @@
           placeholder="e.g. Jeff's leads (optional)"
           style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;" />
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+        <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">👤 Pipedrive owner:</span>
+        <select id="rb-single-owner" style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;background:#fff;">
+          <option value="tony">Tony Hanak</option>
+          <option value="brian">Brian Reinhart</option>
+          <option value="jeff">Jeff</option>
+        </select>
+      </div>
     </div>
 
     <!-- Territory Search Modal -->
@@ -1838,6 +1284,14 @@
         <input type="text" id="rb-territory-list-name"
           placeholder="e.g. Jeff's leads (optional)"
           style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;" />
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+        <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">👤 Pipedrive owner:</span>
+        <select id="rb-territory-owner" style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;background:#fff;">
+          <option value="tony">Tony Hanak</option>
+          <option value="brian">Brian Reinhart</option>
+          <option value="jeff">Jeff</option>
+        </select>
       </div>
     </div>
 
@@ -1923,18 +1377,20 @@
         <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">📋 List name:</span>
         <input type="text" id="rb-bulk-list-name" placeholder="e.g. Jeff's leads (optional)" style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;" />
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+        <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">👤 Pipedrive owner:</span>
+        <select id="rb-bulk-owner" style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;background:#fff;">
+          <option value="tony">Tony Hanak</option>
+          <option value="brian">Brian Reinhart</option>
+          <option value="jeff">Jeff</option>
+        </select>
+      </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
         <div id="rb-bulk-count" style="font-size:12px;color:#64748b;">0 companies ready</div>
         <div style="display:flex;gap:8px;">
           <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
           <button onclick="rebeccaFireBulk()" style="background:#1a2f4e;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Run It</button>
         </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:4px;">
-        <span style="font-size:11px;font-weight:700;color:#4A8FD6;white-space:nowrap;">📋 List name:</span>
-        <input type="text" id="rb-bulk-list-name"
-          placeholder="e.g. Jeff's leads (optional)"
-          style="flex:1;border:1px solid #BFDBFE;border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;" />
       </div>
     </div>
 
@@ -2999,231 +2455,6 @@
     </div>
   </div>
 
-  <!-- ==================== REBECKA MODE ==================== -->
-  <div id="mode-rebecca-legacy" class="mode-content hidden" style="display:none;">
-
-    <!-- Video Call Button — triggers popover -->
-    <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
-      <button id="rb-start-video-btn" onclick="startRebeccaVideo()" style="display:none;background:linear-gradient(135deg, #1a5fb4, #4a90d9); color:white; border:none; border-radius:12px; padding:14px 28px; font-size:15px; font-weight:600; cursor:pointer; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(74,144,217,0.35); transition:all 0.2s;">
-        Video Call with Rebecka
-      </button>
-      <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
-        Access Sheet
-      </a>
-      <!-- Pipeline action buttons (inline) -->
-      <button onclick="rebeccaRunSingle()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-        Single Company
-      </button>
-      <button onclick="rebeccaRunTerritory()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-        Territory Search
-      </button>
-      <button onclick="rebeccaRunBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-        Bulk List
-      </button>
-      <button onclick="window.open('https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI','_blank')" style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
-        View Contacts
-      </button>
-    </div>
-
-    <!-- Pipeline sub-modals (bulk, single, territory) -->
-    <div id="rb-bulk-modal" style="display:none; margin-bottom:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; animation: slideDown 0.3s ease;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <div style="font-size:14px; font-weight:600; color:#1a2f4e;">Bulk Company Upload</div>
-        <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:18px;">x</button>
-      </div>
-      <select id="rb-bulk-vertical" style="width:100%; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:12px; font-family:inherit;">
-          <option value="">Select Vertical</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
-          <option value="b2b_professional_services">B2B Professional Services</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="construction">Construction</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="health_wellness">Health &amp; Wellness</option>
-          <option value="home_services">Home Services</option>
-          <option value="insurance">Insurance</option>
-          <option value="legal_services">Legal Services</option>
-          <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="manufacturing">Manufacturing</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="medical_transport">Medical Transport</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="technology_saas">Technology / SaaS</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-        </select>
-      <div id="rb-drop-zone" style="border:2px dashed #e2e8f0; border-radius:8px; padding:20px; text-align:center; margin-bottom:12px; cursor:pointer; transition:border-color 0.2s;"
-        ondragover="event.preventDefault(); this.style.borderColor='#4a90d9';"
-        ondragleave="this.style.borderColor='#e2e8f0';"
-        ondrop="handleRbDrop(event);"
-        onclick="document.getElementById('rb-csv-input').click();">
-        <div style="font-size:13px; color:#64748b;">Drop file here or click to browse</div>
-        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">CSV, XLS, or XLSX — any column order, any format</div>
-        <input id="rb-csv-input" type="file" accept=".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;" onchange="handleRbCsvFile(event);">
-      </div>
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-        <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-        <div style="font-size:12px; color:#94a3b8;">OR PASTE LIST</div>
-        <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-      </div>
-      <textarea id="rb-bulk-paste" placeholder="Paste companies here, one per line:
-DPR Construction, dpr.com
-Hensel Phelps, henselphelps.com
-Turner Construction, turnerconstruction.com"
-        style="width:100%; height:140px; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:12px; resize:vertical; font-family:monospace; box-sizing:border-box;"></textarea>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-        <div id="rb-bulk-count" style="font-size:12px; color:#64748b;">0 companies ready</div>
-        <div style="display:flex; gap:8px;">
-          <button onclick="document.getElementById('rb-bulk-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
-          <button onclick="rebeccaFireBulk()" style="background:#1a2f4e; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="rb-single-modal" style="display:none; margin-bottom:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
-      <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Run Single Company</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <input id="rb-company-input" placeholder="Company name" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-        <input id="rb-domain-input" placeholder="Domain (e.g. dpr.com)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-        <select id="rb-vertical-input" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
-          <option value="">Select Vertical</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
-          <option value="b2b_professional_services">B2B Professional Services</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="construction">Construction</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="health_wellness">Health &amp; Wellness</option>
-          <option value="home_services">Home Services</option>
-          <option value="insurance">Insurance</option>
-          <option value="legal_services">Legal Services</option>
-          <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="manufacturing">Manufacturing</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="medical_transport">Medical Transport</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="technology_saas">Technology / SaaS</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-        </select>
-        <button onclick="rebeccaFireSingle()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
-        <button onclick="document.getElementById('rb-single-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
-      </div>
-    </div>
-
-    <div id="rb-territory-modal" style="display:none; margin-bottom:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
-      <div style="font-size:14px; font-weight:600; color:#1a2f4e; margin-bottom:12px;">Territory Search</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <input id="rb-city-input" placeholder="City (e.g. Phoenix)" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-        <input id="rb-state-input" placeholder="State (e.g. AZ)" style="flex:1; min-width:80px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;" />
-        <select id="rb-territory-vertical" style="flex:1; min-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px;">
-          <option value="">Select Vertical</option>
-          <option value="accounting_tax">Accounting &amp; Tax</option>
-          <option value="auto_dealerships">Auto Dealerships</option>
-          <option value="b2b_professional_services">B2B Professional Services</option>
-          <option value="behavioral_health">Behavioral Health</option>
-          <option value="construction">Construction</option>
-          <option value="construction_engineering">Construction &amp; Engineering</option>
-          <option value="financial_services">Financial Svcs (Non-Bank)</option>
-          <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
-          <option value="health_wellness">Health &amp; Wellness</option>
-          <option value="home_services">Home Services</option>
-          <option value="insurance">Insurance</option>
-          <option value="legal_services">Legal Services</option>
-          <option value="logistics_transportation">Logistics &amp; Transportation</option>
-          <option value="manufacturing">Manufacturing</option>
-          <option value="marketing_advertising">Marketing &amp; Advertising</option>
-          <option value="medical_transport">Medical Transport</option>
-          <option value="real_estate">Real Estate &amp; Property Mgmt</option>
-          <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
-          <option value="technology_saas">Technology / SaaS</option>
-          <option value="wholesale_distribution">Wholesale Distribution</option>
-        </select>
-        <select id="rb-territory-qty" style="flex:1; min-width:120px; max-width:140px; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:13px; background:#fff;">
-          <option value="10">10 companies</option>
-          <option value="20">20 companies</option>
-          <option value="30">30 companies</option>
-          <option value="50" selected>50 companies</option>
-        </select>
-        <button id="btn-rb-territory-run-2" onclick="rebeccaFireTerritory()" style="background:#4a90d9; color:white; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Run It</button>
-        <button onclick="document.getElementById('rb-territory-modal').style.display='none'" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer;">Cancel</button>
-      </div>
-    </div>
-
-    <div class="rb-layout">
-      <!-- LEFT COLUMN — Profile Card -->
-      <div class="rb-left">
-        <div class="rb-card">
-          <img src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp" alt="Rebecka Mathews" class="rb-photo">
-          <div class="rb-name">Rebecka Mathews</div>
-          <div class="rb-title">Executive Sales Assistant</div>
-          <div class="rb-reports">Supporting Tony Hanak — ManageAI</div>
-          <div class="rb-divider"></div>
-          <div class="rb-status"><span class="rb-status-dot"></span> Online and Ready</div>
-          <div class="rb-divider"></div>
-          <div class="rb-stats-row">
-            <div class="rb-pill" id="rb-stat-contacts"><div class="rb-pill-label">Contacts</div><div class="rb-pill-value">—</div></div>
-            <div class="rb-pill" id="rb-stat-icp"><div class="rb-pill-label">Avg ICP</div><div class="rb-pill-value">—</div></div>
-            <div class="rb-pill" id="rb-stat-pipedrive"><div class="rb-pill-label">PD Deals</div><div class="rb-pill-value">—</div></div>
-          </div>
-          <div class="rb-divider"></div>
-          <div class="rb-section-head">About Rebecka</div>
-          <p class="rb-about">I keep Tony sharp. I know every lead in the pipeline, every deal in Pipedrive, and exactly what needs attention today. I flag what is stale, rank what is hot, and tell it straight — even when the news is not great.</p>
-          <div class="rb-divider"></div>
-          <div class="rb-section-head">What I Handle</div>
-          <ul class="rb-list">
-            <li>Daily briefing — what needs your attention right now</li>
-            <li>Top prospects ranked and ready to work</li>
-            <li>Cross-check leads against your Pipedrive deals</li>
-            <li>Flag contacts you have not touched in 5 plus days</li>
-            <li>Draft outreach emails and follow-ups</li>
-            <li>Prep you for a call with any company in the pipeline</li>
-            <li>Summarize vertical performance</li>
-            <li>Tell you which leads to drop and why</li>
-          </ul>
-        </div>
-      </div>
-      <!-- RIGHT COLUMN — Chat Interface -->
-      <div class="rb-right">
-        <div class="rb-card" style="padding:0;display:flex;flex-direction:column;flex:1;">
-          <!-- Chat Header -->
-          <div class="rb-chat-header">
-            <div class="rb-chat-header-left">
-              <img src="https://manageai.io/wp-content/uploads/2026/03/ChatGPT-Image-Mar-14-2026-at-10_00_26-AM-1.webp" alt="Rebecka" class="rb-chat-avatar-sm">
-              <div>
-                <div class="rb-chat-name">Rebecka Mathews <span class="rb-dot-sm"></span></div>
-                <div class="rb-chat-sub">Your Executive Sales Assistant — Connected to Lead Booster and Pipedrive</div>
-              </div>
-            </div>
-            <button class="rb-clear-btn" id="rb-clear-btn" title="Clear chat">Clear</button>
-          </div>
-          <!-- Chat Messages -->
-          <div id="rb-messages">
-            <!-- Welcome message injected by JS -->
-          </div>
-          <!-- Suggestions -->
-          <div id="rb-suggestions">
-            <button class="rb-suggestion" onclick="rbUseSuggestion(this)">Who are my top prospects to call today?</button>
-            <button class="rb-suggestion" onclick="rbUseSuggestion(this)">Which leads have I not touched in over 5 days?</button>
-            <button class="rb-suggestion" onclick="rbUseSuggestion(this)">Cross-check my Pipedrive deals against new leads</button>
-            <button class="rb-suggestion" onclick="rbUseSuggestion(this)">Give me a full pipeline briefing</button>
-            <button class="rb-suggestion" onclick="rbUseSuggestion(this)">Search Phoenix AZ for construction companies</button>
-            <button class="rb-suggestion" onclick="rbUseSuggestion(this)">Run DPR Construction at dpr.com for construction</button>
-          </div>
-          <!-- Input Area -->
-          <div class="rb-input-area">
-            <textarea id="rb-input" placeholder="Ask Rebecka anything..." rows="1"></textarea>
-            <button id="rb-send">&#9654;</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Footer -->
   <div class="footer">
     <div style="display:flex;align-items:center;gap:6px;">
@@ -3518,7 +2749,7 @@ Turner Construction, turnerconstruction.com"
   }
 
   // ==================== SUBMIT PIPELINE ====================
-  async function fireWebhook(company, domain, vertical, notes, submitterName, submitterEmail, listTag, source) {
+  async function fireWebhook(company, domain, vertical, notes, submitterName, submitterEmail, listTag, source, pipedriveOwner) {
     const resp = await fetch(WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3528,7 +2759,8 @@ Turner Construction, turnerconstruction.com"
         submitter_name: submitterName || '',
         submitter_email: submitterEmail || '',
         list_tag: listTag || buildListTag_fromValue('', 'Lead Run'),
-        source: source || 'lead_booster'
+        source: source || 'lead_booster',
+        pipedrive_owner: pipedriveOwner || ''
       })
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -5823,20 +5055,16 @@ Turner Construction, turnerconstruction.com"
       description: 'Phone lookup \u2014 mobile numbers',
       fetchCredits: async () => {
         try {
-          const r = await fetch('https://api.rocketreach.co/api/v2/account', {
-            headers: { 'Api-Key': '1bfcccck2fafb53720f5ff0303ab04513c2b8cb0' }
-          });
-          if (r.ok) {
-            const d = await r.json();
-            const remaining = d.lookups_left || d.monthly_credits_remaining || d.credits_remaining || d.lookups_remaining;
-            if (remaining !== undefined) {
-              return { remaining: remaining, label: 'lookups remaining', detail: 'Monthly reset',
-                status: remaining > 50 ? 'healthy' : remaining > 10 ? 'low' : 'critical' };
-            }
+          const r = await fetch('/api/rocketreach-credits');
+          const d = await r.json();
+          const remaining = d.remaining;
+          if (remaining !== null && remaining !== undefined) {
+            return { remaining, label: 'lookups remaining', detail: 'Monthly reset',
+              status: remaining > 50 ? 'healthy' : remaining > 10 ? 'low' : 'critical' };
           }
         } catch(e) {}
-        return { remaining: null, label: 'Active', detail: 'View account for credit balance',
-          status: 'healthy', link: 'https://rocketreach.co/subscription' };
+        return { remaining: null, label: 'Check dashboard for balance', detail: 'Click link to view current credits',
+          status: 'unknown', link: 'https://rocketreach.co/subscription' };
       }
     },
     {
@@ -6393,6 +5621,10 @@ Turner Construction, turnerconstruction.com"
       return;
     }
 
+    const ownerMap = { tony: 'Tony Hanak', brian: 'Brian Reinhart', jeff: 'Jeff' };
+    const ownerKey = document.getElementById('rb-bulk-owner')?.value || 'tony';
+    const ownerName = ownerMap[ownerKey] || 'Tony Hanak';
+
     document.getElementById('rb-bulk-modal').style.display = 'none';
     const listName = document.getElementById('rb-bulk-list-name')?.value?.trim() || '';
     const listTag = buildListTag_fromValue(listName, 'Rebecka Bulk');
@@ -6415,10 +5647,11 @@ Turner Construction, turnerconstruction.com"
             company_name: lead.company_name,
             domain: lead.domain,
             vertical: lead.vertical,
-            submitter_name: window._currentUser?.name || 'Tony',
+            submitter_name: ownerName,
             submitter_email: window._currentUser?.email || 'tony@manageai.io',
             source: 'rebecca_bulk',
-            list_tag: listTag
+            list_tag: listTag,
+            pipedrive_owner: ownerName
           })
         });
       } catch (err) {
@@ -6438,11 +5671,15 @@ Turner Construction, turnerconstruction.com"
       return;
     }
 
+    const ownerMap = { tony: 'Tony Hanak', brian: 'Brian Reinhart', jeff: 'Jeff' };
+    const ownerKey = document.getElementById('rb-single-owner')?.value || 'tony';
+    const ownerName = ownerMap[ownerKey] || 'Tony Hanak';
+
     document.getElementById('rb-single-modal').style.display = 'none';
     const listName = document.getElementById('rb-single-list-name')?.value?.trim() || '';
     const listTag = buildListTag_fromValue(listName, 'Rebecka Single');
     showPipelineCard(company, domain, vertical, 'single', { list_tag: listTag });
-    await fireWebhook(company, domain, vertical, '', window._currentUser?.name || 'Tony', window._currentUser?.email || 'tony@manageai.io', listTag, 'rebecca_single');
+    await fireWebhook(company, domain, vertical, '', ownerName, window._currentUser?.email || 'tony@manageai.io', listTag, 'rebecca_single', ownerName);
   }
 
   async function checkTerritoryDedup(city, state, vertical) {
@@ -6500,6 +5737,10 @@ Turner Construction, turnerconstruction.com"
       }
     }
 
+    const ownerMap = { tony: 'Tony Hanak', brian: 'Brian Reinhart', jeff: 'Jeff' };
+    const ownerKey = document.getElementById('rb-territory-owner')?.value || 'tony';
+    const ownerName = ownerMap[ownerKey] || 'Tony Hanak';
+
     document.getElementById('rb-territory-modal').style.display = 'none';
     const listName = document.getElementById('rb-territory-list-name')?.value?.trim() || '';
     const listTag = buildListTag_fromValue(listName, city + ' ' + state + ' Territory');
@@ -6515,9 +5756,10 @@ Turner Construction, turnerconstruction.com"
           vertical: vertical,
           max_results: qty,
           quota_requested: qty,
-          submitter_name: window._currentUser?.name || 'Tony',
+          submitter_name: ownerName,
           submitter_email: window._currentUser?.email || 'tony@manageai.io',
-          list_tag: listTag
+          list_tag: listTag,
+          pipedrive_owner: ownerName
         })
       });
     } catch (err) {
