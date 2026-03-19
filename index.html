@@ -2364,8 +2364,8 @@
       <!-- RESULTS COUNT -->
       <div id="ld-filter-count" style="font-size:12px;color:var(--text-dim);margin-bottom:8px;"></div>
       <!-- SCROLLABLE TABLE -->
-      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:calc(100vh - 320px);overflow-y:auto;">
-        <table style="width:100%;border-collapse:collapse;min-width:1400px;">
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:calc(100vh - 280px);overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:1100px;">
           <thead style="position:sticky;top:0;z-index:10;">
             <tr style="background:#1E3348;">
               <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">First</th>
@@ -2376,8 +2376,6 @@
               <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email</th>
               <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Phone</th>
               <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">LinkedIn</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">City</th>
-              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">State</th>
               <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Vertical</th>
               <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">ICP</th>
               <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email Source</th>
@@ -2386,7 +2384,7 @@
             </tr>
           </thead>
           <tbody id="lists-detail-tbody">
-            <tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading...</td></tr>
+            <tr><td colspan="13" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -5140,30 +5138,29 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     const tbody = document.getElementById('lists-detail-tbody');
     if (!tbody) return;
     if (!contacts || !contacts.length) {
-      tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">No contacts match your filters.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">No contacts match your filters.</td></tr>';
       return;
     }
     tbody.innerHTML = contacts.map((c, i) => {
       const rowBg = i % 2 === 0 ? '#fff' : '#F5F6F8';
-      const icp = c.icp_score !== null && c.icp_score !== undefined ? c.icp_score : '\u2014';
+      const icp = c.icp_score !== null && c.icp_score !== undefined ? c.icp_score : '—';
       const icpBg = (c.icp_score||0) >= 80 ? '#DCFCE7' : (c.icp_score||0) >= 60 ? '#DBEAFE' : '#F5F6F8';
       const icpColor = (c.icp_score||0) >= 80 ? '#15803D' : (c.icp_score||0) >= 60 ? '#1D4ED8' : '#94A3B8';
-      const completeness = c.final_completeness_score ? Math.round(c.final_completeness_score) + '%' : '\u2014';
-      const date = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '\u2014';
-      const li = c.linkedin_url ? '<a href="'+c.linkedin_url+'" target="_blank" style="color:var(--accent);text-decoration:none;font-size:16px;">\uD83D\uDD17</a>' : '<span style="color:#CBD5E1;">\u2014</span>';
-      const emailDisplay = c.email ? '<span style="color:#1D4ED8;">' + c.email + '</span>' : '<span style="color:#CBD5E1;">\u2014</span>';
-      const phoneDisplay = c.phone || '<span style="color:#CBD5E1;">\u2014</span>';
-      const td = (val, style) => '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;'+(style||'color:var(--text);">')+(val||'<span style="color:#CBD5E1;">\u2014</span>')+'</td>';
+      const completeness = c.final_completeness_score ? Math.round(c.final_completeness_score) + '%' : '—';
+      const date = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+      const li = c.linkedin_url ? '<a href="'+c.linkedin_url+'" target="_blank" style="color:var(--accent);text-decoration:none;font-size:16px;">🔗</a>' : '<span style="color:#CBD5E1;">—</span>';
+      const emailDisplay = c.email ? '<span style="color:#1D4ED8;">' + c.email + '</span>' : '<span style="color:#CBD5E1;">—</span>';
+      const phoneDisplay = c.phone || '<span style="color:#CBD5E1;">—</span>';
+      const titleDisplay = c.title || c.position || '—';
+      const td = (val, style) => '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;'+(style||'color:var(--text);">')+(val||'<span style="color:#CBD5E1;">—</span>')+'</td>';
       return '<tr style="background:'+rowBg+';" onmouseover="this.style.background=\'#EEF1F5\'" onmouseout="this.style.background=\''+rowBg+'\'">' +
         td(c.first_name) + td(c.last_name) +
-        td(c.title,'font-size:12px;color:var(--text-mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;') +
+        td(titleDisplay,'font-size:12px;color:var(--text-mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;') +
         td(c.company_name,'font-size:12px;font-weight:600;color:var(--text);') +
         td(c.domain,'font-size:11px;color:var(--text-dim);') +
         '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;">' + emailDisplay + '</td>' +
         '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #F0F0F0;white-space:nowrap;color:var(--text);">' + phoneDisplay + '</td>' +
         '<td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F0F0F0;">' + li + '</td>' +
-        td(c.city,'font-size:12px;color:var(--text-mid);') +
-        td(c.state,'font-size:12px;color:var(--text-mid);') +
         td((c.vertical||'').replace(/_/g,' '),'font-size:11px;color:var(--text-dim);') +
         '<td style="padding:9px 12px;text-align:center;border-bottom:1px solid #F0F0F0;"><span style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;background:'+icpBg+';color:'+icpColor+';">'+icp+'</span></td>' +
         td(c.email_source,'font-size:11px;color:var(--text-dim);') +
