@@ -3301,8 +3301,6 @@ Turner Construction, turnerconstruction.com"
 <script>
   // ==================== CONFIG ====================
   const WEBHOOK = "https://manageai2026.app.n8n.cloud/webhook/lb-discovery";
-  window.speechSynthesis.speak = function() {};
-  window.speechSynthesis.cancel = function() {};
   const WEBHOOK_TERRITORY = "https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2";
   const MAX_COMPANIES = 150;
 
@@ -3311,6 +3309,15 @@ Turner Construction, turnerconstruction.com"
   // NOTE: Replace with your anon key from Supabase dashboard > Settings > API
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODE1MzcsImV4cCI6MjA4ODM1NzUzN30.-8yi1QepliAdMhgARQhId93Ny-M0skqaDHgOevM3Zro";
   const SB_TABLE = "lb_requests";
+
+  // Kill browser TTS permanently — ElevenLabs only
+  window._browserTTSKilled = true;
+  const _origSpeak = window.speechSynthesis ? window.speechSynthesis.speak.bind(window.speechSynthesis) : null;
+  if (window.speechSynthesis) {
+    window.speechSynthesis.speak = function() {
+      console.log('[TTS] Browser TTS blocked — ElevenLabs handles all speech');
+    };
+  }
 
   // Proxy for Supabase service-role calls (key stays server-side)
   async function sbProxy(table, method, query, body) {
@@ -5109,28 +5116,29 @@ Turner Construction, turnerconstruction.com"
     const user = window._currentUser || {};
     rebeckaFbMessages.push({ role: 'user', content: text });
     const doneBtn = document.getElementById('rebecka-fb-done');
-    if (doneBtn) doneBtn.style.display = 'block';
+    if (doneBtn && rebeckaFbMessages.length >= 2) doneBtn.style.display = 'block';
     try {
       const resp = await fetch(
         'https://manageai2026.app.n8n.cloud/webhook/lb-rebecca-chat',
         {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 120,
-            system: 'You are Rebecka, AI sales assistant for ManageAI. Someone is giving you feedback about Lead Booster Pro. Be warm, conversational, and brief — under 2 sentences. Acknowledge what they said and ask one follow-up if helpful. User: ' + (user.name || 'team member'),
-            messages: rebeckaFbMessages.slice(-6)
+            message: text,
+            messages: rebeckaFbMessages.slice(-8),
+            user_name: user.name || 'Team member',
+            user_email: user.email || 'unknown@manageai.io'
           })
         }
       );
+      if (!resp.ok) throw new Error('Chat proxy returned ' + resp.status);
       const data = await resp.json();
-      const reply = data.content?.[0]?.text ||
-        "Got it — anything else before I send this to Brian and Dan?";
+      const reply = data.reply || data.content?.[0]?.text || "Got it — anything else before I send this to Brian and Dan?";
       rebeckaFbMessages.push({ role: 'assistant', content: reply });
       rebeckaFbSpeak(reply);
     } catch(e) {
-      rebeckaFbSpeak("Got it! Anything else you want to add?");
+      console.error('[Rebecka] Chat failed:', e.message);
+      rebeckaFbSpeak("Got it! Anything else you want to add before I send this?");
     }
   }
 
@@ -5139,38 +5147,37 @@ Turner Construction, turnerconstruction.com"
     const responseEl = document.getElementById('rebecka-fb-response');
     if (responseEl) { responseEl.textContent = text; responseEl.style.display = 'block'; }
     try {
-      // Ensure AudioContext is alive and resumed
+      // Ensure AudioContext exists and is running
       if (!window._audioCtx || window._audioCtx.state === 'closed') {
         window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (window._audioCtx.state === 'suspended') {
         await window._audioCtx.resume();
       }
-      // Call ElevenLabs via n8n proxy
       const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text, voice_id: '9BWtsMINqrJLrRacOk9x' })
       });
-      if (!resp.ok) throw new Error('TTS proxy ' + resp.status);
+      if (!resp.ok) throw new Error('TTS proxy returned ' + resp.status);
       const data = await resp.json();
-      if (!data.audio_base64 || data.audio_base64.length < 100) throw new Error('Empty audio');
-      // Decode base64 → ArrayBuffer
+      if (!data.audio_base64 || data.audio_base64.length < 100) throw new Error('Empty audio from proxy');
+      // Decode base64 to bytes
       const binary = atob(data.audio_base64);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      // Decode MP3 and play via AudioContext — no gesture required
+      // Decode MP3 via AudioContext — plays without needing active gesture
       const audioBuffer = await window._audioCtx.decodeAudioData(bytes.buffer);
       const source = window._audioCtx.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(window._audioCtx.destination);
       source.onended = () => setFbOrbState('idle');
       source.start(0);
-      console.log('Aria playing via AudioContext — duration:', audioBuffer.duration.toFixed(1) + 's');
+      console.log('[Rebecka] Aria playing via AudioContext, duration:', audioBuffer.duration.toFixed(1) + 's');
     } catch(e) {
-      console.error('ElevenLabs failed:', e.message);
-      // Silent fallback — no browser TTS
-      setTimeout(() => setFbOrbState('idle'), 2000);
+      console.error('[Rebecka] ElevenLabs failed:', e.message);
+      // No browser TTS fallback — just reset orb state
+      setTimeout(() => setFbOrbState('idle'), 1500);
     }
   }
 
