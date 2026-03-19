@@ -2310,6 +2310,50 @@
   <!-- ==================== MY LISTS MODE ==================== -->
   <div id="mode-lists" class="mode-content hidden">
 
+    <!-- LIST DETAIL VIEW (hidden by default) -->
+    <div id="lists-detail-view" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <button onclick="closeListDetail()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;font-family:var(--font);padding:0;">&larr; Back to My Lists</button>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div id="lists-detail-count" style="font-size:13px;color:var(--text-dim);"></div>
+          <button onclick="downloadListDetailCSV()" style="padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">&darr; Download CSV</button>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div id="lists-detail-title" style="font-size:20px;font-weight:700;color:var(--text);"></div>
+        <div id="lists-detail-meta" style="font-size:13px;color:var(--text-dim);margin-top:2px;"></div>
+      </div>
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
+        <table id="lists-detail-table" style="width:100%;border-collapse:collapse;min-width:1200px;">
+          <thead>
+            <tr style="background:#1E3348;position:sticky;top:0;">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">First Name</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Last Name</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Title</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Company</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Domain</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Phone</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">LinkedIn</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">City</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">State</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Vertical</th>
+              <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">ICP</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Email Source</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Completeness</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Date</th>
+            </tr>
+          </thead>
+          <tbody id="lists-detail-tbody">
+            <tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading contacts...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MAIN LISTS CONTENT -->
+    <div id="lists-main-content">
+
     <!-- HEADER -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div>
@@ -2419,8 +2463,10 @@
       <div style="font-size:48px;margin-bottom:16px;">📋</div>
       <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">No lists yet</div>
       <div style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">Run your first lead search from the Rebecka tab</div>
-      <button onclick="setMode('rebecca')" class="btn-primary">Go to Rebecka →</button>
+      <button onclick="setMode('rebecca')" class="btn-primary">Go to Rebecka &rarr;</button>
     </div>
+
+    </div><!-- /lists-main-content -->
 
   </div>
 
@@ -4833,6 +4879,7 @@
         '<td style="padding:10px 14px;font-size:12px;color:var(--text-mid);">'+date+'</td>' +
         '<td style="padding:10px 14px;text-align:center;">' +
           '<div style="display:flex;gap:4px;justify-content:center;">' +
+          '<button onclick="openListDetail(\''+r.id+'\',\''+((r.list_name||'').replace(/'/g,'\\\''))+'\',\''+encodeURIComponent(r.list_tag||'')+'\')" style="padding:4px 8px;border:1px solid var(--accent);border-radius:4px;background:#EFF6FF;color:var(--accent);font-size:11px;cursor:pointer;font-family:var(--font);font-weight:600;">\uD83D\uDC41 View</button>' +
           '<button onclick="listsDownloadCSV(\''+encodeURIComponent(r.list_tag||'')+'\')" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">↓ CSV</button>' +
           '<button onclick="listsRerun(\''+r.id+'\')" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">▶ Re-run</button>' +
           '</div></td></tr>';
@@ -4879,6 +4926,93 @@
         if (lName) lName.value = (row.list_name||'') + ' (Re-run)';
       }
     }, 300);
+  }
+
+  // ==================== LIST DETAIL VIEW ====================
+  let currentListDetailContacts = [];
+  let currentListDetailName = '';
+
+  async function openListDetail(listId, listName, encodedTag) {
+    currentListDetailName = listName || 'List';
+    const listTag = decodeURIComponent(encodedTag || '');
+    const detail = document.getElementById('lists-detail-view');
+    const mainContent = document.getElementById('lists-main-content');
+    if (detail) detail.style.display = 'block';
+    if (mainContent) mainContent.style.display = 'none';
+    const titleEl = document.getElementById('lists-detail-title');
+    if (titleEl) titleEl.textContent = listName || 'List Detail';
+    const tbody = document.getElementById('lists-detail-tbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">Loading contacts...</td></tr>';
+    try {
+      const filter = listTag
+        ? 'list_tag=eq.' + encodeURIComponent(listTag) + '&order=icp_score.desc.nullslast&limit=500'
+        : 'order=created_at.desc&limit=500';
+      const contacts = await sbProxy('lb_contacts', 'GET', filter);
+      currentListDetailContacts = contacts || [];
+      const meta = document.getElementById('lists-detail-meta');
+      if (meta) meta.textContent = currentListDetailContacts.length + ' contacts \u00B7 ' + (contacts?.[0]?.vertical || '').replace(/_/g,' ') + ' \u00B7 sorted by ICP score';
+      const count = document.getElementById('lists-detail-count');
+      if (count) count.textContent = currentListDetailContacts.length + ' contacts';
+      renderListDetailTable(currentListDetailContacts);
+    } catch(e) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--red);font-size:13px;">Failed to load contacts: ' + e.message + '</td></tr>';
+    }
+  }
+
+  function renderListDetailTable(contacts) {
+    const tbody = document.getElementById('lists-detail-tbody');
+    if (!tbody) return;
+    if (!contacts || !contacts.length) {
+      tbody.innerHTML = '<tr><td colspan="15" style="padding:40px;text-align:center;color:var(--text-dim);font-size:13px;">No contacts found for this list.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = contacts.map((c, i) => {
+      const rowBg = i % 2 === 0 ? '#fff' : '#F5F6F8';
+      const icp = c.icp_score !== null && c.icp_score !== undefined ? c.icp_score : '\u2014';
+      const icpColor = (c.icp_score||0) >= 80 ? '#15803D' : (c.icp_score||0) >= 60 ? '#1D4ED8' : '#94A3B8';
+      const completeness = c.final_completeness_score ? c.final_completeness_score + '%' : '\u2014';
+      const date = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '\u2014';
+      const li = c.linkedin_url ? '<a href="'+c.linkedin_url+'" target="_blank" style="color:var(--accent);text-decoration:none;">\uD83D\uDD17</a>' : '\u2014';
+      const cell = (val, extra) => '<td style="padding:9px 12px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border);white-space:nowrap;'+(extra||'')+'">'+(val||'\u2014')+'</td>';
+      return '<tr style="background:'+rowBg+';">' +
+        cell(c.first_name) +
+        cell(c.last_name) +
+        cell(c.title) +
+        cell(c.company_name,'font-weight:600;') +
+        cell(c.domain) +
+        cell(c.email,'color:#1D4ED8;') +
+        cell(c.phone) +
+        '<td style="padding:9px 12px;font-size:12px;border-bottom:1px solid var(--border);text-align:center;">'+li+'</td>' +
+        cell(c.city) +
+        cell(c.state) +
+        cell((c.vertical||'').replace(/_/g,' ')) +
+        '<td style="padding:9px 12px;font-size:12px;font-weight:700;color:'+icpColor+';border-bottom:1px solid var(--border);text-align:center;">'+icp+'</td>' +
+        cell(c.email_source) +
+        cell(completeness) +
+        cell(date) +
+      '</tr>';
+    }).join('');
+  }
+
+  function closeListDetail() {
+    const detail = document.getElementById('lists-detail-view');
+    const mainContent = document.getElementById('lists-main-content');
+    if (detail) detail.style.display = 'none';
+    if (mainContent) mainContent.style.display = 'block';
+    currentListDetailContacts = [];
+  }
+
+  function downloadListDetailCSV() {
+    if (!currentListDetailContacts.length) { alert('No contacts to download.'); return; }
+    const cols = ['first_name','last_name','title','company_name','domain','email','phone','linkedin_url','city','state','vertical','icp_score','icp_rationale','email_source','email_confidence','phone_source','final_completeness_score','enrichment_notes','submitter_name','created_at'];
+    const headers = ['First Name','Last Name','Title','Company','Domain','Email','Phone','LinkedIn','City','State','Vertical','ICP Score','ICP Rationale','Email Source','Email Confidence','Phone Source','Completeness %','Enrichment Notes','Submitted By','Date'];
+    const csv = [headers.join(','), ...currentListDetailContacts.map(c =>
+      cols.map(k => '"'+(c[k]||'').toString().replace(/"/g,'""')+'"').join(',')
+    )].join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = (currentListDetailName || 'list').replace(/[^a-z0-9]/gi,'_') + '_contacts.csv';
+    a.click();
   }
 
   const PIPEDRIVE_KEY = '2fada79568e20083cf472cd5b307e9e12d171a1d';
