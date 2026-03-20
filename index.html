@@ -965,6 +965,7 @@
   <!-- Mode Tabs -->
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="setMode('rebecca')" id="tab-rebecca">Rebecka</button>
+    <button class="mode-tab" onclick="setMode('leadbooster')" id="tab-leadbooster" style="background:linear-gradient(135deg,#1a5fb4,#7C3AED);color:#fff;border-radius:7px;">🚀 Lead Booster</button>
     <button class="mode-tab" onclick="setMode('dashboard')" id="tab-dashboard" style="display:none;">Dashboard</button>
     <button class="mode-tab" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
@@ -993,14 +994,15 @@
       <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
         Access Sheet
       </a>
+      <button onclick="setMode('leadbooster')" style="background:linear-gradient(135deg,#1a5fb4,#7C3AED);color:white;border:none;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(124,58,237,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(124,58,237,0.35)'">🚀 Lead Booster</button>
       <a href="https://manageai.pipedrive.com" target="_blank" id="rb-pipedrive-btn" style="background:#fff;color:#1E293B;border:1px solid #E2E6EC;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;font-family:inherit;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.08);" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
         <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 3C10.7 3 6 7.7 6 13.5c0 3.5 1.7 6.6 4.3 8.5L16.5 29l6.2-7c2.6-1.9 4.3-5 4.3-8.5C27 7.7 22.3 3 16.5 3zm0 15.2c-3.1 0-5.7-2.5-5.7-5.7 0-3.1 2.5-5.7 5.7-5.7 3.1 0 5.7 2.5 5.7 5.7 0 3.2-2.6 5.7-5.7 5.7z" fill="#017737"/></svg>
         Pipedrive
       </a>
       <div class="mode-tabs" style="margin-bottom:0;">
-        <button class="rb-action-tab active" onclick="toggleRebeccaForm('territory')" id="rb-tab-territory">Territory Search</button>
-        <button class="rb-action-tab" onclick="toggleRebeccaForm('single')" id="rb-tab-single">Single Company</button>
-        <button class="rb-action-tab" onclick="setRbAction('bulk')" id="rb-tab-bulk">Bulk List</button>
+        <button class="rb-action-tab active" onclick="toggleRebeccaForm('territory')" id="rb-tab-territory" style="display:none;">Territory Search</button>
+        <button class="rb-action-tab" onclick="toggleRebeccaForm('single')" id="rb-tab-single" style="display:none;">Single Company</button>
+        <button class="rb-action-tab" onclick="setRbAction('bulk')" id="rb-tab-bulk" style="display:none;">Bulk List</button>
       </div>
     </div>
 
@@ -1894,6 +1896,265 @@
     <div class="section-label">Pipeline Status</div>
     <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;" id="results-list"></div>
     <div class="summary-banner" id="summary-banner"></div>
+  </div>
+
+  <!-- ==================== LEAD BOOSTER MODE ==================== -->
+  <div id="mode-leadbooster" class="mode-content hidden">
+    <!-- Header -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:26px;font-weight:800;color:var(--text);margin-bottom:6px;background:linear-gradient(135deg,#1a5fb4,#7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🚀 Lead Booster</div>
+      <div style="font-size:13px;color:var(--text-mid);max-width:600px;line-height:1.7;">Discover, enrich, and score leads. Pick your search type below.</div>
+    </div>
+    <!-- Mode selector -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
+      <button onclick="setLbMode('single')" id="lb-card-single" style="padding:20px 16px;border:2px solid var(--accent);border-radius:12px;background:var(--accent-light);cursor:pointer;text-align:left;font-family:var(--font);transition:all 0.2s;">
+        <div style="font-size:22px;margin-bottom:8px;">🏢</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Single Company</div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.5;">Run one company through the full pipeline</div>
+      </button>
+      <button onclick="setLbMode('bulk')" id="lb-card-bulk" style="padding:20px 16px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;text-align:left;font-family:var(--font);transition:all 0.2s;">
+        <div style="font-size:22px;margin-bottom:8px;">📋</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Bulk Upload</div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.5;">Upload a list of companies to enrich</div>
+      </button>
+      <button onclick="setLbMode('territory')" id="lb-card-territory" style="padding:20px 16px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;text-align:left;font-family:var(--font);transition:all 0.2s;">
+        <div style="font-size:22px;margin-bottom:8px;">🗺️</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Territory Search</div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.5;">Search a city + vertical for companies</div>
+      </button>
+      <button onclick="setLbMode('knownlist')" id="lb-card-knownlist" style="padding:20px 16px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;text-align:left;font-family:var(--font);transition:all 0.2s;">
+        <div style="font-size:22px;margin-bottom:8px;">👥</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Known List</div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.5;">Enrich people you already know by name</div>
+      </button>
+    </div>
+    <!-- SINGLE COMPANY FORM -->
+    <div id="lb-form-single">
+      <div class="card">
+        <div class="card-title">🏢 Single Company</div>
+        <div class="card-sub">Enter one company to run through the full Lead Booster pipeline.</div>
+        <div class="row-2">
+          <div class="field">
+            <label>Company Name</label>
+            <input type="text" id="lb-s-company" placeholder="DPR Construction" />
+          </div>
+          <div class="field">
+            <label>Domain</label>
+            <input type="text" id="lb-s-domain" placeholder="dpr.com" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Vertical</label>
+          <div class="chips" id="lb-s-chips">
+            <button class="chip active" data-v="construction" onclick="selectChip(this,'lb-s-chips')">Construction</button>
+            <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'lb-s-chips')">Behavioral Health</button>
+            <button class="chip" data-v="financial_services" onclick="selectChip(this,'lb-s-chips')">Financial Services</button>
+            <button class="chip" data-v="medical_transport" onclick="selectChip(this,'lb-s-chips')">Medical Transport</button>
+            <button class="chip" data-v="insurance" onclick="selectChip(this,'lb-s-chips')">Insurance</button>
+            <button class="chip" data-v="legal_services" onclick="selectChip(this,'lb-s-chips')">Legal Services</button>
+            <button class="chip" data-v="technology_saas" onclick="selectChip(this,'lb-s-chips')">Technology / SaaS</button>
+            <button class="chip" data-v="real_estate" onclick="selectChip(this,'lb-s-chips')">Real Estate</button>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>📋 List Name</label>
+            <input type="text" id="lb-s-listname" placeholder="e.g. Phoenix Construction Q2" />
+          </div>
+          <div class="field">
+            <label>👤 Pipedrive Owner</label>
+            <select id="lb-s-owner">
+              <option value="Tony Hanak">Tony Hanak</option>
+              <option value="Brian Reinhart">Brian Reinhart</option>
+              <option value="Jeff Merritt">Jeff Merritt</option>
+              <option value="Dave Albertson">Dave Albertson</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Your Email</label>
+          <input type="email" id="lb-single-email" placeholder="tony@manageai.io" />
+        </div>
+        <button class="btn-primary" onclick="lbSubmitSingle()">🚀 Run Lead Booster</button>
+      </div>
+    </div>
+    <!-- BULK FORM -->
+    <div id="lb-form-bulk" style="display:none;">
+      <div class="card">
+        <div class="card-title">📋 Bulk Upload</div>
+        <div class="card-sub">Upload a CSV or paste companies. Max 50 per run.</div>
+        <div class="upload-area" id="lb-bulk-drop" onclick="document.getElementById('lb-bulk-csv').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLbBulkDrop(event)">
+          <input type="file" id="lb-bulk-csv" class="upload-input" accept=".csv,.xls,.xlsx" onchange="handleLbBulkFile(event)" />
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">Drop file or click to browse</div>
+          <div class="upload-sub">CSV: Company Name, domain.com</div>
+        </div>
+        <div class="field">
+          <label>Or paste companies</label>
+          <textarea id="lb-bulk-paste" rows="8" oninput="updateLbBulkCount()" placeholder="DPR Construction, dpr.com
+Turner Construction, turnerconstruction.com" style="font-family:var(--mono);font-size:12px;"></textarea>
+        </div>
+        <div class="limit-bar">
+          <div class="limit-label">Companies</div>
+          <div class="limit-track">
+            <div class="limit-fill" id="lb-bulk-fill" style="width:0%"></div>
+          </div>
+          <div class="limit-count ok" id="lb-bulk-count">0 / 50</div>
+        </div>
+        <div class="field">
+          <label>Default Vertical</label>
+          <select id="lb-bulk-vertical">
+            <option value="construction">Construction</option>
+            <option value="behavioral_health">Behavioral Health</option>
+            <option value="financial_services">Financial Services</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="insurance">Insurance</option>
+            <option value="legal_services">Legal Services</option>
+            <option value="technology_saas">Technology / SaaS</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>📋 List Name</label>
+            <input type="text" id="lb-bulk-listname" placeholder="e.g. Q2 Construction" />
+          </div>
+          <div class="field">
+            <label>👤 Pipedrive Owner</label>
+            <select id="lb-bulk-owner">
+              <option value="Tony Hanak">Tony Hanak</option>
+              <option value="Brian Reinhart">Brian Reinhart</option>
+              <option value="Jeff Merritt">Jeff Merritt</option>
+              <option value="Dave Albertson">Dave Albertson</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Your Email</label>
+          <input type="email" id="lb-bulk-email" placeholder="tony@manageai.io" />
+        </div>
+        <button class="btn-primary" onclick="lbSubmitBulk()">🚀 Run Bulk Lead Booster</button>
+      </div>
+    </div>
+    <!-- TERRITORY FORM -->
+    <div id="lb-form-territory" style="display:none;">
+      <div class="card">
+        <div class="card-title">🗺️ Territory Search</div>
+        <div class="card-sub">Search a city and vertical. Lead Booster finds matching companies and enriches the best contacts.</div>
+        <div class="row-2">
+          <div class="field">
+            <label>City</label>
+            <input type="text" id="lb-territory-city" placeholder="Phoenix" />
+          </div>
+          <div class="field">
+            <label>State</label>
+            <input type="text" id="lb-territory-state" placeholder="AZ" maxlength="2" style="text-transform:uppercase" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Vertical</label>
+          <div class="chips" id="lb-t-chips">
+            <button class="chip active" data-v="construction" onclick="selectChip(this,'lb-t-chips')">Construction</button>
+            <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'lb-t-chips')">Behavioral Health</button>
+            <button class="chip" data-v="financial_services" onclick="selectChip(this,'lb-t-chips')">Financial Services</button>
+            <button class="chip" data-v="medical_transport" onclick="selectChip(this,'lb-t-chips')">Medical Transport</button>
+            <button class="chip" data-v="insurance" onclick="selectChip(this,'lb-t-chips')">Insurance</button>
+            <button class="chip" data-v="legal_services" onclick="selectChip(this,'lb-t-chips')">Legal Services</button>
+            <button class="chip" data-v="technology_saas" onclick="selectChip(this,'lb-t-chips')">Technology / SaaS</button>
+            <button class="chip" data-v="real_estate" onclick="selectChip(this,'lb-t-chips')">Real Estate</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Max Companies</label>
+          <select id="lb-territory-qty">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50" selected>50</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>📋 List Name</label>
+            <input type="text" id="lb-territory-listname" placeholder="e.g. Phoenix Construction March" />
+          </div>
+          <div class="field">
+            <label>👤 Pipedrive Owner</label>
+            <select id="lb-territory-owner">
+              <option value="Tony Hanak">Tony Hanak</option>
+              <option value="Brian Reinhart">Brian Reinhart</option>
+              <option value="Jeff Merritt">Jeff Merritt</option>
+              <option value="Dave Albertson">Dave Albertson</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Your Email</label>
+          <input type="email" id="lb-territory-email" placeholder="tony@manageai.io" />
+        </div>
+        <button class="btn-primary" id="btn-lb-territory" onclick="lbSubmitTerritory()">🚀 Search Territory</button>
+        <div id="lb-territory-preview" style="margin-top:16px;display:none;"></div>
+      </div>
+    </div>
+    <!-- KNOWN LIST FORM -->
+    <div id="lb-form-knownlist" style="display:none;">
+      <div class="card">
+        <div class="card-title">👥 Known List Enrichment</div>
+        <div class="card-sub">You know who you want to reach. Upload names + companies + domains. Lead Booster finds their emails, phones, and ICP scores them. Max 200 people.</div>
+        <div class="upload-area" id="lb-kl-drop" onclick="document.getElementById('lb-kl-csv').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLbKlDrop(event)">
+          <input type="file" id="lb-kl-csv" class="upload-input" accept=".csv,.xls,.xlsx" onchange="handleLbKlFile(event)" />
+          <div class="upload-icon">👥</div>
+          <div class="upload-title">Drop CSV here or click to browse</div>
+          <div class="upload-sub">Columns: first_name, last_name, company, domain, title, phone</div>
+        </div>
+        <div class="field">
+          <label>Or paste people</label>
+          <textarea id="lb-kl-paste" rows="10" oninput="updateLbKlCount()" placeholder="first_name,last_name,company,domain,title,phone
+Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867" style="font-family:var(--mono);font-size:11px;line-height:1.6;"></textarea>
+        </div>
+        <div class="limit-bar">
+          <div class="limit-label">People</div>
+          <div class="limit-track">
+            <div class="limit-fill" id="lb-kl-fill" style="width:0%"></div>
+          </div>
+          <div class="limit-count ok" id="lb-kl-count">0 / 200</div>
+        </div>
+        <div class="field">
+          <label>Vertical</label>
+          <select id="lb-kl-vertical">
+            <option value="financial_services">Financial Services</option>
+            <option value="construction">Construction</option>
+            <option value="behavioral_health">Behavioral Health</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="insurance">Insurance</option>
+            <option value="legal_services">Legal Services</option>
+            <option value="technology_saas">Technology / SaaS</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>📋 List Name</label>
+            <input type="text" id="lb-kl-listname" placeholder="e.g. Barrons Top 100 Advisors 2025" />
+          </div>
+          <div class="field">
+            <label>👤 Pipedrive Owner</label>
+            <select id="lb-kl-owner">
+              <option value="Tony Hanak">Tony Hanak</option>
+              <option value="Brian Reinhart">Brian Reinhart</option>
+              <option value="Jeff Merritt">Jeff Merritt</option>
+              <option value="Dave Albertson">Dave Albertson</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Your Email</label>
+          <input type="email" id="lb-kl-email" placeholder="tony@manageai.io" />
+        </div>
+        <button class="btn-primary" onclick="lbSubmitKnownList()">👥 Run Known List Enrichment</button>
+      </div>
+    </div>
+    <div id="lb-results" style="display:none;margin-top:16px;"></div>
   </div>
 
   <!-- ==================== KNOWN LIST MODE ==================== -->
@@ -2840,7 +3101,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       endRebeccaVideo();
     }
     currentMode = mode;
-    ['dashboard','single','bulk','knownlist','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits','lists','scraper','callqueue'].forEach(m => {
+    ['dashboard','single','bulk','knownlist','leadbooster','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits','lists','scraper','callqueue'].forEach(m => {
       const el = document.getElementById('mode-' + m);
       if (el) el.classList.toggle('hidden', m !== mode);
       const tab = document.getElementById('tab-' + m);
@@ -2860,6 +3121,13 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     if (mode === 'knownlist') {
       const emailEl = document.getElementById('kl-email');
       if (emailEl && window._currentUser?.email) emailEl.value = window._currentUser.email;
+    }
+    if (mode === 'leadbooster') {
+      const emailEls = ['lb-single-email','lb-bulk-email','lb-territory-email','lb-kl-email'];
+      emailEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && window._currentUser?.email) el.value = window._currentUser.email;
+      });
     }
   }
 
@@ -3351,8 +3619,9 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     const file = event.target.files[0];
     if (file) handleBulkFile(file, 'kl-paste', updateKlCount);
   }
-  function parseKlPeople() {
-    const raw = (document.getElementById('kl-paste')?.value || '').trim();
+  function parseKlPeople(textareaId) {
+    const taId = textareaId || 'kl-paste';
+    const raw = (document.getElementById(taId)?.value || '').trim();
     if (!raw) return [];
     const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
     if (!lines.length) return [];
@@ -3438,6 +3707,139 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = '👥 Run Known List Enrichment'; }
     }
+  }
+
+  // ==================== LEAD BOOSTER PAGE ====================
+  function setLbMode(mode) {
+    const forms = ['single','bulk','territory','knownlist'];
+    forms.forEach(f => {
+      const el = document.getElementById('lb-form-' + f);
+      if (el) el.style.display = f === mode ? 'block' : 'none';
+      const card = document.getElementById('lb-card-' + f);
+      if (card) {
+        card.style.borderColor = f === mode ? 'var(--accent)' : 'var(--border)';
+        card.style.background = f === mode ? 'var(--accent-light)' : '#fff';
+      }
+    });
+  }
+  function handleLbBulkDrop(event) {
+    event.preventDefault();
+    document.getElementById('lb-bulk-drop').style.borderColor = 'var(--border)';
+    const file = event.dataTransfer.files[0];
+    if (file) handleBulkFile(file, 'lb-bulk-paste', updateLbBulkCount);
+  }
+  function handleLbBulkFile(event) {
+    const file = event.target.files[0];
+    if (file) handleBulkFile(file, 'lb-bulk-paste', updateLbBulkCount);
+  }
+  function handleLbKlDrop(event) {
+    event.preventDefault();
+    document.getElementById('lb-kl-drop').style.borderColor = 'var(--border)';
+    const file = event.dataTransfer.files[0];
+    if (file) handleBulkFile(file, 'lb-kl-paste', updateLbKlCount);
+  }
+  function handleLbKlFile(event) {
+    const file = event.target.files[0];
+    if (file) handleBulkFile(file, 'lb-kl-paste', updateLbKlCount);
+  }
+  function updateLbBulkCount() {
+    const lines = parseSmartBulk(document.getElementById('lb-bulk-paste')?.value || '');
+    const n = Math.min(lines.length, 50);
+    const pct = (n/50)*100;
+    const c = document.getElementById('lb-bulk-count');
+    const f = document.getElementById('lb-bulk-fill');
+    if (c) c.textContent = n + ' / 50';
+    if (f) f.style.width = pct + '%';
+  }
+  function updateLbKlCount() {
+    const people = parseKlPeople('lb-kl-paste');
+    const n = Math.min(people.length, 200);
+    const pct = (n/200)*100;
+    const c = document.getElementById('lb-kl-count');
+    const f = document.getElementById('lb-kl-fill');
+    if (c) c.textContent = n + ' / 200';
+    if (f) f.style.width = pct + '%';
+  }
+  async function lbSubmitSingle() {
+    const company = document.getElementById('lb-s-company')?.value?.trim();
+    const domain = document.getElementById('lb-s-domain')?.value?.trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+    const vertical = getActiveChip('lb-s-chips');
+    const listName = document.getElementById('lb-s-listname')?.value?.trim();
+    const owner = document.getElementById('lb-s-owner')?.value || 'Tony Hanak';
+    const email = document.getElementById('lb-single-email')?.value?.trim() || window._currentUser?.email || '';
+    if (!company || !domain) { alert('Please enter company and domain.'); return; }
+    const listTag = buildListTag_fromValue(listName || company, 'Lead Run');
+    showPipelineCard(company, domain, vertical, 'single', { list_tag: listTag });
+    await fireWebhook(company, domain, vertical, '', window._currentUser?.name || owner, email, listTag, 'lb_single', owner);
+    showToast('🚀 Lead Booster running for ' + company);
+  }
+  async function lbSubmitBulk() {
+    const parsed = parseSmartBulk(document.getElementById('lb-bulk-paste')?.value || '');
+    const vertical = document.getElementById('lb-bulk-vertical')?.value || 'general';
+    const listName = document.getElementById('lb-bulk-listname')?.value?.trim();
+    const owner = document.getElementById('lb-bulk-owner')?.value || 'Tony Hanak';
+    const email = document.getElementById('lb-bulk-email')?.value?.trim() || window._currentUser?.email || '';
+    if (!parsed.length) { alert('Please add at least one company.'); return; }
+    const listTag = buildListTag_fromValue(listName || 'Bulk Run', 'Bulk Run');
+    const leads = parsed.map(p => ({
+      company: p.company, domain: p.domain, vertical,
+      notes: '', list_tag: listTag, source: 'bulk_upload'
+    })).filter(l => l.company && l.domain);
+    if (leads[0]) showPipelineCard(leads[0].company, leads[0].domain, vertical, 'bulk', { list_tag: listTag });
+    await runLeads(leads, 'bulk', window._currentUser?.name || owner, email);
+  }
+  async function lbSubmitTerritory() {
+    const city = document.getElementById('lb-territory-city')?.value?.trim();
+    const state = document.getElementById('lb-territory-state')?.value?.trim().toUpperCase();
+    const vertical = getActiveChip('lb-t-chips');
+    const qty = parseInt(document.getElementById('lb-territory-qty')?.value || '50');
+    const listName = document.getElementById('lb-territory-listname')?.value?.trim();
+    const owner = document.getElementById('lb-territory-owner')?.value || 'Tony Hanak';
+    const email = document.getElementById('lb-territory-email')?.value?.trim() || window._currentUser?.email || '';
+    if (!city || !state) { alert('Please enter city and state.'); return; }
+    const listTag = buildListTag_fromValue(listName || city + ' ' + state + ' Territory', 'Territory');
+    showPipelineCard(city + ' ' + state, '', vertical, 'territory', { city, state, qty, list_tag: listTag });
+    try {
+      await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-territory-v2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city, state, vertical, max_results: qty,
+          submitter_name: window._currentUser?.name || owner,
+          submitter_email: email, list_tag: listTag, pipedrive_owner: owner
+        })
+      });
+      showToast('🗺️ Territory search running for ' + city + ', ' + state);
+    } catch(err) { alert('Failed: ' + err.message); }
+  }
+  async function lbSubmitKnownList() {
+    const people = parseKlPeople('lb-kl-paste');
+    const vertical = document.getElementById('lb-kl-vertical')?.value || 'general';
+    const listName = document.getElementById('lb-kl-listname')?.value?.trim();
+    const owner = document.getElementById('lb-kl-owner')?.value || 'Tony Hanak';
+    const email = document.getElementById('lb-kl-email')?.value?.trim() || window._currentUser?.email || '';
+    if (!listName) { alert('Please enter a list name.'); return; }
+    if (!people.length) { alert('Please add at least one person.'); return; }
+    const listTag = listName + ' — KL — ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    showPipelineCard(listName, people[0]?.domain || '', vertical, 'bulk', { list_tag: listTag, qty: people.length });
+    try {
+      await fetch('https://manageai2026.app.n8n.cloud/webhook/we-intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          people, list_name: listName, list_tag: listTag, vertical,
+          submitter_name: window._currentUser?.name || 'Tony',
+          submitter_email: email, pipedrive_owner: owner
+        })
+      });
+      showToast('👥 ' + people.length + ' people queued for enrichment');
+      const rEl = document.getElementById('lb-results');
+      if (rEl) {
+        rEl.style.display = 'block';
+        rEl.innerHTML = '<div class="card" style="background:#DCFCE7;border:1px solid #BBF7D0;">' +
+          '<div style="font-size:14px;font-weight:700;color:#15803D;">✅ ' + people.length + ' people submitted — pipeline running</div></div>';
+      }
+    } catch(err) { alert('Failed: ' + err.message); }
   }
 
   // ==================== SUPABASE ====================
