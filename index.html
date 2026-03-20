@@ -7408,11 +7408,41 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     applyFiltersAndRender();
   }
 
-  function cqPickList(listTag) {
+  async function cqPickList(listTag) {
     cqActiveListTag = listTag;
-    applyFiltersAndRender();
     const meta = document.getElementById('cq-list-meta');
-    if (meta) meta.textContent = listTag ? cqFiltered.length + ' contacts — ICP order' : '';
+    if (!listTag) {
+      if (meta) meta.textContent = '';
+      applyFiltersAndRender();
+      return;
+    }
+    const matchExact = cqAllContacts.filter(c => c.list_tag === listTag);
+    let matched = matchExact;
+    if (!matched.length) {
+      matched = cqAllContacts.filter(c => c.list_tag && (c.list_tag.includes(listTag) || listTag.includes(c.list_tag)));
+    }
+    if (!matched.length) {
+      try {
+        const fresh = await sbProxy('lb_contacts', 'GET',
+          'list_tag=eq.'+encodeURIComponent(listTag)+
+          '&select=id,first_name,last_name,name,title,company,email,phone,linkedin_url,vertical,icp_score,icp_rationale,enrichment_notes,email_source,phone_source,list_tag,domain,outcome,created_at'+
+          '&order=icp_score.desc.nullslast&limit=500');
+        if (fresh && fresh.length) {
+          fresh.forEach(c => {
+            if (!cqAllContacts.find(x => x.id === c.id)) {
+              const fn = c.first_name || (c.name||'').split(' ')[0] || '';
+              const ln = c.last_name || (c.name||'').split(' ').slice(1).join(' ') || '';
+              cqAllContacts.push({ ...c, first_name: fn, last_name: ln, display_name: (fn+' '+ln).trim() || c.name || 'Unknown', pd_stage: null });
+            }
+          });
+          matched = fresh;
+        }
+      } catch(e) {}
+    }
+    if (meta) {
+      meta.textContent = matched.length > 0 ? matched.length + ' contacts — ICP order' : 'No contacts found for this list';
+    }
+    applyFiltersAndRender();
   }
 
   // ── Filter + render ──
