@@ -2413,6 +2413,12 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       <!-- LEFT -->
       <div style="display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:12px;">
         <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;background:#F8FAFC;">Contacts</div>
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);background:#F8FAFC;">
+          <select id="cq-active-list" onchange="cqSetActiveList(this.value)" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#fff;font-weight:600;color:var(--text);">
+            <option value="">📋 All Contacts (ICP order)</option>
+          </select>
+          <div id="cq-active-list-meta" style="font-size:10px;color:var(--text-dim);margin-top:4px;padding-left:2px;display:none;"></div>
+        </div>
         <div id="cq-contact-list" style="flex:1;overflow-y:auto;"></div>
         <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#F8FAFC;">
           <button onclick="cqPrevPage()" id="cq-prev" style="padding:4px 10px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">← Prev</button>
@@ -7293,7 +7299,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
 
   // ==================== CALL QUEUE ====================
   const PD_SYNC_WEBHOOK = 'https://manageai2026.app.n8n.cloud/webhook/lb-pipedrive-sync';
-  window._myPlan = JSON.parse(sessionStorage.getItem('lb_my_plan') || '[]');
+  window._myPlan = [];
   let cqAllContacts = [];
   let cqFiltered = [];
   let cqPage = 0;
@@ -7327,8 +7333,16 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
           pd_stage: null
         };
       });
-      loadCqListFilter();
-      filterCallQueue();
+      await loadPlanFromSupabase();
+      await loadCqListFilter();
+      // Auto-select the most recent list
+      const listSel = document.getElementById('cq-active-list');
+      if (listSel && listSel.options.length > 1) {
+        listSel.selectedIndex = 1;
+        cqSetActiveList(listSel.options[1].value);
+      } else {
+        filterCallQueue();
+      }
       renderMyPlan();
     } catch(e) {
       listEl.innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px;">Failed: '+e.message+'</div>';
@@ -7340,13 +7354,31 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       const lists = await sbProxy('lb_lists','GET',
         'select=list_name,list_tag&order=created_at.desc&limit=100');
       const sel = document.getElementById('cq-list-filter');
-      if (!sel || !lists) return;
-      sel.innerHTML = '<option value="">All Lists</option>'+
-        (lists||[]).map(l =>
-          '<option value="'+(l.list_tag||'').replace(/"/g,'&quot;')+'">'+
-          (l.list_name||'Unknown').substring(0,38)+'</option>'
-        ).join('');
+      const activeSel = document.getElementById('cq-active-list');
+      const listOptions = (lists||[]).map(l =>
+        '<option value="'+(l.list_tag||'').replace(/"/g,'&quot;')+'">'+
+        (l.list_name||'Unknown').substring(0,36)+'</option>'
+      ).join('');
+      if (sel) sel.innerHTML = '<option value="">All Lists</option>'+listOptions;
+      if (activeSel) activeSel.innerHTML = '<option value="">📋 All Contacts (ICP order)</option>'+listOptions;
     } catch(e) {}
+  }
+
+  async function cqSetActiveList(listTag) {
+    const meta = document.getElementById('cq-active-list-meta');
+    if (!listTag) {
+      if (meta) meta.style.display = 'none';
+      filterCallQueue();
+      return;
+    }
+    const match = cqAllContacts.filter(c => c.list_tag === listTag);
+    if (meta) {
+      meta.style.display = 'block';
+      meta.textContent = match.length + ' contacts in this list';
+    }
+    cqFiltered = match;
+    cqPage = 0;
+    renderCqList();
   }
 
   // ── Filter ──
@@ -7460,9 +7492,48 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     const idx = window._myPlan.findIndex(c=>c.id===id);
     if (idx>-1) { window._myPlan.splice(idx,1); }
     else { window._myPlan.push(contact); }
-    sessionStorage.setItem('lb_my_plan', JSON.stringify(window._myPlan));
+    savePlanToSupabase(window._myPlan);
     renderMyPlan();
     renderCqList();
+  }
+
+  async function savePlanToSupabase(plan) {
+    const email = window._currentUser?.email;
+    if (!email) return;
+    const ids = plan.map(c => c.id);
+    try {
+      await fetch(
+        'https://palcqjfgygpidzwjzikn.supabase.co/rest/v1/lb_users?email=eq.'+encodeURIComponent(email),
+        {
+          method: 'PATCH',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ plan_contact_ids: ids })
+        }
+      );
+    } catch(e) { console.warn('Plan save failed:', e.message); }
+  }
+
+  async function loadPlanFromSupabase() {
+    const email = window._currentUser?.email;
+    if (!email) return;
+    try {
+      const resp = await fetch(
+        'https://palcqjfgygpidzwjzikn.supabase.co/rest/v1/lb_users?email=eq.'+encodeURIComponent(email)+'&select=plan_contact_ids',
+        {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbGNxamZneWdwaWR6d2p6aWtuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjc4MTUzNywiZXhwIjoyMDg4MzU3NTM3fQ.ojp5xMRnHy_GQ8ImmFG-PMlYcYw78kh7Cftp26u3CsA'
+          }
+        }
+      );
+      const rows = await resp.json();
+      const ids = rows?.[0]?.plan_contact_ids || [];
+      window._myPlan = cqAllContacts.filter(c => ids.includes(c.id));
+    } catch(e) { window._myPlan = []; }
   }
 
   function renderMyPlan() {
@@ -7594,8 +7665,8 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
         '</div>'+
         '<textarea id="cq-call-notes-'+id+'" oninput="saveCqNotes(\''+id+'\')" placeholder="Type, hold mic to dictate, or Record Call for full transcript." style="width:100%;height:140px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);resize:vertical;outline:none;box-sizing:border-box;line-height:1.7;transition:border-color 0.2s;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">'+savedNotes+'</textarea>'+
         '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'+
-          '<button onclick="saveNoteToPd(\''+id+'\')" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);" title="Save these notes as a Note on their Pipedrive record">💾 Save Note to Pipedrive</button>'+
-          '<button onclick="logCallToPd(\''+id+'\')" style="padding:8px 16px;background:var(--nav);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);" title="Log this as a completed Call activity in Pipedrive">📞 Log as Call Activity</button>'+
+          '<button onclick="saveNoteToPd(\''+id+'\')" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);" title="Saves these notes as a text Note on their Pipedrive person/deal — visible in the notes tab">💾 Save Note to Pipedrive</button>'+
+          '<button onclick="logCallToPd(\''+id+'\')" style="padding:8px 16px;background:var(--nav);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);" title="Logs a completed Call in their Pipedrive activity timeline — shows call history and duration">📞 Log as Call Activity</button>'+
         '</div>'+
       '</div>';
   }
