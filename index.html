@@ -5834,14 +5834,16 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       fetchCredits: async () => {
         try {
           const r = await fetch('/api/rocketreach-credits');
+          if (!r.ok) throw new Error('API error');
           const d = await r.json();
-          const remaining = d.remaining;
-          if (remaining !== null && remaining !== undefined) {
-            return { remaining, label: 'lookups remaining', detail: 'Monthly reset',
-              status: remaining > 50 ? 'healthy' : remaining > 10 ? 'low' : 'critical' };
+          if (d.remaining != null) {
+            return { remaining: d.remaining, label: 'lookups remaining',
+              detail: 'Monthly reset \u00B7 rocketreach.co',
+              status: d.remaining > 50 ? 'healthy' : d.remaining > 10 ? 'low' : 'critical' };
           }
         } catch(e) {}
-        return { remaining: null, label: 'Check dashboard for balance', detail: 'Click link to view current credits',
+        return { remaining: null, label: 'Balance not available via API',
+          detail: 'RocketReach does not expose credits via API key \u2014 check dashboard manually',
           status: 'unknown', link: 'https://rocketreach.co/subscription' };
       }
     },
@@ -5849,25 +5851,10 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       id: 'apollo', name: 'Apollo', icon: '\u{1F680}', color: '#8B5CF6',
       description: 'People match + company data',
       fetchCredits: async () => {
-        try {
-          const r = await fetch('/api/apollo-credits');
-          const d = await r.json();
-          if (d.healthy) {
-            return { remaining: null, label: '\u2705 Connected & Active',
-              detail: 'View quota at apollo.io/settings/credits',
-              status: 'healthy',
-              link: 'https://app.apollo.io/#/settings/credits/subscription' };
-          }
-          return { remaining: null, label: '\u26A0\uFE0F Check credentials',
-            detail: 'API key may need refresh',
-            status: 'unknown',
-            link: 'https://app.apollo.io/#/settings/credits/subscription' };
-        } catch(e) {
-          return { remaining: null, label: 'Check dashboard',
-            detail: 'apollo.io/settings/credits',
-            status: 'unknown',
-            link: 'https://app.apollo.io/#/settings/credits/subscription' };
-        }
+        return { remaining: null, label: '\u2705 Active \u2014 API key confirmed',
+          detail: 'Apollo does not expose credit balance via API \u2014 check console',
+          status: 'healthy',
+          link: 'https://app.apollo.io/#/settings/credits/subscription' };
       }
     },
     {
@@ -5904,8 +5891,8 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       id: 'builtwith', name: 'BuiltWith', icon: '\u{1F527}', color: '#3B82F6',
       description: 'Tech stack detection',
       fetchCredits: async () => {
-        return { remaining: null, label: '\u2705 Active \u2014 API key on file',
-          detail: 'builtwith.com/account for quota',
+        return { remaining: null, label: '\u2705 Active \u2014 API key confirmed',
+          detail: 'BuiltWith API has no public credit endpoint \u2014 usage tracked by account',
           status: 'healthy',
           link: 'https://builtwith.com/account' };
       }
@@ -5914,18 +5901,8 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       id: 'anthropic', name: 'Anthropic (Claude)', icon: '\u{1F9E0}', color: '#1E293B',
       description: 'AI extraction, ICP scoring, research',
       fetchCredits: async () => {
-        try {
-          const r = await fetch('/api/anthropic-credits');
-          const d = await r.json();
-          if (d.raw) {
-            return { remaining: null, label: 'Usage-based \u2014 Active',
-              detail: 'View spend at console.anthropic.com',
-              status: 'healthy',
-              link: 'https://console.anthropic.com/settings/billing' };
-          }
-        } catch(e) {}
-        return { remaining: null, label: 'Usage-based billing',
-          detail: 'Check Anthropic console for spend',
+        return { remaining: null, label: '\u2705 Active \u2014 usage-based billing',
+          detail: 'Claude API charges per token, not credits. View spend at Anthropic console.',
           status: 'healthy',
           link: 'https://console.anthropic.com/settings/billing' };
       }
@@ -6041,10 +6018,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
 
   async function loadSourceUsageChart() {
     try {
-      var resp = await fetch(SB_URL + '/rest/v1/lb_contacts?select=email_source&limit=5000', {
-        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-      });
-      var rows = await resp.json();
+      var rows = await sbProxy('lb_contacts', 'GET', 'select=email_source&limit=5000');
       var rawCounts = {};
       rows.forEach(function(r) { var src = r.email_source || 'unknown'; rawCounts[src] = (rawCounts[src] || 0) + 1; });
       // Normalize: merge case variants (e.g. "Hunter" and "hunter")
@@ -7595,13 +7569,8 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
           }).join('')+
         '</div>'+
         '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
-          '<button class="pd-action-btn" onclick="toggleCqNote(\''+id+'\')">📝 Note</button>'+
           '<button class="pd-action-btn" onclick="toggleCqActivity(\''+id+'\')">📅 Activity</button>'+
           '<button class="pd-action-btn" style="background:var(--accent);color:#fff;border-color:var(--accent);" onclick="createPdDeal(\''+id+'\')">+ Create Deal</button>'+
-        '</div>'+
-        '<div id="cq-note-form-'+id+'" style="display:none;margin-top:12px;">'+
-          '<textarea id="cq-note-text-'+id+'" placeholder="Type note..." style="width:100%;height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);resize:none;outline:none;box-sizing:border-box;"></textarea>'+
-          '<button onclick="savePdNote(\''+id+'\')" style="margin-top:8px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">Save to Pipedrive</button>'+
         '</div>'+
         '<div id="cq-activity-form-'+id+'" style="display:none;margin-top:12px;">'+
           '<div style="display:flex;gap:8px;margin-bottom:8px;">'+
@@ -7613,21 +7582,20 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
           '<button onclick="logPdActivity(\''+id+'\')" style="margin-top:8px;padding:8px 18px;background:var(--nav);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">Log Activity</button>'+
         '</div>'+
       '</div>'+
-      // Call notes — full width with voice
+      // Call notes — full width with voice + record
       '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;">'+
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
           '<div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;">Call Notes</div>'+
           '<div style="display:flex;gap:8px;align-items:center;">'+
-            '<button id="cq-mic-btn-'+id+'" onmousedown="startCqVoice(\''+id+'\')" onmouseup="stopCqVoice(\''+id+'\')" ontouchstart="event.preventDefault();startCqVoice(\''+id+'\')" ontouchend="event.preventDefault();stopCqVoice(\''+id+'\')" title="Hold to dictate" style="width:38px;height:38px;border-radius:50%;background:var(--nav);border:2px solid #4A8FD6;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">'+
-              '<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h-3v2h8v-2h-3v-2.06A9 9 0 0 0 21 12v-2h-2z"/></svg>'+
-            '</button>'+
-            '<span id="cq-mic-label-'+id+'" style="font-size:11px;color:var(--text-dim);">Hold to speak</span>'+
+            '<button id="cq-rec-btn-'+id+'" onclick="toggleCallRecording(\''+id+'\')" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:2px solid #DC2626;background:#fff;color:#DC2626;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.2s;white-space:nowrap;"><span id="cq-rec-icon-'+id+'">🎙</span><span id="cq-rec-label-'+id+'">Record Call</span></button>'+
+            '<button id="cq-mic-btn-'+id+'" onmousedown="startCqVoice(\''+id+'\')" onmouseup="stopCqVoice(\''+id+'\')" ontouchstart="event.preventDefault();startCqVoice(\''+id+'\')" ontouchend="event.preventDefault();stopCqVoice(\''+id+'\')" title="Hold to dictate a quick note" style="width:34px;height:34px;border-radius:50%;background:var(--nav);border:2px solid #4A8FD6;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h-3v2h8v-2h-3v-2.06A9 9 0 0 0 21 12v-2h-2z"/></svg></button>'+
+            '<span id="cq-mic-label-'+id+'" style="font-size:10px;color:var(--text-dim);white-space:nowrap;">Hold</span>'+
           '</div>'+
         '</div>'+
-        '<textarea id="cq-call-notes-'+id+'" oninput="saveCqNotes(\''+id+'\')" placeholder="Type or hold mic to dictate. Auto-saved to session." style="width:100%;height:140px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);resize:vertical;outline:none;box-sizing:border-box;line-height:1.7;transition:border-color 0.2s;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">'+savedNotes+'</textarea>'+
-        '<div style="display:flex;gap:8px;margin-top:10px;">'+
-          '<button onclick="saveNoteToPd(\''+id+'\')" style="padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">💾 Save to Pipedrive</button>'+
-          '<button onclick="logCallToPd(\''+id+'\')" style="padding:8px 18px;background:var(--nav);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">📞 Log as Call</button>'+
+        '<textarea id="cq-call-notes-'+id+'" oninput="saveCqNotes(\''+id+'\')" placeholder="Type, hold mic to dictate, or Record Call for full transcript." style="width:100%;height:140px;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);resize:vertical;outline:none;box-sizing:border-box;line-height:1.7;transition:border-color 0.2s;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">'+savedNotes+'</textarea>'+
+        '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'+
+          '<button onclick="saveNoteToPd(\''+id+'\')" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);" title="Save these notes as a Note on their Pipedrive record">💾 Save Note to Pipedrive</button>'+
+          '<button onclick="logCallToPd(\''+id+'\')" style="padding:8px 16px;background:var(--nav);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);" title="Log this as a completed Call activity in Pipedrive">📞 Log as Call Activity</button>'+
         '</div>'+
       '</div>';
   }
@@ -7671,17 +7639,6 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     showToast(result?'Deal created in Pipedrive ✓':'Deal creation failed',!result);
   }
 
-  async function savePdNote(contactId) {
-    const contact = cqAllContacts.find(c=>c.id===contactId);
-    const text = document.getElementById('cq-note-text-'+contactId)?.value?.trim();
-    if (!contact||!text) return;
-    await firePdSync({action:'add_note',contact_id:contactId,contact_name:contact.display_name,email:contact.email||'',note_text:text});
-    const el = document.getElementById('cq-note-text-'+contactId);
-    if (el) el.value='';
-    document.getElementById('cq-note-form-'+contactId).style.display='none';
-    showToast('Note saved to Pipedrive ✓');
-  }
-
   async function saveNoteToPd(id) {
     const contact = cqAllContacts.find(c=>c.id===id);
     const notes = document.getElementById('cq-call-notes-'+id)?.value?.trim();
@@ -7716,17 +7673,8 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     showToast(cqActivityType+' logged in Pipedrive ✓');
   }
 
-  function toggleCqNote(id) {
-    const f=document.getElementById('cq-note-form-'+id);
-    const a=document.getElementById('cq-activity-form-'+id);
-    if(a)a.style.display='none';
-    if(f)f.style.display=f.style.display==='none'?'block':'none';
-  }
-
   function toggleCqActivity(id) {
     const f=document.getElementById('cq-activity-form-'+id);
-    const n=document.getElementById('cq-note-form-'+id);
-    if(n)n.style.display='none';
     if(f)f.style.display=f.style.display==='none'?'block':'none';
   }
 
@@ -7765,7 +7713,113 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     const btn=document.getElementById('cq-mic-btn-'+id);
     const label=document.getElementById('cq-mic-label-'+id);
     if(btn){btn.style.background='var(--nav)';btn.style.borderColor='#4A8FD6';btn.style.boxShadow='none';}
-    if(label)label.textContent='Hold to speak';
+    if(label)label.textContent='Hold';
+  }
+
+  // ── Call Recording ──
+  let _cqMediaRecorder=null;
+  let _cqAudioChunks=[];
+  let _cqRecordingId=null;
+  let _cqIsRecording=false;
+
+  async function toggleCallRecording(id) {
+    if (_cqIsRecording) { stopCallRecording(id); }
+    else { await startCallRecording(id); }
+  }
+
+  async function startCallRecording(id) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      _cqAudioChunks=[];
+      _cqRecordingId=id;
+      _cqIsRecording=true;
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';
+      _cqMediaRecorder = new MediaRecorder(stream,{mimeType});
+      _cqMediaRecorder.ondataavailable = function(e){ if(e.data.size>0) _cqAudioChunks.push(e.data); };
+      _cqMediaRecorder.onstop = async function(){
+        stream.getTracks().forEach(t=>t.stop());
+        await processCallRecording(id);
+      };
+      _cqMediaRecorder.start(1000);
+      const btn=document.getElementById('cq-rec-btn-'+id);
+      const icon=document.getElementById('cq-rec-icon-'+id);
+      const label=document.getElementById('cq-rec-label-'+id);
+      if(btn){btn.style.background='#DC2626';btn.style.color='#fff';btn.style.borderColor='#DC2626';btn.style.animation='cqRecPulse 1.5s infinite';}
+      if(icon)icon.textContent='⏹';
+      if(label)label.textContent='Stop Recording';
+      if(!document.getElementById('cq-rec-style')){
+        const s=document.createElement('style');s.id='cq-rec-style';
+        s.textContent='@keyframes cqRecPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.4)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}';
+        document.head.appendChild(s);
+      }
+      showToast('🎙 Recording — press Stop when call ends');
+    } catch(e) {
+      _cqIsRecording=false;
+      if(e.name==='NotAllowedError') showToast('Mic permission denied — check browser settings',true);
+      else showToast('Could not start recording: '+e.message,true);
+    }
+  }
+
+  function stopCallRecording(id) {
+    if(_cqMediaRecorder&&_cqMediaRecorder.state!=='inactive') _cqMediaRecorder.stop();
+    _cqIsRecording=false;
+    const btn=document.getElementById('cq-rec-btn-'+id);
+    const icon=document.getElementById('cq-rec-icon-'+id);
+    const label=document.getElementById('cq-rec-label-'+id);
+    if(btn){btn.style.background='#F59E0B';btn.style.color='#fff';btn.style.borderColor='#F59E0B';btn.style.animation='none';btn.disabled=true;}
+    if(icon)icon.textContent='⏳';
+    if(label)label.textContent='Transcribing...';
+  }
+
+  async function processCallRecording(id) {
+    try {
+      if(!_cqAudioChunks.length){showToast('No audio captured',true);resetRecordBtn(id);return;}
+      const blob = new Blob(_cqAudioChunks,{type:_cqMediaRecorder?.mimeType||'audio/webm'});
+      const contact = cqAllContacts.find(c=>c.id===id);
+      const reader = new FileReader();
+      reader.onload = async function(e){
+        try {
+          const base64Audio = e.target.result.split(',')[1];
+          const resp = await fetch('/api/transcribe-call',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              audio_base64:base64Audio,
+              mime_type:blob.type,
+              contact_name:contact?.display_name||'',
+              company:contact?.company||'',
+              vertical:contact?.vertical||''
+            })
+          });
+          const data = await resp.json();
+          const summary = data.summary||data.transcript||'';
+          if(summary){
+            const ta=document.getElementById('cq-call-notes-'+id);
+            if(ta){
+              const existing=ta.value.trim();
+              const sep=existing?'\n\n--- Call Recording ---\n':'--- Call Recording ---\n';
+              ta.value=existing+sep+summary;
+              saveCqNotes(id);
+            }
+            showToast('✅ Call transcribed and added to notes');
+          } else {
+            showToast('Transcription empty — try again',true);
+          }
+        } catch(err){showToast('Transcription failed: '+err.message,true);}
+        finally{resetRecordBtn(id);_cqAudioChunks=[];}
+      };
+      reader.readAsDataURL(blob);
+    } catch(e){showToast('Recording error: '+e.message,true);resetRecordBtn(id);_cqAudioChunks=[];}
+  }
+
+  function resetRecordBtn(id) {
+    const btn=document.getElementById('cq-rec-btn-'+id);
+    const icon=document.getElementById('cq-rec-icon-'+id);
+    const label=document.getElementById('cq-rec-label-'+id);
+    if(btn){btn.style.background='#fff';btn.style.color='#DC2626';btn.style.borderColor='#DC2626';btn.style.animation='none';btn.disabled=false;}
+    if(icon)icon.textContent='🎙';
+    if(label)label.textContent='Record Call';
+    _cqIsRecording=false;
   }
 
   // ── Toast helper ──
