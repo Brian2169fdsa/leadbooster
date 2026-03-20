@@ -2391,9 +2391,9 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
         <option value="">All Lists</option>
       </select>
       <select id="cq-date-filter" onchange="filterCallQueue()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;background:#fff;">
-        <option value="0">All Time</option>
+        <option value="0" selected>All Time</option>
         <option value="1">Today</option>
-        <option value="7" selected>Last 7 Days</option>
+        <option value="7">Last 7 Days</option>
         <option value="30">Last 30 Days</option>
         <option value="90">Last 90 Days</option>
       </select>
@@ -2413,6 +2413,11 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       <!-- LEFT -->
       <div style="display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:12px;">
         <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;background:#F8FAFC;">Contacts</div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);background:#fff;">
+          <select id="cq-list-picker" onchange="cqPickList(this.value)" style="width:100%;padding:8px 10px;border:1.5px solid var(--accent);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#EFF6FF;font-weight:700;color:var(--accent);">
+            <option value="">📋 All Lists</option>
+          </select>
+        </div>
         <div style="padding:10px 12px;border-bottom:1px solid var(--border);background:#F8FAFC;">
           <select id="cq-active-list" onchange="cqSetActiveList(this.value)" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#fff;font-weight:600;color:var(--text);">
             <option value="">📋 All Contacts (ICP order)</option>
@@ -7361,7 +7366,23 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       ).join('');
       if (sel) sel.innerHTML = '<option value="">All Lists</option>'+listOptions;
       if (activeSel) activeSel.innerHTML = '<option value="">📋 All Contacts (ICP order)</option>'+listOptions;
+      const picker = document.getElementById('cq-list-picker');
+      if (picker) {
+        picker.innerHTML = '<option value="">📋 All Lists</option>' + listOptions;
+        if (picker.options.length > 1) {
+          picker.selectedIndex = 1;
+          cqPickList(picker.options[1].value);
+        }
+      }
     } catch(e) {}
+  }
+
+  async function cqPickList(listTag) {
+    const topFilter = document.getElementById('cq-list-filter');
+    if (topFilter) topFilter.value = listTag;
+    const panelFilter = document.getElementById('cq-active-list');
+    if (panelFilter) panelFilter.value = listTag;
+    cqSetActiveList(listTag);
   }
 
   async function cqSetActiveList(listTag) {
