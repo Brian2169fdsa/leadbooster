@@ -2412,17 +2412,33 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;height:calc(100vh - 320px);" id="cq-main-layout">
       <!-- LEFT -->
       <div style="display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:12px;">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;background:#F8FAFC;">Contacts</div>
-        <div style="padding:8px 12px;border-bottom:1px solid var(--border);background:#fff;">
-          <select id="cq-list-picker" onchange="cqPickList(this.value)" style="width:100%;padding:8px 10px;border:1.5px solid var(--accent);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#EFF6FF;font-weight:700;color:var(--accent);">
-            <option value="">📋 All Lists</option>
-          </select>
+        <!-- SECTION 1: MY PLAN -->
+        <div id="cq-plan-section" style="border-bottom:2px solid var(--accent);background:var(--nav);">
+          <div onclick="toggleMyPlan()" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:14px;">⭐</span>
+              <span style="font-size:12px;font-weight:700;color:#fff;">My Plan</span>
+              <span id="my-plan-count" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.15);color:#fff;">0 contacts</span>
+            </div>
+            <span id="my-plan-chevron" style="font-size:11px;color:rgba(255,255,255,0.6);transition:transform 0.2s;">▸</span>
+          </div>
+          <div id="my-plan-body" style="display:none;max-height:220px;overflow-y:auto;background:#F8FAFC;padding:8px;">
+            <div id="my-plan-list">
+              <div style="text-align:center;padding:12px;color:var(--text-dim);font-size:11px;">Star any contact below to add to your plan</div>
+            </div>
+          </div>
         </div>
-        <div style="padding:10px 12px;border-bottom:1px solid var(--border);background:#F8FAFC;">
-          <select id="cq-active-list" onchange="cqSetActiveList(this.value)" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#fff;font-weight:600;color:var(--text);">
-            <option value="">📋 All Contacts (ICP order)</option>
+        <!-- SECTION 2: LIST SELECTOR -->
+        <div style="border-bottom:1px solid var(--border);background:#F8FAFC;padding:10px 12px;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Select List</div>
+          <select id="cq-list-picker" onchange="cqPickList(this.value)" style="width:100%;padding:8px 10px;border:1.5px solid var(--accent);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#EFF6FF;font-weight:700;color:var(--accent);cursor:pointer;">
+            <option value="">📋 All Contacts</option>
           </select>
-          <div id="cq-active-list-meta" style="font-size:10px;color:var(--text-dim);margin-top:4px;padding-left:2px;display:none;"></div>
+          <div id="cq-list-meta" style="font-size:10px;color:var(--text-dim);margin-top:4px;padding-left:2px;min-height:14px;"></div>
+        </div>
+        <!-- SECTION 3: CONTACTS -->
+        <div style="padding:8px 10px 4px;background:#F8FAFC;border-bottom:1px solid var(--border);">
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;">Contacts</div>
         </div>
         <div id="cq-contact-list" style="flex:1;overflow-y:auto;"></div>
         <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#F8FAFC;">
@@ -7340,14 +7356,6 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       });
       await loadPlanFromSupabase();
       await loadCqListFilter();
-      // Auto-select the most recent list
-      const listSel = document.getElementById('cq-active-list');
-      if (listSel && listSel.options.length > 1) {
-        listSel.selectedIndex = 1;
-        cqSetActiveList(listSel.options[1].value);
-      } else {
-        filterCallQueue();
-      }
       renderMyPlan();
     } catch(e) {
       listEl.innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px;">Failed: '+e.message+'</div>';
@@ -7357,47 +7365,45 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
   async function loadCqListFilter() {
     try {
       const lists = await sbProxy('lb_lists','GET',
-        'select=list_name,list_tag&order=created_at.desc&limit=100');
-      const sel = document.getElementById('cq-list-filter');
-      const activeSel = document.getElementById('cq-active-list');
-      const listOptions = (lists||[]).map(l =>
-        '<option value="'+(l.list_tag||'').replace(/"/g,'&quot;')+'">'+
-        (l.list_name||'Unknown').substring(0,36)+'</option>'
-      ).join('');
-      if (sel) sel.innerHTML = '<option value="">All Lists</option>'+listOptions;
-      if (activeSel) activeSel.innerHTML = '<option value="">📋 All Contacts (ICP order)</option>'+listOptions;
-      const picker = document.getElementById('cq-list-picker');
-      if (picker) {
-        picker.innerHTML = '<option value="">📋 All Lists</option>' + listOptions;
-        if (picker.options.length > 1) {
-          picker.selectedIndex = 1;
-          cqPickList(picker.options[1].value);
+        'select=list_name,list_tag,contacts_found&order=created_at.desc&limit=100');
+      if (!lists) return;
+      const opts = '<option value="">📋 All Contacts</option>' +
+        (lists||[]).map(l =>
+          '<option value="'+(l.list_tag||'').replace(/"/g,'&quot;')+'">'+
+          (l.list_name||'Unknown').substring(0,34)+
+          ' ('+(l.contacts_found||0)+')'+
+          '</option>'
+        ).join('');
+      const sel1 = document.getElementById('cq-list-filter');
+      const sel3 = document.getElementById('cq-list-picker');
+      if (sel1) sel1.innerHTML = opts;
+      if (sel3) {
+        sel3.innerHTML = opts;
+        if (sel3.options.length > 1) {
+          sel3.selectedIndex = 1;
+          cqPickList(sel3.options[1].value);
         }
       }
     } catch(e) {}
   }
 
   async function cqPickList(listTag) {
+    const meta = document.getElementById('cq-list-meta');
     const topFilter = document.getElementById('cq-list-filter');
     if (topFilter) topFilter.value = listTag;
-    const panelFilter = document.getElementById('cq-active-list');
-    if (panelFilter) panelFilter.value = listTag;
-    cqSetActiveList(listTag);
-  }
-
-  async function cqSetActiveList(listTag) {
-    const meta = document.getElementById('cq-active-list-meta');
     if (!listTag) {
-      if (meta) meta.style.display = 'none';
-      filterCallQueue();
+      if (meta) meta.textContent = '';
+      cqFiltered = [...cqAllContacts];
+      cqPage = 0;
+      renderCqList();
       return;
     }
-    const match = cqAllContacts.filter(c => c.list_tag === listTag);
+    cqFiltered = cqAllContacts
+      .filter(c => c.list_tag === listTag)
+      .sort((a, b) => (b.icp_score||0) - (a.icp_score||0));
     if (meta) {
-      meta.style.display = 'block';
-      meta.textContent = match.length + ' contacts in this list';
+      meta.textContent = cqFiltered.length + ' contacts — ICP order';
     }
-    cqFiltered = match;
     cqPage = 0;
     renderCqList();
   }
