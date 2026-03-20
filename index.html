@@ -827,6 +827,7 @@
     }
   </style>
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
+  <script src="https://sdk.twilio.com/js/client/releases/1.14.0/twilio.min.js"></script>
 </head>
 <body>
 
@@ -2771,7 +2772,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     if (mode === 'credits') loadCredits();
     if (mode === 'feedback') { showFbHome(); }
     if (mode === 'lists') { typeof loadLists === 'function' && loadLists(); }
-    if (mode === 'callqueue') { typeof loadCallQueue === 'function' && loadCallQueue(); }
+    if (mode === 'callqueue') { typeof loadCallQueue === 'function' && loadCallQueue(); initTwilioDevice(); }
   }
 
   // ==================== CHIP SELECT ====================
@@ -7714,7 +7715,21 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
         '<div class="cq-info-card">'+
           '<div class="cq-info-label">Phone</div>'+
           '<div class="cq-info-value">'+(hasPhone?contact.phone:'Not on file')+'</div>'+
-          (hasPhone ? '<a href="tel:'+contact.phone+'" class="cq-call-btn green">📞 Call Now</a>' : '<div style="padding:10px;text-align:center;font-size:12px;color:var(--text-dim);background:var(--surface);border-radius:8px;">No phone</div>')+
+          (hasPhone ? '<div>'+
+            '<button onclick="twilioCall(\''+contact.phone+'\',\''+id+'\')" id="cq-call-btn-'+id+'" class="cq-call-btn green" style="width:100%;margin-bottom:6px;">📞 Call Now</button>'+
+            '<div id="cq-call-status-'+id+'" style="display:none;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;margin-bottom:8px;">'+
+              '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
+                '<div style="display:flex;align-items:center;gap:8px;">'+
+                  '<div style="width:8px;height:8px;border-radius:50%;background:#16A34A;animation:pulseDot 1.5s infinite;"></div>'+
+                  '<span id="cq-call-timer-'+id+'" style="font-size:13px;font-weight:700;color:#15803D;">Connecting...</span>'+
+                '</div>'+
+                '<div style="display:flex;gap:6px;">'+
+                  '<button onclick="twilioMute(\''+id+'\')" id="cq-mute-btn-'+id+'" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">🎤 Mute</button>'+
+                  '<button onclick="twilioHangup(\''+id+'\')" style="padding:6px 12px;border-radius:6px;border:none;background:#DC2626;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);">End Call</button>'+
+                '</div>'+
+              '</div>'+
+            '</div>'+
+          '</div>' : '<div style="padding:10px;text-align:center;font-size:12px;color:var(--text-dim);background:var(--surface);border-radius:8px;">No phone on file</div>')+
         '</div>'+
         '<div class="cq-info-card">'+
           '<div class="cq-info-label">Email</div>'+
@@ -8008,6 +8023,122 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       document.body.appendChild(toast);
       setTimeout(()=>{if(toast.parentNode){toast.style.opacity='0';toast.style.transition='opacity 0.3s';setTimeout(()=>toast.remove(),300);}},3000);
     };
+  }
+
+  // ── Twilio browser calling ──
+  const TWILIO_TOKEN_URL = 'https://manageai2026.app.n8n.cloud/webhook/lb-twilio-token';
+  let twilioDevice = null;
+  let twilioConnection = null;
+  let twilioCallTimer = null;
+  let twilioCallSeconds = 0;
+  let twilioMuted = false;
+  let twilioActiveContactId = null;
+
+  async function initTwilioDevice() {
+    if (twilioDevice) return;
+    try {
+      const resp = await fetch(TWILIO_TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identity: window._currentUser?.name || 'agent' })
+      });
+      const data = await resp.json();
+      if (!data.token) throw new Error('No token returned');
+      twilioDevice = new Twilio.Device(data.token, {
+        codecPreferences: ['opus','pcmu'],
+        enableRingingState: true,
+        debug: false
+      });
+      twilioDevice.on('error', (err) => {
+        console.error('Twilio error:', err);
+        showToast('Call error: ' + err.message, true);
+        resetTwilioUI(twilioActiveContactId);
+      });
+      twilioDevice.on('disconnect', () => {
+        stopTwilioTimer();
+        resetTwilioUI(twilioActiveContactId);
+      });
+      console.log('Twilio device ready');
+    } catch(err) {
+      console.error('Twilio init error:', err);
+      showToast('Dialer init failed: ' + err.message, true);
+    }
+  }
+
+  async function twilioCall(phoneNumber, contactId) {
+    twilioActiveContactId = contactId;
+    if (!twilioDevice) await initTwilioDevice();
+    if (!twilioDevice) { showToast('Dialer not ready', true); return; }
+    const clean = phoneNumber.replace(/\D/g,'').slice(-10);
+    if (!clean || clean.length < 10) { showToast('Invalid phone number', true); return; }
+    try {
+      const callBtn = document.getElementById('cq-call-btn-' + contactId);
+      const statusDiv = document.getElementById('cq-call-status-' + contactId);
+      if (callBtn) callBtn.style.display = 'none';
+      if (statusDiv) statusDiv.style.display = 'block';
+      twilioConnection = await twilioDevice.connect({ params: { To: clean } });
+      twilioConnection.on('accept', () => {
+        startTwilioTimer(contactId);
+        showToast('📞 Connected — recording in progress');
+      });
+      twilioConnection.on('disconnect', () => {
+        stopTwilioTimer();
+        resetTwilioUI(contactId);
+        showToast('Call ended — pushing to Pipedrive...');
+      });
+      twilioConnection.on('error', (err) => {
+        showToast('Call failed: ' + err.message, true);
+        resetTwilioUI(contactId);
+      });
+    } catch(err) {
+      showToast('Call failed: ' + err.message, true);
+      resetTwilioUI(contactId);
+    }
+  }
+
+  function twilioHangup(contactId) {
+    if (twilioConnection) { twilioConnection.disconnect(); twilioConnection = null; }
+    if (twilioDevice) twilioDevice.disconnectAll();
+    stopTwilioTimer();
+    resetTwilioUI(contactId);
+  }
+
+  function twilioMute(contactId) {
+    if (!twilioConnection) return;
+    twilioMuted = !twilioMuted;
+    twilioConnection.mute(twilioMuted);
+    const btn = document.getElementById('cq-mute-btn-' + contactId);
+    if (btn) {
+      btn.textContent = twilioMuted ? '🔇 Unmute' : '🎤 Mute';
+      btn.style.background = twilioMuted ? '#FEF3C7' : '#fff';
+    }
+  }
+
+  function startTwilioTimer(contactId) {
+    twilioCallSeconds = 0;
+    const el = document.getElementById('cq-call-timer-' + contactId);
+    twilioCallTimer = setInterval(() => {
+      twilioCallSeconds++;
+      const m = Math.floor(twilioCallSeconds / 60);
+      const s = twilioCallSeconds % 60;
+      if (el) el.textContent = '🔴 ' + m + ':' + String(s).padStart(2,'0') + ' Recording';
+    }, 1000);
+  }
+
+  function stopTwilioTimer() {
+    if (twilioCallTimer) { clearInterval(twilioCallTimer); twilioCallTimer = null; }
+  }
+
+  function resetTwilioUI(contactId) {
+    if (!contactId) return;
+    const btn = document.getElementById('cq-call-btn-' + contactId);
+    const status = document.getElementById('cq-call-status-' + contactId);
+    const timer = document.getElementById('cq-call-timer-' + contactId);
+    if (btn) btn.style.display = 'block';
+    if (status) status.style.display = 'none';
+    if (timer) timer.textContent = 'Connecting...';
+    twilioMuted = false;
+    twilioActiveContactId = null;
   }
 
 </script>
