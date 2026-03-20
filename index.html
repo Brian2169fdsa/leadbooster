@@ -827,7 +827,7 @@
     }
   </style>
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
-  <script src="https://media.twiliocdn.com/sdk/js/client/v1.13/twilio.min.js"></script>
+  <script src="https://sdk.twilio.com/js/voice/1.15.1/twilio.min.js"></script>
 </head>
 <body>
 
@@ -8037,30 +8037,28 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
   async function initTwilioDevice() {
     if (twilioDevice) return;
     try {
-      const resp = await fetch(TWILIO_TOKEN_URL, {
+      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-twilio-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identity: window._currentUser?.name || 'agent' })
       });
       const data = await resp.json();
       if (!data.token) throw new Error('No token returned');
-      twilioDevice = new Twilio.Device(data.token);
-      twilioDevice.on('ready', function() {
-        console.log('Twilio ready');
+      const { Device } = Twilio;
+      twilioDevice = new Device(data.token, {
+        logLevel: 1,
+        codecPreferences: ['opus', 'pcmu']
       });
+      await twilioDevice.register();
       twilioDevice.on('error', (err) => {
         console.error('Twilio error:', err);
-        showToast('Call error: ' + err.message, true);
-        resetTwilioUI(twilioActiveContactId);
-      });
-      twilioDevice.on('disconnect', () => {
-        stopTwilioTimer();
+        showToast('Call error: ' + err.message);
         resetTwilioUI(twilioActiveContactId);
       });
       console.log('Twilio device ready');
     } catch(err) {
       console.error('Twilio init error:', err);
-      showToast('Dialer init failed: ' + err.message, true);
+      showToast('Dialer init failed: ' + err.message);
     }
   }
 
@@ -8078,7 +8076,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       twilioConnection = await twilioDevice.connect({ params: { To: clean } });
       twilioConnection.on('accept', () => {
         startTwilioTimer(contactId);
-        showToast('📞 Connected — recording in progress');
+        showToast('📞 Connected — recording');
       });
       twilioConnection.on('disconnect', () => {
         stopTwilioTimer();
@@ -8086,11 +8084,11 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
         showToast('Call ended — pushing to Pipedrive...');
       });
       twilioConnection.on('error', (err) => {
-        showToast('Call failed: ' + err.message, true);
+        showToast('Call failed: ' + err.message);
         resetTwilioUI(contactId);
       });
     } catch(err) {
-      showToast('Call failed: ' + err.message, true);
+      showToast('Call failed: ' + err.message);
       resetTwilioUI(contactId);
     }
   }
