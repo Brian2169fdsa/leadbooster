@@ -976,6 +976,7 @@
     <!-- Hidden tabs — do not delete, just hidden -->
     <button class="mode-tab" onclick="setMode('single')" id="tab-single" style="display:none;">Single Company</button>
     <button class="mode-tab" onclick="setMode('bulk')" id="tab-bulk" style="display:none;">Bulk Upload</button>
+    <button class="mode-tab" onclick="setMode('knownlist')" id="tab-knownlist">👥 Known List</button>
     <button class="mode-tab" onclick="setMode('territory')" id="tab-territory" style="display:none;">Territory Search</button>
     <button class="mode-tab" onclick="setMode('history')" id="tab-history" style="display:none;">History</button>
     <button class="mode-tab" onclick="setMode('current')" id="tab-current" style="display:none;">Current Run</button>
@@ -1895,6 +1896,90 @@
     <div class="summary-banner" id="summary-banner"></div>
   </div>
 
+  <!-- ==================== KNOWN LIST MODE ==================== -->
+  <div id="mode-knownlist" class="mode-content hidden">
+    <div style="margin-bottom:24px;">
+      <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;">👥 Known List Enrichment</div>
+      <div style="font-size:13px;color:var(--text-mid);max-width:640px;line-height:1.7;">You already know who you want to reach. Upload a list of named people with their company and domain. Lead Booster will scrape their company site for contact info, run the full Hunter → Apollo → PDL → RocketReach → Clay enrichment waterfall, ICP score each person, and push everything to Pipedrive and Google Sheets. Up to 200 people per run.</div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Run Details</div>
+      <div class="row-2" style="margin-bottom:14px;">
+        <div class="field">
+          <label>List Name *</label>
+          <input type="text" id="kl-list-name" placeholder="e.g. Barrons Top 100 Advisors 2025" />
+        </div>
+        <div class="field">
+          <label>Vertical</label>
+          <select id="kl-vertical">
+            <option value="financial_services">Financial Svcs (Non-Bank)</option>
+            <option value="construction">Construction</option>
+            <option value="behavioral_health">Behavioral Health</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="insurance">Insurance</option>
+            <option value="legal_services">Legal Services</option>
+            <option value="accounting_tax">Accounting &amp; Tax</option>
+            <option value="technology_saas">Technology / SaaS</option>
+            <option value="healthcare_services">Healthcare Services</option>
+            <option value="real_estate">Real Estate</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Pipedrive Owner</label>
+          <select id="kl-owner">
+            <option value="Tony Hanak">Tony Hanak</option>
+            <option value="Brian Reinhart">Brian Reinhart</option>
+            <option value="Jeff Merritt">Jeff Merritt</option>
+            <option value="Dave Albertson">Dave Albertson</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Your Email</label>
+          <input type="email" id="kl-email" placeholder="tony@manageai.io" />
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">People List</div>
+      <div class="card-sub">Upload CSV or paste below. Required: first_name, last_name, company, domain. Optional: title, phone. Max 200 people per run.</div>
+      <div class="upload-area" id="kl-drop-zone" onclick="document.getElementById('kl-csv-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleKlDrop(event)">
+        <input type="file" id="kl-csv-input" class="upload-input" accept=".csv,.xls,.xlsx" onchange="handleKlFile(event)" />
+        <div class="upload-icon">👥</div>
+        <div class="upload-title">Drop CSV here or click to browse</div>
+        <div class="upload-sub">Columns: first_name, last_name, company, domain, title (optional), phone (optional)</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <span style="font-size:11px;font-weight:700;color:var(--text-dim);">OR PASTE BELOW</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+      <div class="field">
+        <label>People — one per line</label>
+        <textarea id="kl-paste" rows="12" oninput="updateKlCount()" placeholder="first_name,last_name,company,domain,title,phone
+Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867
+Mark,Curtis,Morgan Stanley,morganstanley.com,Financial Advisor,(650) 496-4220" style="font-family:var(--mono);font-size:11px;line-height:1.6;"></textarea>
+        <div class="field-hint">First row = headers. domain column is required for scraping + enrichment.</div>
+      </div>
+      <div class="limit-bar">
+        <div class="limit-label">People</div>
+        <div class="limit-track">
+          <div class="limit-fill" id="kl-fill" style="width:0%"></div>
+        </div>
+        <div class="limit-count ok" id="kl-count">0 / 200</div>
+      </div>
+      <div style="background:#EFF6FF;border:1.5px solid #4A8FD6;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">📋 Name this list</div>
+        <input type="text" id="kl-list-tag-name" placeholder="e.g. Barrons Top 100 Advisors 2025" oninput="updateKlListPreview()" style="width:100%;padding:10px 13px;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-family:var(--font);background:#fff;outline:none;box-sizing:border-box;" />
+        <div id="kl-list-preview" style="font-size:11px;color:#3B82F6;margin-top:6px;font-weight:500;"></div>
+      </div>
+      <button class="btn-primary" id="btn-kl-run" onclick="submitKnownList()" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);">👥 Run Known List Enrichment</button>
+    </div>
+    <div id="kl-results" style="display:none;"></div>
+  </div>
+
   <!-- ==================== ACTIVECAMPAIGN MODE ==================== -->
   <div id="mode-activecampaign" class="mode-content hidden">
 
@@ -2755,7 +2840,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       endRebeccaVideo();
     }
     currentMode = mode;
-    ['dashboard','single','bulk','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits','lists','scraper','callqueue'].forEach(m => {
+    ['dashboard','single','bulk','knownlist','territory','current','history','rebecca','activecampaign','feedback','analysis','precall','credits','lists','scraper','callqueue'].forEach(m => {
       const el = document.getElementById('mode-' + m);
       if (el) el.classList.toggle('hidden', m !== mode);
       const tab = document.getElementById('tab-' + m);
@@ -2772,6 +2857,10 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     if (mode === 'feedback') { showFbHome(); }
     if (mode === 'lists') { typeof loadLists === 'function' && loadLists(); }
     if (mode === 'callqueue') { typeof loadCallQueue === 'function' && loadCallQueue(); initTwilioDevice(); }
+    if (mode === 'knownlist') {
+      const emailEl = document.getElementById('kl-email');
+      if (emailEl && window._currentUser?.email) emailEl.value = window._currentUser.email;
+    }
   }
 
   // ==================== CHIP SELECT ====================
@@ -3249,6 +3338,106 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     var _tState = document.getElementById('t-state') ? document.getElementById('t-state').value.trim() : '';
     showPipelineCard(leads[0]?.company || (_tCity + ' Territory'), leads[0]?.domain || '', getActiveChip('t-chips'), 'territory', { city: _tCity, state: _tState, qty: leads.length, list_tag: listTag });
     runLeads(leads, 'territory', window._currentUser?.name || 'Brian', window._currentUser?.email || 'brian@manageai.io');
+  }
+
+  // ==================== KNOWN LIST ====================
+  function handleKlDrop(event) {
+    event.preventDefault();
+    document.getElementById('kl-drop-zone').style.borderColor = 'var(--border)';
+    const file = event.dataTransfer.files[0];
+    if (file) handleBulkFile(file, 'kl-paste', updateKlCount);
+  }
+  function handleKlFile(event) {
+    const file = event.target.files[0];
+    if (file) handleBulkFile(file, 'kl-paste', updateKlCount);
+  }
+  function parseKlPeople() {
+    const raw = (document.getElementById('kl-paste')?.value || '').trim();
+    if (!raw) return [];
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
+    if (!lines.length) return [];
+    const first = lines[0].toLowerCase();
+    const hasHeader = first.includes('first') || first.includes('name') || first.includes('domain');
+    const data = hasHeader ? lines.slice(1) : lines;
+    return data.map(line => {
+      const c = line.split(',').map(x => x.trim().replace(/^["']|["']$/g,''));
+      return {
+        first_name: c[0]||'',
+        last_name: c[1]||'',
+        company: c[2]||'',
+        domain: (c[3]||'').replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,''),
+        title: c[4]||'',
+        phone: c[5]||''
+      };
+    }).filter(p => (p.first_name||p.last_name) && p.domain).slice(0, 200);
+  }
+  function updateKlCount() {
+    const people = parseKlPeople();
+    const n = people.length;
+    const pct = Math.min((n/200)*100,100);
+    const countEl = document.getElementById('kl-count');
+    const fillEl = document.getElementById('kl-fill');
+    if (countEl) {
+      countEl.textContent = n + ' / 200';
+      countEl.className = 'limit-count ' + (n>=200?'over':n>=150?'warn':'ok');
+    }
+    if (fillEl) fillEl.style.width = pct+'%';
+  }
+  function updateKlListPreview() {
+    const name = (document.getElementById('kl-list-tag-name')?.value||'').trim();
+    const prev = document.getElementById('kl-list-preview');
+    if (!prev) return;
+    const tag = name ? name + ' — KL — ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+    prev.textContent = tag ? 'Tag: ' + tag : '';
+  }
+  async function submitKnownList() {
+    const listName = (document.getElementById('kl-list-tag-name')?.value || document.getElementById('kl-list-name')?.value || '').trim();
+    const vertical = document.getElementById('kl-vertical')?.value || 'general';
+    const owner = document.getElementById('kl-owner')?.value || 'Tony Hanak';
+    const email = document.getElementById('kl-email')?.value?.trim() || window._currentUser?.email || 'tony@manageai.io';
+    const people = parseKlPeople();
+    if (!listName) { alert('Please enter a list name.'); return; }
+    if (!people.length) { alert('Please add at least one person with a domain.'); return; }
+    const btn = document.getElementById('btn-kl-run');
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+    const listTag = listName + ' — KL — ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    showPipelineCard(listName, people[0]?.domain || '', vertical, 'bulk', { list_tag: listTag, qty: people.length });
+    try {
+      const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/we-intake', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          people,
+          list_name: listName,
+          list_tag: listTag,
+          vertical,
+          submitter_name: window._currentUser?.name || 'Tony',
+          submitter_email: email,
+          pipedrive_owner: owner
+        })
+      });
+      const data = await resp.json();
+      const rEl = document.getElementById('kl-results');
+      if (rEl) {
+        rEl.style.display = 'block';
+        rEl.innerHTML = '<div class="card" style="background:#DCFCE7;border:1px solid #BBF7D0;">' +
+          '<div style="font-size:15px;font-weight:700;color:#15803D;margin-bottom:8px;">✅ ' + people.length + ' people submitted</div>' +
+          '<div style="font-size:13px;color:#166534;line-height:1.7;">' +
+          'Lead Booster is now:<br>' +
+          '1. Scraping company sites for contact info<br>' +
+          '2. Running Hunter → Apollo → PDL → RocketReach → Clay<br>' +
+          '3. ICP scoring each person<br>' +
+          '4. Pushing to Pipedrive + Google Sheets<br><br>' +
+          '<strong>List:</strong> ' + listTag + '<br>' +
+          '<strong>Est. time:</strong> ' + Math.ceil(people.length * 0.5) + '–' + Math.ceil(people.length * 1.5) + ' minutes' +
+          '</div></div>';
+      }
+      showToast('✅ ' + people.length + ' people queued — pipeline running');
+    } catch(err) {
+      alert('Submission failed: ' + err.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '👥 Run Known List Enrichment'; }
+    }
   }
 
   // ==================== SUPABASE ====================
