@@ -733,6 +733,12 @@
       #rb-daily-container { height: 280px !important; }
       #rb-daily-container iframe { height:360px !important; top:6px !important; }
 
+      /* ── CALL QUEUE MOBILE ── */
+      #cq-main-layout { grid-template-columns: 1fr !important; height: auto !important; }
+      #cq-main-layout > div:first-child { height: 420px; }
+      #cq-toggle-lists, #cq-toggle-all { font-size: 12px !important; padding: 8px !important; }
+      #cq-list-picker { font-size: 14px !important; }
+
       /* ── FOOTER ── */
       .footer { flex-direction: column !important; gap: 6px !important; text-align: center !important; }
 
@@ -2347,27 +2353,27 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
 
   <!-- ==================== CALL QUEUE MODE ==================== -->
   <div id="mode-callqueue" class="mode-content hidden">
-    <!-- My Plan -->
-    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;">
-      <div onclick="toggleMyPlan()" style="padding:12px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;background:var(--nav);" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+    <!-- MY PLAN BAR -->
+    <div style="background:var(--nav);border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <div onclick="toggleMyPlan()" style="padding:12px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-size:14px;">⭐</span>
           <span style="font-size:13px;font-weight:700;color:#fff;">My Plan</span>
           <span id="my-plan-count" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.15);color:#fff;">0 contacts</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:rgba(255,255,255,0.6);">Click ★ on any contact to add to plan</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.6);">★ any contact to add to today's plan</span>
           <span id="my-plan-chevron" style="font-size:12px;color:rgba(255,255,255,0.7);transition:transform 0.2s;">▸</span>
         </div>
       </div>
-      <div id="my-plan-body" style="display:none;padding:12px 16px;background:#F8FAFC;">
-        <div id="my-plan-list" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;">
-          <div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px;">No contacts in your plan yet. Click ★ on any contact below to add them here.</div>
+      <div id="my-plan-body" style="display:none;padding:10px 14px;background:#F8FAFC;">
+        <div id="my-plan-list" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;">
+          <div style="text-align:center;padding:14px;color:var(--text-dim);font-size:12px;">No contacts in your plan yet. Star any contact below to add them.</div>
         </div>
       </div>
     </div>
-    <!-- Filter bar -->
-    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+    <!-- FILTER BAR -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
       <input type="text" id="cq-search" placeholder="Search name or company..." oninput="filterCallQueue()" style="flex:2;min-width:180px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;"/>
       <select id="cq-icp-filter" onchange="filterCallQueue()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;background:#fff;">
         <option value="0">All ICP</option>
@@ -2387,72 +2393,59 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
         <option value="Closed Won">Closed Won ✅</option>
         <option value="Closed Lost">Closed Lost ❌</option>
       </select>
-      <select id="cq-list-filter" onchange="filterCallQueue()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;background:#fff;max-width:180px;">
-        <option value="">All Lists</option>
-      </select>
-      <select id="cq-date-filter" onchange="filterCallQueue()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;background:#fff;">
-        <option value="0" selected>All Time</option>
-        <option value="1">Today</option>
-        <option value="7">Last 7 Days</option>
-        <option value="30">Last 30 Days</option>
-        <option value="90">Last 90 Days</option>
-      </select>
       <select id="cq-priority-filter" onchange="filterCallQueue()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;background:#fff;">
         <option value="">All Priority</option>
         <option value="elite">🔥 Elite (ICP 90+)</option>
         <option value="hot">⚡ Hot (ICP 80+)</option>
         <option value="stale">🧊 Stale (14+ days)</option>
         <option value="no_deal">📭 No Deal Yet</option>
-        <option value="has_phone">📞 Has Phone</option>
       </select>
-      <button id="cq-phone-only" onclick="toggleCqPhoneOnly()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;background:var(--surface);color:var(--text-dim);cursor:pointer;font-family:var(--font);white-space:nowrap;">📞 Phone</button>
+      <button id="cq-phone-only" onclick="toggleCqPhoneOnly()" style="padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;background:var(--surface);color:var(--text-dim);cursor:pointer;font-family:var(--font);white-space:nowrap;">📞 Phone Only</button>
       <span id="cq-count" style="font-size:12px;color:var(--text-dim);font-weight:600;white-space:nowrap;margin-left:auto;"></span>
     </div>
-    <!-- Two column layout -->
-    <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;height:calc(100vh - 320px);" id="cq-main-layout">
-      <!-- LEFT -->
+    <!-- MAIN TWO COLUMN LAYOUT -->
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;height:calc(100vh - 340px);" id="cq-main-layout">
+      <!-- LEFT PANEL -->
       <div style="display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:12px;">
-        <!-- SECTION 1: MY PLAN -->
-        <div id="cq-plan-section" style="border-bottom:2px solid var(--accent);background:var(--nav);">
-          <div onclick="toggleMyPlan()" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:14px;">⭐</span>
-              <span style="font-size:12px;font-weight:700;color:#fff;">My Plan</span>
-              <span id="my-plan-count" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.15);color:#fff;">0 contacts</span>
-            </div>
-            <span id="my-plan-chevron" style="font-size:11px;color:rgba(255,255,255,0.6);transition:transform 0.2s;">▸</span>
-          </div>
-          <div id="my-plan-body" style="display:none;max-height:220px;overflow-y:auto;background:#F8FAFC;padding:8px;">
-            <div id="my-plan-list">
-              <div style="text-align:center;padding:12px;color:var(--text-dim);font-size:11px;">Star any contact below to add to your plan</div>
-            </div>
+        <!-- MODE TOGGLE -->
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);background:#F8FAFC;">
+          <div style="display:flex;background:var(--surface);border-radius:8px;padding:3px;border:1px solid var(--border);">
+            <button id="cq-toggle-lists" onclick="setCqMode('lists')" style="flex:1;padding:7px 10px;border-radius:5px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);background:var(--nav);color:#fff;transition:all 0.2s;">📋 My Lists</button>
+            <button id="cq-toggle-all" onclick="setCqMode('all')" style="flex:1;padding:7px 10px;border-radius:5px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);background:transparent;color:var(--text-dim);transition:all 0.2s;">👥 All Contacts</button>
           </div>
         </div>
-        <!-- SECTION 2: LIST SELECTOR -->
-        <div style="border-bottom:1px solid var(--border);background:#F8FAFC;padding:10px 12px;">
-          <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Select List</div>
-          <select id="cq-list-picker" onchange="cqPickList(this.value)" style="width:100%;padding:8px 10px;border:1.5px solid var(--accent);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#EFF6FF;font-weight:700;color:var(--accent);cursor:pointer;">
-            <option value="">📋 All Contacts</option>
+        <!-- LIST CONTROLS (My Lists mode only) -->
+        <div id="cq-list-controls" style="padding:10px 12px;border-bottom:1px solid var(--border);background:#fff;">
+          <select id="cq-list-picker" onchange="cqPickList(this.value)" style="width:100%;padding:8px 10px;border:1.5px solid var(--accent);border-radius:6px;font-size:12px;font-family:var(--font);outline:none;background:#EFF6FF;font-weight:700;color:var(--accent);margin-bottom:6px;">
+            <option value="">📋 Select a list...</option>
           </select>
-          <div id="cq-list-meta" style="font-size:10px;color:var(--text-dim);margin-top:4px;padding-left:2px;min-height:14px;"></div>
+          <select id="cq-list-sort" onchange="cqSortLists(this.value)" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:var(--font);outline:none;background:#fff;color:var(--text-mid);">
+            <option value="newest">Sort: Most Recent First</option>
+            <option value="oldest">Sort: Oldest First</option>
+            <option value="az">Sort: A-Z by Name</option>
+            <option value="most">Sort: Most Contacts</option>
+          </select>
+          <div id="cq-list-meta" style="font-size:10px;color:var(--text-dim);margin-top:5px;padding-left:2px;min-height:14px;"></div>
         </div>
-        <!-- SECTION 3: CONTACTS -->
-        <div style="padding:8px 10px 4px;background:#F8FAFC;border-bottom:1px solid var(--border);">
+        <!-- CONTACT LIST HEADER -->
+        <div style="padding:8px 12px 4px;background:#F8FAFC;border-bottom:1px solid var(--border);">
           <div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;">Contacts</div>
         </div>
+        <!-- CONTACT LIST (grouped) -->
         <div id="cq-contact-list" style="flex:1;overflow-y:auto;"></div>
+        <!-- PAGINATION -->
         <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#F8FAFC;">
           <button onclick="cqPrevPage()" id="cq-prev" style="padding:4px 10px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">← Prev</button>
           <span id="cq-page-info" style="font-size:10px;color:var(--text-dim);"></span>
           <button onclick="cqNextPage()" id="cq-next" style="padding:4px 10px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;font-family:var(--font);">Next →</button>
         </div>
       </div>
-      <!-- RIGHT -->
+      <!-- RIGHT PANEL — detail unchanged -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow-y:auto;padding:20px;">
         <div id="cq-detail-panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;color:var(--text-dim);">
           <div style="font-size:48px;margin-bottom:16px;">📞</div>
           <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;">Select a contact to start calling</div>
-          <div style="font-size:13px;max-width:280px;line-height:1.6;color:var(--text-dim);">Use My Plan above to queue your priority calls. Filter by stage, list, or date to find the right contacts. Click any contact to call and manage their Pipedrive deal.</div>
+          <div style="font-size:13px;max-width:280px;line-height:1.6;color:var(--text-dim);">Pick a list, star your priority contacts into My Plan, then click any contact to call and log to Pipedrive.</div>
         </div>
       </div>
     </div>
@@ -7323,126 +7316,148 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
   window._myPlan = [];
   let cqAllContacts = [];
   let cqFiltered = [];
+  let cqGrouped = [];
   let cqPage = 0;
   let cqPhoneOnly = false;
   let cqActiveId = null;
-  const CQ_PER_PAGE = 50;
+  let cqMode = 'lists';
+  let cqAllLists = [];
+  let cqActiveListTag = '';
+  const CQ_PER_PAGE = 60;
+
+  // ── Mode toggle ──
+  function setCqMode(mode) {
+    cqMode = mode;
+    const btnLists = document.getElementById('cq-toggle-lists');
+    const btnAll = document.getElementById('cq-toggle-all');
+    const controls = document.getElementById('cq-list-controls');
+    if (mode === 'lists') {
+      if (btnLists) { btnLists.style.background = 'var(--nav)'; btnLists.style.color = '#fff'; }
+      if (btnAll) { btnAll.style.background = 'transparent'; btnAll.style.color = 'var(--text-dim)'; }
+      if (controls) controls.style.display = 'block';
+    } else {
+      if (btnAll) { btnAll.style.background = 'var(--nav)'; btnAll.style.color = '#fff'; }
+      if (btnLists) { btnLists.style.background = 'transparent'; btnLists.style.color = 'var(--text-dim)'; }
+      if (controls) controls.style.display = 'none';
+      cqActiveListTag = '';
+    }
+    applyFiltersAndRender();
+  }
 
   // ── Load ──
   async function loadCallQueue() {
     const listEl = document.getElementById('cq-contact-list');
     if (!listEl) return;
-    // If already loaded just re-filter
     if (cqAllContacts.length > 0) {
-      loadCqListFilter();
-      filterCallQueue();
+      await loadCqListFilter();
+      applyFiltersAndRender();
       renderMyPlan();
       return;
     }
     listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">Loading contacts...</div>';
     try {
       const data = await sbProxy('lb_contacts','GET',
-        'select=id,first_name,last_name,name,title,company,email,phone,linkedin_url,vertical,icp_score,icp_rationale,enrichment_notes,email_source,employee_count,annual_revenue,final_completeness_score,list_tag,submitter_email,domain,outcome,created_at&order=icp_score.desc.nullslast&limit=500');
+        'select=id,first_name,last_name,name,title,company,email,phone,linkedin_url,vertical,icp_score,icp_rationale,enrichment_notes,email_source,phone_source,list_tag,submitter_email,domain,outcome,created_at&order=icp_score.desc.nullslast&limit=2000');
       cqAllContacts = (data||[]).map(c => {
         const fn = c.first_name||(c.name||'').split(' ')[0]||'';
         const ln = c.last_name||(c.name||'').split(' ').slice(1).join(' ')||'';
-        return {
-          ...c,
-          first_name: fn,
-          last_name: ln,
-          display_name: (fn+' '+ln).trim()||c.name||'Unknown',
-          pd_stage: null
-        };
+        return { ...c, first_name: fn, last_name: ln, display_name: (fn+' '+ln).trim()||c.name||'Unknown', pd_stage: null };
       });
-      await loadPlanFromSupabase();
       await loadCqListFilter();
+      await loadPlanFromSupabase();
+      applyFiltersAndRender();
       renderMyPlan();
     } catch(e) {
       listEl.innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px;">Failed: '+e.message+'</div>';
     }
   }
 
+  // ── Load lists dropdown ──
   async function loadCqListFilter() {
     try {
-      const lists = await sbProxy('lb_lists','GET',
-        'select=list_name,list_tag,contacts_found&order=created_at.desc&limit=100');
-      if (!lists) return;
-      const opts = '<option value="">📋 All Contacts</option>' +
-        (lists||[]).map(l =>
-          '<option value="'+(l.list_tag||'').replace(/"/g,'&quot;')+'">'+
-          (l.list_name||'Unknown').substring(0,34)+
-          ' ('+(l.contacts_found||0)+')'+
-          '</option>'
-        ).join('');
-      const sel1 = document.getElementById('cq-list-filter');
-      const sel3 = document.getElementById('cq-list-picker');
-      if (sel1) sel1.innerHTML = opts;
-      if (sel3) {
-        sel3.innerHTML = opts;
-        if (sel3.options.length > 1) {
-          sel3.selectedIndex = 1;
-          cqPickList(sel3.options[1].value);
-        }
-      }
+      cqAllLists = await sbProxy('lb_lists','GET',
+        'select=list_name,list_tag,contacts_found,created_at&order=created_at.desc&limit=200');
+      renderListDropdown(document.getElementById('cq-list-sort')?.value || 'newest');
     } catch(e) {}
   }
 
-  async function cqPickList(listTag) {
-    const meta = document.getElementById('cq-list-meta');
-    const topFilter = document.getElementById('cq-list-filter');
-    if (topFilter) topFilter.value = listTag;
-    if (!listTag) {
-      if (meta) meta.textContent = '';
-      cqFiltered = [...cqAllContacts];
-      cqPage = 0;
-      renderCqList();
-      return;
+  function renderListDropdown(sortOrder) {
+    const picker = document.getElementById('cq-list-picker');
+    if (!picker || !cqAllLists) return;
+    let sorted = [...cqAllLists];
+    if (sortOrder === 'newest') sorted.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    else if (sortOrder === 'oldest') sorted.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    else if (sortOrder === 'az') sorted.sort((a,b) => (a.list_name||'').localeCompare(b.list_name||''));
+    else if (sortOrder === 'most') sorted.sort((a,b) => (b.contacts_found||0) - (a.contacts_found||0));
+    picker.innerHTML = '<option value="">📋 Select a list...</option>' +
+      sorted.map(l =>
+        '<option value="'+(l.list_tag||'').replace(/"/g,'&quot;')+'">'+(l.list_name||'Unknown').substring(0,32)+' ('+(l.contacts_found||0)+')</option>'
+      ).join('');
+    if (!cqActiveListTag && picker.options.length > 1) {
+      picker.selectedIndex = 1;
+      cqActiveListTag = picker.options[1].value;
+    } else if (cqActiveListTag) {
+      for (let i = 0; i < picker.options.length; i++) {
+        if (picker.options[i].value === cqActiveListTag) { picker.selectedIndex = i; break; }
+      }
     }
-    cqFiltered = cqAllContacts
-      .filter(c => c.list_tag === listTag)
-      .sort((a, b) => (b.icp_score||0) - (a.icp_score||0));
-    if (meta) {
-      meta.textContent = cqFiltered.length + ' contacts — ICP order';
-    }
-    cqPage = 0;
-    renderCqList();
   }
 
-  // ── Filter ──
-  function filterCallQueue() {
+  function cqSortLists(sortOrder) {
+    renderListDropdown(sortOrder);
+    applyFiltersAndRender();
+  }
+
+  function cqPickList(listTag) {
+    cqActiveListTag = listTag;
+    applyFiltersAndRender();
+    const meta = document.getElementById('cq-list-meta');
+    if (meta) meta.textContent = listTag ? cqFiltered.length + ' contacts — ICP order' : '';
+  }
+
+  // ── Filter + render ──
+  function filterCallQueue() { applyFiltersAndRender(); }
+
+  function applyFiltersAndRender() {
     const search = (document.getElementById('cq-search')?.value||'').toLowerCase();
     const minIcp = parseInt(document.getElementById('cq-icp-filter')?.value||'0');
     const stageFilter = document.getElementById('cq-stage-filter')?.value||'';
-    const listFilter = document.getElementById('cq-list-filter')?.value||'';
-    const days = parseInt(document.getElementById('cq-date-filter')?.value||'0');
     const priority = document.getElementById('cq-priority-filter')?.value||'';
-    const cutoff = days>0 ? new Date(Date.now()-days*86400000) : null;
-    cqFiltered = cqAllContacts.filter(c => {
+    let pool;
+    if (cqMode === 'lists' && cqActiveListTag) {
+      pool = cqAllContacts.filter(c => c.list_tag === cqActiveListTag);
+    } else if (cqMode === 'lists' && !cqActiveListTag) {
+      pool = [];
+    } else {
+      pool = [...cqAllContacts];
+    }
+    cqFiltered = pool.filter(c => {
       if (cqPhoneOnly && !c.phone) return false;
       if (search) {
         const s = (c.display_name+' '+(c.company||'')+' '+(c.title||'')).toLowerCase();
         if (!s.includes(search)) return false;
       }
-      if (minIcp>0 && (c.icp_score||0)<minIcp) return false;
+      if (minIcp > 0 && (c.icp_score||0) < minIcp) return false;
       if (stageFilter) {
-        if (stageFilter==='none') { if (c.pd_stage) return false; }
-        else { if (c.pd_stage!==stageFilter) return false; }
+        if (stageFilter === 'none') { if (c.pd_stage) return false; }
+        else { if (c.pd_stage !== stageFilter) return false; }
       }
-      if (listFilter && c.list_tag!==listFilter) return false;
-      if (cutoff && c.created_at) {
-        if (new Date(c.created_at)<cutoff) return false;
-      }
-      if (priority==='elite' && (c.icp_score||0)<90) return false;
-      if (priority==='hot' && (c.icp_score||0)<80) return false;
-      if (priority==='stale') {
-        const age = Date.now()-new Date(c.created_at||0).getTime();
-        if (age<14*86400000) return false;
-      }
-      if (priority==='no_deal' && c.pd_stage) return false;
-      if (priority==='has_phone' && !c.phone) return false;
+      if (priority === 'elite' && (c.icp_score||0) < 90) return false;
+      if (priority === 'hot' && (c.icp_score||0) < 80) return false;
+      if (priority === 'stale') { const age = Date.now() - new Date(c.created_at||0).getTime(); if (age < 14*86400000) return false; }
+      if (priority === 'no_deal' && c.pd_stage) return false;
       return true;
     });
-    cqPage=0;
+    if (cqMode === 'lists') {
+      cqFiltered.sort((a,b) => (b.icp_score||0) - (a.icp_score||0));
+    } else {
+      cqFiltered.sort((a,b) => { const co = (a.company||'').localeCompare(b.company||''); if (co !== 0) return co; return (b.icp_score||0) - (a.icp_score||0); });
+    }
+    cqPage = 0;
+    const countEl = document.getElementById('cq-count');
+    if (countEl) countEl.textContent = cqFiltered.length + ' contacts';
+    const meta = document.getElementById('cq-list-meta');
+    if (meta && cqActiveListTag) meta.textContent = cqFiltered.length + ' contacts — ICP order';
     renderCqList();
   }
 
@@ -7453,77 +7468,120 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       btn.style.background = cqPhoneOnly ? 'var(--green)' : 'var(--surface)';
       btn.style.color = cqPhoneOnly ? '#fff' : 'var(--text-dim)';
       btn.style.borderColor = cqPhoneOnly ? 'var(--green)' : 'var(--border)';
-      btn.textContent = cqPhoneOnly ? '📞 Phone ✓' : '📞 Phone';
+      btn.textContent = cqPhoneOnly ? '📞 Phone Only ✓' : '📞 Phone Only';
     }
-    filterCallQueue();
+    applyFiltersAndRender();
   }
 
-  // ── Render list ──
+  // ── Render grouped list ──
   function renderCqList() {
     const listEl = document.getElementById('cq-contact-list');
-    const countEl = document.getElementById('cq-count');
     if (!listEl) return;
     const total = cqFiltered.length;
-    const start = cqPage*CQ_PER_PAGE;
-    const page = cqFiltered.slice(start, start+CQ_PER_PAGE);
-    if (countEl) countEl.textContent = total+' contacts';
-    if (!page.length) {
-      listEl.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:13px;">No contacts match filters</div>';
-      updateCqPagination(total);
+    if (!total) {
+      listEl.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:13px;">' +
+        (cqMode === 'lists' && !cqActiveListTag ? 'Select a list above to see contacts' : 'No contacts match filters') + '</div>';
+      updateCqPagination(0);
       return;
     }
-    listEl.innerHTML = page.map(c => {
-      const score = c.icp_score||0;
-      const cls = score>=75?'high':score>=50?'mid':'low';
-      const hasPhone = c.phone&&c.phone.trim();
-      const isActive = c.id===cqActiveId;
-      const isPlanned = (window._myPlan||[]).some(p => p.id===c.id);
-      const stageColor = {'Lead In':'#64748B','Qualified':'#1D4ED8','Demo Scheduled':'#D97706','Proposal Sent':'#7C3AED','Closed Won':'#16A34A','Closed Lost':'#DC2626'}[c.pd_stage] || null;
-      return '<div class="cq-card'+(isActive?' active':'')+'" id="cqc-'+c.id+'" onclick="loadCqContact(\''+c.id+'\')">'+
-        '<div style="display:flex;align-items:center;gap:8px;">'+
-          '<div class="cq-icp-badge '+cls+'">'+score+'</div>'+
-          '<div style="flex:1;min-width:0;">'+
-            '<div class="cq-name">'+c.display_name+'</div>'+
-            '<div class="cq-meta">'+(c.title||'—')+' · '+(c.company||'—')+'</div>'+
-            (c.pd_stage ? '<div style="font-size:10px;font-weight:700;color:'+stageColor+';margin-top:2px;">● '+c.pd_stage+'</div>' : '')+
+    const start = cqPage * CQ_PER_PAGE;
+    const pageContacts = cqFiltered.slice(start, start + CQ_PER_PAGE);
+    const pageGroups = {};
+    pageContacts.forEach(c => { const co = c.company || 'Unknown'; if (!pageGroups[co]) pageGroups[co] = []; pageGroups[co].push(c); });
+    let html = '';
+    Object.entries(pageGroups).forEach(([company, contacts]) => {
+      html += '<div style="padding:6px 14px 4px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:10px;font-weight:800;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.07em;position:sticky;top:0;z-index:1;">' +
+        company + ' <span style="font-weight:500;color:var(--text-dim);">(' + contacts.length + ')</span></div>';
+      contacts.forEach(c => {
+        const score = c.icp_score||0;
+        const cls = score >= 75 ? 'high' : score >= 50 ? 'mid' : 'low';
+        const isActive = c.id === cqActiveId;
+        const isPlanned = (window._myPlan||[]).some(p => p.id === c.id);
+        const hasPhone = c.phone && c.phone.trim();
+        const stageColors = {'Lead In':'#64748B','Qualified':'#1D4ED8','Demo Scheduled':'#D97706','Proposal Sent':'#7C3AED','Closed Won':'#16A34A','Closed Lost':'#DC2626'};
+        const stageColor = stageColors[c.pd_stage] || null;
+        html += '<div class="cq-card'+(isActive?' active':'')+'" id="cqc-'+c.id+'" onclick="loadCqContact(\''+c.id+'\')">'+
+          '<div style="display:flex;align-items:center;gap:8px;">'+
+            '<div class="cq-icp-badge '+cls+'">'+score+'</div>'+
+            '<div style="flex:1;min-width:0;">'+
+              '<div class="cq-name">'+c.display_name+'</div>'+
+              '<div class="cq-meta">'+(c.title||'—')+'</div>'+
+              (c.pd_stage ? '<div style="font-size:10px;font-weight:700;color:'+stageColor+';margin-top:2px;">● '+c.pd_stage+'</div>' : '')+
+            '</div>'+
+            '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">'+
+              '<button onclick="toggleMyPlanContact(\''+c.id+'\',event)" style="background:none;border:none;cursor:pointer;font-size:16px;line-height:1;padding:0;color:'+(isPlanned?'var(--amber)':'#CBD5E1')+';">'+(isPlanned?'★':'☆')+'</button>'+
+              (hasPhone ? '<div style="width:7px;height:7px;border-radius:50%;background:var(--green);" title="Has phone"></div>' : '')+
+            '</div>'+
           '</div>'+
-          '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">'+
-            '<button onclick="toggleMyPlanContact(\''+c.id+'\',event)" title="Add to My Plan" style="background:none;border:none;cursor:pointer;font-size:16px;line-height:1;padding:0;color:'+(isPlanned?'var(--amber)':'#CBD5E1')+';">'+(isPlanned?'★':'☆')+'</button>'+
-            (hasPhone ? '<div style="width:7px;height:7px;border-radius:50%;background:var(--green);" title="Has phone"></div>' : '')+
-          '</div>'+
-        '</div>'+
-      '</div>';
-    }).join('');
+        '</div>';
+      });
+    });
+    listEl.innerHTML = html;
     updateCqPagination(total);
   }
 
   function updateCqPagination(total) {
-    const start = cqPage*CQ_PER_PAGE;
+    const start = cqPage * CQ_PER_PAGE;
     const pi = document.getElementById('cq-page-info');
     const pb = document.getElementById('cq-prev');
     const nb = document.getElementById('cq-next');
     if (pi) pi.textContent = (start+1)+'–'+Math.min(start+CQ_PER_PAGE,total)+' of '+total;
-    if (pb) pb.disabled = cqPage===0;
-    if (nb) nb.disabled = start+CQ_PER_PAGE>=total;
+    if (pb) pb.disabled = cqPage === 0;
+    if (nb) nb.disabled = start + CQ_PER_PAGE >= total;
   }
 
-  function cqPrevPage() { if (cqPage>0){cqPage--;renderCqList();} }
-  function cqNextPage() { if ((cqPage+1)*CQ_PER_PAGE<cqFiltered.length){cqPage++;renderCqList();} }
+  function cqPrevPage() { if (cqPage > 0) { cqPage--; renderCqList(); } }
+  function cqNextPage() { if ((cqPage+1)*CQ_PER_PAGE < cqFiltered.length) { cqPage++; renderCqList(); } }
 
   // ── My Plan ──
   function toggleMyPlanContact(id, event) {
     event?.stopPropagation();
-    const contact = cqAllContacts.find(c=>c.id===id);
+    const contact = cqAllContacts.find(c => c.id === id);
     if (!contact) return;
-    if (!window._myPlan) window._myPlan=[];
-    const idx = window._myPlan.findIndex(c=>c.id===id);
-    if (idx>-1) { window._myPlan.splice(idx,1); }
+    if (!window._myPlan) window._myPlan = [];
+    const idx = window._myPlan.findIndex(c => c.id === id);
+    if (idx > -1) { window._myPlan.splice(idx, 1); }
     else { window._myPlan.push(contact); }
     savePlanToSupabase(window._myPlan);
     renderMyPlan();
     renderCqList();
   }
 
+  function renderMyPlan() {
+    const list = document.getElementById('my-plan-list');
+    const countEl = document.getElementById('my-plan-count');
+    const plan = window._myPlan || [];
+    if (countEl) countEl.textContent = plan.length + ' contact' + (plan.length !== 1 ? 's' : '');
+    if (!list) return;
+    if (!plan.length) {
+      list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px;">No contacts in your plan yet. Star any contact to add them.</div>';
+      return;
+    }
+    list.innerHTML = plan.map(c => {
+      const score = c.icp_score || 0;
+      const scoreColor = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--accent)' : 'var(--text-dim)';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border-radius:8px;cursor:pointer;border:1px solid var(--border);transition:box-shadow 0.15s;" onclick="loadCqContact(\''+c.id+'\')" onmouseover="this.style.boxShadow=\'0 2px 6px rgba(0,0,0,0.08)\'" onmouseout="this.style.boxShadow=\'none\'">'+
+        '<div style="font-size:13px;font-weight:800;color:'+scoreColor+';width:30px;text-align:center;flex-shrink:0;">'+score+'</div>'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+c.display_name+'</div>'+
+          '<div style="font-size:11px;color:var(--text-dim);">'+(c.company||'')+'</div>'+
+        '</div>'+
+        (c.phone ? '<a href="tel:'+c.phone+'" onclick="event.stopPropagation()" style="padding:5px 10px;background:var(--green);color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;flex-shrink:0;">📞 Call</a>' : '')+
+        '<button onclick="toggleMyPlanContact(\''+c.id+'\',event)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--amber);flex-shrink:0;">★</button>'+
+      '</div>';
+    }).join('');
+  }
+
+  function toggleMyPlan() {
+    const body = document.getElementById('my-plan-body');
+    const chev = document.getElementById('my-plan-chevron');
+    if (!body) return;
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)';
+  }
+
+  // ── Supabase plan persistence ──
   async function savePlanToSupabase(plan) {
     const email = window._currentUser?.email;
     if (!email) return;
@@ -7541,7 +7599,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
           body: JSON.stringify({ plan_contact_ids: ids })
         }
       );
-    } catch(e) { console.warn('Plan save failed:', e.message); }
+    } catch(e) {}
   }
 
   async function loadPlanFromSupabase() {
@@ -7561,41 +7619,6 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       const ids = rows?.[0]?.plan_contact_ids || [];
       window._myPlan = cqAllContacts.filter(c => ids.includes(c.id));
     } catch(e) { window._myPlan = []; }
-  }
-
-  function renderMyPlan() {
-    const list = document.getElementById('my-plan-list');
-    const countEl = document.getElementById('my-plan-count');
-    const plan = window._myPlan||[];
-    if (countEl) countEl.textContent = plan.length+' contact'+(plan.length!==1?'s':'');
-    if (!list) return;
-    if (!plan.length) {
-      list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px;">No contacts in your plan yet. Click ★ on any contact to add them.</div>';
-      return;
-    }
-    list.innerHTML = plan.map(c => {
-      const score = c.icp_score||0;
-      const scoreColor = score>=75?'var(--green)':score>=50?'var(--accent)':'var(--text-dim)';
-      const stageLabel = c.pd_stage ? ' · <span style="color:var(--accent);font-size:10px;">'+c.pd_stage+'</span>' : '';
-      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border-radius:8px;cursor:pointer;border:1px solid var(--border);transition:box-shadow 0.15s;" onclick="loadCqContact(\''+c.id+'\')" onmouseover="this.style.boxShadow=\'0 2px 6px rgba(0,0,0,0.08)\'" onmouseout="this.style.boxShadow=\'none\'">'+
-        '<div style="font-size:13px;font-weight:800;color:'+scoreColor+';width:30px;text-align:center;flex-shrink:0;">'+score+'</div>'+
-        '<div style="flex:1;min-width:0;">'+
-          '<div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+c.display_name+'</div>'+
-          '<div style="font-size:11px;color:var(--text-dim);">'+(c.title||'')+(c.title&&c.company?' · ':'')+(c.company||'')+stageLabel+'</div>'+
-        '</div>'+
-        (c.phone ? '<a href="tel:'+c.phone+'" onclick="event.stopPropagation()" style="padding:5px 10px;background:var(--green);color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;flex-shrink:0;">📞</a>' : '')+
-        '<button onclick="toggleMyPlanContact(\''+c.id+'\',event)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--amber);flex-shrink:0;">★</button>'+
-      '</div>';
-    }).join('');
-  }
-
-  function toggleMyPlan() {
-    const body = document.getElementById('my-plan-body');
-    const chev = document.getElementById('my-plan-chevron');
-    if (!body) return;
-    const isOpen = body.style.display!=='none';
-    body.style.display = isOpen?'none':'block';
-    if (chev) chev.style.transform = isOpen?'':'rotate(90deg)';
   }
 
   // ── Contact detail panel ──
