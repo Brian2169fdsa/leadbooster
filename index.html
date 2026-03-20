@@ -827,7 +827,6 @@
     }
   </style>
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
-  <script src="https://sdk.twilio.com/js/voice/releases/2.3.0/twilio.min.js"></script>
 </head>
 <body>
 
@@ -8036,6 +8035,25 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
 
   async function initTwilioDevice() {
     if (twilioDevice) return;
+    if (typeof Twilio === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://sdk.twilio.com/js/voice/releases/2.3.0/twilio.min.js';
+        script.onload = resolve;
+        script.onerror = () => {
+          const s2 = document.createElement('script');
+          s2.src = 'https://media.twiliocdn.com/sdk/js/voice/v2.0/twilio.min.js';
+          s2.onload = resolve;
+          s2.onerror = reject;
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(script);
+      });
+    }
+    if (typeof Twilio === 'undefined' || typeof Twilio.Device === 'undefined') {
+      showToast('Twilio SDK failed to load — check your connection', true);
+      return;
+    }
     try {
       const resp = await fetch('https://manageai2026.app.n8n.cloud/webhook/lb-twilio-token', {
         method: 'POST',
@@ -8044,18 +8062,21 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       });
       const data = await resp.json();
       if (!data.token) throw new Error('No token returned');
-      twilioDevice = new Twilio.Device(data.token, {
-        logLevel: 1
-      });
+      twilioDevice = new Twilio.Device(data.token, { logLevel: 1 });
       twilioDevice.on('error', (err) => {
         console.error('Twilio error:', err);
-        showToast('Call error: ' + err.message);
+        showToast('Call error: ' + err.message, true);
+        resetTwilioUI(twilioActiveContactId);
+      });
+      twilioDevice.on('disconnect', () => {
+        stopTwilioTimer();
         resetTwilioUI(twilioActiveContactId);
       });
       console.log('Twilio device ready');
     } catch(err) {
       console.error('Twilio init error:', err);
-      showToast('Dialer init failed: ' + err.message);
+      showToast('Dialer init failed: ' + err.message, true);
+      twilioDevice = null;
     }
   }
 
