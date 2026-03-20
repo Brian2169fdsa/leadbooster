@@ -2135,13 +2135,13 @@ Turner Construction, turnerconstruction.com" style="font-family:var(--mono);font
     <!-- KNOWN LIST FORM -->
     <div id="lb-form-knownlist" style="display:none;">
       <div class="card">
-        <div class="card-title">👥 Known List Enrichment</div>
-        <div class="card-sub">You know who you want to reach. Upload names + companies + domains. Lead Booster finds their emails, phones, and ICP scores them. Max 200 people.</div>
+        <div class="card-title">👥 Known List — Full Enrichment</div>
+        <div class="card-sub">Upload a list of names, companies, and domains. Lead Booster hits every data source — Hunter, Apollo, People Data Labs, Lusha, RocketReach, Clay, website scraping — and aggregates everything found. Every email and phone from every source is labeled and preserved in Pipedrive. Nothing is overwritten, nothing is discarded. ICP scored and pushed to your Call Queue. Max 200 people.</div>
         <div class="upload-area" id="lb-kl-drop" onclick="document.getElementById('lb-kl-csv').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLbKlDrop(event)">
           <input type="file" id="lb-kl-csv" class="upload-input" accept=".csv,.xls,.xlsx,.xlsm,.xlsb,.ods,.tsv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.google-apps.spreadsheet" onchange="handleLbKlFile(event)" />
           <div class="upload-icon">👥</div>
           <div class="upload-title">Drop file or click to browse</div>
-          <div class="upload-sub">CSV, XLS, XLSX, ODS, TSV — Columns: first_name, last_name, company, domain, title, phone</div>
+          <div class="upload-sub">CSV, XLS, XLSX, ODS, TSV — Columns: first_name, last_name, company, domain, title (optional), phone (optional) — existing data is preserved and enriched</div>
         </div>
         <div class="field">
           <label>Or paste people</label>
@@ -2200,7 +2200,7 @@ Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867"
           <label>Your Email</label>
           <input type="email" id="lb-kl-email" placeholder="tony@manageai.io" />
         </div>
-        <button class="btn-primary" onclick="lbSubmitKnownList()">👥 Run Known List Enrichment</button>
+        <button class="btn-primary" onclick="lbSubmitKnownList()">🔍 Run Full Enrichment — All Sources</button>
       </div>
     </div>
     <div id="lb-results" style="display:none;margin-top:16px;"></div>
@@ -2209,8 +2209,8 @@ Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867"
   <!-- ==================== KNOWN LIST MODE ==================== -->
   <div id="mode-knownlist" class="mode-content hidden">
     <div style="margin-bottom:24px;">
-      <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;">👥 Known List Enrichment</div>
-      <div style="font-size:13px;color:var(--text-mid);max-width:640px;line-height:1.7;">You already know who you want to reach. Upload a list of named people with their company and domain. Lead Booster will scrape their company site for contact info, run the full Hunter → Apollo → PDL → RocketReach → Clay enrichment waterfall, ICP score each person, and push everything to Pipedrive and Google Sheets. Up to 200 people per run.</div>
+      <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;">👥 Known List — Full Enrichment</div>
+      <div style="font-size:13px;color:var(--text-mid);max-width:640px;line-height:1.7;">You already know who you want to reach. Upload a list of names, companies, and domains — Lead Booster runs every available data source against each person simultaneously: Hunter, Apollo, People Data Labs, Lusha, RocketReach, Clay, website scraping, and more. Every email, phone number, and LinkedIn profile found across all sources is preserved and written to Pipedrive with its source label — nothing is thrown away. The system selects the best primary contact for each field and ICP scores every person. Results go to Pipedrive, Google Sheets, and your Call Queue. Up to 200 people per run.</div>
     </div>
     <div class="card" style="margin-bottom:16px;">
       <div class="card-title">Run Details</div>
@@ -2269,7 +2269,7 @@ Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867"
         <input type="file" id="kl-csv-input" class="upload-input" accept=".csv,.xls,.xlsx,.xlsm,.xlsb,.ods,.tsv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.google-apps.spreadsheet" onchange="handleKlFile(event)" />
         <div class="upload-icon">👥</div>
         <div class="upload-title">Drop file or click to browse</div>
-        <div class="upload-sub">CSV, XLS, XLSX, ODS, TSV — Columns: first_name, last_name, company, domain, title (optional), phone (optional)</div>
+        <div class="upload-sub">CSV, XLS, XLSX, ODS, TSV — Columns: first_name, last_name, company, domain, title (optional), phone (optional) — existing data is preserved and enriched</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
@@ -2295,7 +2295,7 @@ Mark,Curtis,Morgan Stanley,morganstanley.com,Financial Advisor,(650) 496-4220" s
         <input type="text" id="kl-list-tag-name" placeholder="e.g. Barrons Top 100 Advisors 2025" oninput="updateKlListPreview()" style="width:100%;padding:10px 13px;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-family:var(--font);background:#fff;outline:none;box-sizing:border-box;" />
         <div id="kl-list-preview" style="font-size:11px;color:#3B82F6;margin-top:6px;font-weight:500;"></div>
       </div>
-      <button class="btn-primary" id="btn-kl-run" onclick="submitKnownList()" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);">👥 Run Known List Enrichment</button>
+      <button class="btn-primary" id="btn-kl-run" onclick="submitKnownList()" style="background:linear-gradient(135deg,#1a5fb4,#4a90d9);">🔍 Run Full Enrichment — All Sources</button>
     </div>
     <div id="kl-results" style="display:none;"></div>
   </div>
@@ -3764,7 +3764,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     } catch(err) {
       alert('Submission failed: ' + err.message);
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = '👥 Run Known List Enrichment'; }
+      if (btn) { btn.disabled = false; btn.textContent = '🔍 Run Full Enrichment — All Sources'; }
     }
   }
 
