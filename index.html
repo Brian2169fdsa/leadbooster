@@ -827,7 +827,7 @@
     }
   </style>
   <script crossorigin src="https://unpkg.com/@daily-co/daily-js"></script>
-  <script src="https://sdk.twilio.com/js/voice/1.15.1/twilio.min.js"></script>
+  <script src="https://media.twiliocdn.com/sdk/js/voice/v1.15/twilio.min.js"></script>
 </head>
 <body>
 
@@ -8044,12 +8044,10 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       });
       const data = await resp.json();
       if (!data.token) throw new Error('No token returned');
-      const { Device } = Twilio;
-      twilioDevice = new Device(data.token, {
+      twilioDevice = new Twilio.Device(data.token, {
         logLevel: 1,
         codecPreferences: ['opus', 'pcmu']
       });
-      await twilioDevice.register();
       twilioDevice.on('error', (err) => {
         console.error('Twilio error:', err);
         showToast('Call error: ' + err.message);
