@@ -970,14 +970,14 @@
     <button class="mode-tab" onclick="setMode('precall')" id="tab-precall" data-nav="nav-precall">Pre-Call Brief</button>
     <button class="mode-tab" onclick="setMode('analysis')" id="tab-analysis">Analysis</button>
     <button class="mode-tab" onclick="setMode('scraper')" id="tab-scraper" style="display:none;">🕷 Scraper</button>
-    <button class="mode-tab" onclick="setMode('lists')" id="tab-lists">📋 My Lists</button>
+    <button class="mode-tab" onclick="setMode('lists')" id="tab-lists">My Lists</button>
     <button class="mode-tab" onclick="setMode('callqueue')" id="tab-callqueue">Call Queue</button>
     <button class="mode-tab" onclick="setMode('credits')" id="tab-credits">Credits</button>
     <button class="mode-tab" onclick="setMode('feedback')" id="tab-feedback">Feedback</button>
     <!-- Hidden tabs — do not delete, just hidden -->
     <button class="mode-tab" onclick="setMode('single')" id="tab-single" style="display:none;">Single Company</button>
     <button class="mode-tab" onclick="setMode('bulk')" id="tab-bulk" style="display:none;">Bulk Upload</button>
-    <button class="mode-tab" onclick="setMode('knownlist')" id="tab-knownlist">👥 Known List</button>
+    <button class="mode-tab" onclick="setMode('knownlist')" id="tab-knownlist" style="display:none;">👥 Known List</button>
     <button class="mode-tab" onclick="setMode('territory')" id="tab-territory" style="display:none;">Territory Search</button>
     <button class="mode-tab" onclick="setMode('history')" id="tab-history" style="display:none;">History</button>
     <button class="mode-tab" onclick="setMode('current')" id="tab-current" style="display:none;">Current Run</button>
@@ -994,7 +994,6 @@
       <a href="https://docs.google.com/spreadsheets/d/1q-ilos41TKQjtfOtc343OTBW2dFY7A8VUqVTys1GLOI/edit?gid=742517028#gid=742517028" target="_blank" style="background:#7C3AED;color:white;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;text-decoration:none;">
         Access Sheet
       </a>
-      <button onclick="setMode('leadbooster')" style="background:linear-gradient(135deg,#1a5fb4,#7C3AED);color:white;border:none;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;font-family:inherit;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(124,58,237,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(124,58,237,0.35)'">🚀 Lead Booster</button>
       <a href="https://manageai.pipedrive.com" target="_blank" id="rb-pipedrive-btn" style="background:#fff;color:#1E293B;border:1px solid #E2E6EC;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;font-family:inherit;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.08);" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
         <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 3C10.7 3 6 7.7 6 13.5c0 3.5 1.7 6.6 4.3 8.5L16.5 29l6.2-7c2.6-1.9 4.3-5 4.3-8.5C27 7.7 22.3 3 16.5 3zm0 15.2c-3.1 0-5.7-2.5-5.7-5.7 0-3.1 2.5-5.7 5.7-5.7 3.1 0 5.7 2.5 5.7 5.7 0 3.2-2.6 5.7-5.7 5.7z" fill="#017737"/></svg>
         Pipedrive
@@ -1946,14 +1945,26 @@
         <div class="field">
           <label>Vertical</label>
           <div class="chips" id="lb-s-chips">
-            <button class="chip active" data-v="construction" onclick="selectChip(this,'lb-s-chips')">Construction</button>
+            <button class="chip" data-v="accounting_tax" onclick="selectChip(this,'lb-s-chips')">Accounting &amp; Tax</button>
+            <button class="chip" data-v="auto_dealerships" onclick="selectChip(this,'lb-s-chips')">Auto Dealerships</button>
+            <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'lb-s-chips')">B2B Professional Services</button>
             <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'lb-s-chips')">Behavioral Health</button>
-            <button class="chip" data-v="financial_services" onclick="selectChip(this,'lb-s-chips')">Financial Services</button>
-            <button class="chip" data-v="medical_transport" onclick="selectChip(this,'lb-s-chips')">Medical Transport</button>
+            <button class="chip active" data-v="construction" onclick="selectChip(this,'lb-s-chips')">Construction</button>
+            <button class="chip" data-v="construction_engineering" onclick="selectChip(this,'lb-s-chips')">Construction &amp; Engineering</button>
+            <button class="chip" data-v="financial_services" onclick="selectChip(this,'lb-s-chips')">Financial Svcs (Non-Bank)</button>
+            <button class="chip" data-v="health_wellness" onclick="selectChip(this,'lb-s-chips')">Health &amp; Wellness</button>
+            <button class="chip" data-v="healthcare_services" onclick="selectChip(this,'lb-s-chips')">Healthcare Svcs (Non-Hospital)</button>
+            <button class="chip" data-v="home_services" onclick="selectChip(this,'lb-s-chips')">Home Services</button>
             <button class="chip" data-v="insurance" onclick="selectChip(this,'lb-s-chips')">Insurance</button>
             <button class="chip" data-v="legal_services" onclick="selectChip(this,'lb-s-chips')">Legal Services</button>
+            <button class="chip" data-v="logistics_transportation" onclick="selectChip(this,'lb-s-chips')">Logistics &amp; Transportation</button>
+            <button class="chip" data-v="manufacturing" onclick="selectChip(this,'lb-s-chips')">Manufacturing</button>
+            <button class="chip" data-v="marketing_advertising" onclick="selectChip(this,'lb-s-chips')">Marketing &amp; Advertising</button>
+            <button class="chip" data-v="medical_transport" onclick="selectChip(this,'lb-s-chips')">Medical Transport</button>
+            <button class="chip" data-v="staffing_professional_svcs" onclick="selectChip(this,'lb-s-chips')">Professional Svcs / Staffing</button>
+            <button class="chip" data-v="real_estate" onclick="selectChip(this,'lb-s-chips')">Real Estate &amp; Property Mgmt</button>
             <button class="chip" data-v="technology_saas" onclick="selectChip(this,'lb-s-chips')">Technology / SaaS</button>
-            <button class="chip" data-v="real_estate" onclick="selectChip(this,'lb-s-chips')">Real Estate</button>
+            <button class="chip" data-v="wholesale_distribution" onclick="selectChip(this,'lb-s-chips')">Wholesale Distribution</button>
           </div>
         </div>
         <div class="row-2">
@@ -1984,10 +1995,10 @@
         <div class="card-title">📋 Bulk Upload</div>
         <div class="card-sub">Upload a CSV or paste companies. Max 50 per run.</div>
         <div class="upload-area" id="lb-bulk-drop" onclick="document.getElementById('lb-bulk-csv').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLbBulkDrop(event)">
-          <input type="file" id="lb-bulk-csv" class="upload-input" accept=".csv,.xls,.xlsx" onchange="handleLbBulkFile(event)" />
+          <input type="file" id="lb-bulk-csv" class="upload-input" accept=".csv,.xls,.xlsx,.xlsm,.xlsb,.ods,.tsv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.google-apps.spreadsheet" onchange="handleLbBulkFile(event)" />
           <div class="upload-icon">📄</div>
           <div class="upload-title">Drop file or click to browse</div>
-          <div class="upload-sub">CSV: Company Name, domain.com</div>
+          <div class="upload-sub">CSV, XLS, XLSX, ODS, TSV — any spreadsheet format</div>
         </div>
         <div class="field">
           <label>Or paste companies</label>
@@ -2004,14 +2015,27 @@ Turner Construction, turnerconstruction.com" style="font-family:var(--mono);font
         <div class="field">
           <label>Default Vertical</label>
           <select id="lb-bulk-vertical">
-            <option value="construction">Construction</option>
+            <option value="accounting_tax">Accounting &amp; Tax</option>
+            <option value="auto_dealerships">Auto Dealerships</option>
+            <option value="b2b_professional_services">B2B Professional Services</option>
             <option value="behavioral_health">Behavioral Health</option>
-            <option value="financial_services">Financial Services</option>
-            <option value="medical_transport">Medical Transport</option>
+            <option value="construction">Construction</option>
+            <option value="construction_engineering">Construction &amp; Engineering</option>
+            <option value="financial_services">Financial Svcs (Non-Bank)</option>
+            <option value="general">General</option>
+            <option value="health_wellness">Health &amp; Wellness</option>
+            <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
+            <option value="home_services">Home Services</option>
             <option value="insurance">Insurance</option>
             <option value="legal_services">Legal Services</option>
+            <option value="logistics_transportation">Logistics &amp; Transportation</option>
+            <option value="manufacturing">Manufacturing</option>
+            <option value="marketing_advertising">Marketing &amp; Advertising</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
+            <option value="real_estate">Real Estate &amp; Property Mgmt</option>
             <option value="technology_saas">Technology / SaaS</option>
-            <option value="general">General</option>
+            <option value="wholesale_distribution">Wholesale Distribution</option>
           </select>
         </div>
         <div class="row-2">
@@ -2054,14 +2078,26 @@ Turner Construction, turnerconstruction.com" style="font-family:var(--mono);font
         <div class="field">
           <label>Vertical</label>
           <div class="chips" id="lb-t-chips">
-            <button class="chip active" data-v="construction" onclick="selectChip(this,'lb-t-chips')">Construction</button>
+            <button class="chip" data-v="accounting_tax" onclick="selectChip(this,'lb-t-chips')">Accounting &amp; Tax</button>
+            <button class="chip" data-v="auto_dealerships" onclick="selectChip(this,'lb-t-chips')">Auto Dealerships</button>
+            <button class="chip" data-v="b2b_professional_services" onclick="selectChip(this,'lb-t-chips')">B2B Professional Services</button>
             <button class="chip" data-v="behavioral_health" onclick="selectChip(this,'lb-t-chips')">Behavioral Health</button>
-            <button class="chip" data-v="financial_services" onclick="selectChip(this,'lb-t-chips')">Financial Services</button>
-            <button class="chip" data-v="medical_transport" onclick="selectChip(this,'lb-t-chips')">Medical Transport</button>
+            <button class="chip active" data-v="construction" onclick="selectChip(this,'lb-t-chips')">Construction</button>
+            <button class="chip" data-v="construction_engineering" onclick="selectChip(this,'lb-t-chips')">Construction &amp; Engineering</button>
+            <button class="chip" data-v="financial_services" onclick="selectChip(this,'lb-t-chips')">Financial Svcs (Non-Bank)</button>
+            <button class="chip" data-v="health_wellness" onclick="selectChip(this,'lb-t-chips')">Health &amp; Wellness</button>
+            <button class="chip" data-v="healthcare_services" onclick="selectChip(this,'lb-t-chips')">Healthcare Svcs (Non-Hospital)</button>
+            <button class="chip" data-v="home_services" onclick="selectChip(this,'lb-t-chips')">Home Services</button>
             <button class="chip" data-v="insurance" onclick="selectChip(this,'lb-t-chips')">Insurance</button>
             <button class="chip" data-v="legal_services" onclick="selectChip(this,'lb-t-chips')">Legal Services</button>
+            <button class="chip" data-v="logistics_transportation" onclick="selectChip(this,'lb-t-chips')">Logistics &amp; Transportation</button>
+            <button class="chip" data-v="manufacturing" onclick="selectChip(this,'lb-t-chips')">Manufacturing</button>
+            <button class="chip" data-v="marketing_advertising" onclick="selectChip(this,'lb-t-chips')">Marketing &amp; Advertising</button>
+            <button class="chip" data-v="medical_transport" onclick="selectChip(this,'lb-t-chips')">Medical Transport</button>
+            <button class="chip" data-v="staffing_professional_svcs" onclick="selectChip(this,'lb-t-chips')">Professional Svcs / Staffing</button>
+            <button class="chip" data-v="real_estate" onclick="selectChip(this,'lb-t-chips')">Real Estate &amp; Property Mgmt</button>
             <button class="chip" data-v="technology_saas" onclick="selectChip(this,'lb-t-chips')">Technology / SaaS</button>
-            <button class="chip" data-v="real_estate" onclick="selectChip(this,'lb-t-chips')">Real Estate</button>
+            <button class="chip" data-v="wholesale_distribution" onclick="selectChip(this,'lb-t-chips')">Wholesale Distribution</button>
           </div>
         </div>
         <div class="field">
@@ -2102,10 +2138,10 @@ Turner Construction, turnerconstruction.com" style="font-family:var(--mono);font
         <div class="card-title">👥 Known List Enrichment</div>
         <div class="card-sub">You know who you want to reach. Upload names + companies + domains. Lead Booster finds their emails, phones, and ICP scores them. Max 200 people.</div>
         <div class="upload-area" id="lb-kl-drop" onclick="document.getElementById('lb-kl-csv').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleLbKlDrop(event)">
-          <input type="file" id="lb-kl-csv" class="upload-input" accept=".csv,.xls,.xlsx" onchange="handleLbKlFile(event)" />
+          <input type="file" id="lb-kl-csv" class="upload-input" accept=".csv,.xls,.xlsx,.xlsm,.xlsb,.ods,.tsv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.google-apps.spreadsheet" onchange="handleLbKlFile(event)" />
           <div class="upload-icon">👥</div>
-          <div class="upload-title">Drop CSV here or click to browse</div>
-          <div class="upload-sub">Columns: first_name, last_name, company, domain, title, phone</div>
+          <div class="upload-title">Drop file or click to browse</div>
+          <div class="upload-sub">CSV, XLS, XLSX, ODS, TSV — Columns: first_name, last_name, company, domain, title, phone</div>
         </div>
         <div class="field">
           <label>Or paste people</label>
@@ -2122,14 +2158,27 @@ Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867"
         <div class="field">
           <label>Vertical</label>
           <select id="lb-kl-vertical">
-            <option value="financial_services">Financial Services</option>
-            <option value="construction">Construction</option>
+            <option value="accounting_tax">Accounting &amp; Tax</option>
+            <option value="auto_dealerships">Auto Dealerships</option>
+            <option value="b2b_professional_services">B2B Professional Services</option>
             <option value="behavioral_health">Behavioral Health</option>
-            <option value="medical_transport">Medical Transport</option>
+            <option value="construction">Construction</option>
+            <option value="construction_engineering">Construction &amp; Engineering</option>
+            <option value="financial_services">Financial Svcs (Non-Bank)</option>
+            <option value="general">General</option>
+            <option value="health_wellness">Health &amp; Wellness</option>
+            <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
+            <option value="home_services">Home Services</option>
             <option value="insurance">Insurance</option>
             <option value="legal_services">Legal Services</option>
+            <option value="logistics_transportation">Logistics &amp; Transportation</option>
+            <option value="manufacturing">Manufacturing</option>
+            <option value="marketing_advertising">Marketing &amp; Advertising</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
+            <option value="real_estate">Real Estate &amp; Property Mgmt</option>
             <option value="technology_saas">Technology / SaaS</option>
-            <option value="general">General</option>
+            <option value="wholesale_distribution">Wholesale Distribution</option>
           </select>
         </div>
         <div class="row-2">
@@ -2173,17 +2222,27 @@ Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867"
         <div class="field">
           <label>Vertical</label>
           <select id="kl-vertical">
-            <option value="financial_services">Financial Svcs (Non-Bank)</option>
-            <option value="construction">Construction</option>
+            <option value="accounting_tax">Accounting &amp; Tax</option>
+            <option value="auto_dealerships">Auto Dealerships</option>
+            <option value="b2b_professional_services">B2B Professional Services</option>
             <option value="behavioral_health">Behavioral Health</option>
-            <option value="medical_transport">Medical Transport</option>
+            <option value="construction">Construction</option>
+            <option value="construction_engineering">Construction &amp; Engineering</option>
+            <option value="financial_services">Financial Svcs (Non-Bank)</option>
+            <option value="general">General</option>
+            <option value="health_wellness">Health &amp; Wellness</option>
+            <option value="healthcare_services">Healthcare Svcs (Non-Hospital)</option>
+            <option value="home_services">Home Services</option>
             <option value="insurance">Insurance</option>
             <option value="legal_services">Legal Services</option>
-            <option value="accounting_tax">Accounting &amp; Tax</option>
+            <option value="logistics_transportation">Logistics &amp; Transportation</option>
+            <option value="manufacturing">Manufacturing</option>
+            <option value="marketing_advertising">Marketing &amp; Advertising</option>
+            <option value="medical_transport">Medical Transport</option>
+            <option value="staffing_professional_svcs">Professional Svcs / Staffing</option>
+            <option value="real_estate">Real Estate &amp; Property Mgmt</option>
             <option value="technology_saas">Technology / SaaS</option>
-            <option value="healthcare_services">Healthcare Services</option>
-            <option value="real_estate">Real Estate</option>
-            <option value="general">General</option>
+            <option value="wholesale_distribution">Wholesale Distribution</option>
           </select>
         </div>
       </div>
@@ -2207,10 +2266,10 @@ Lyon,Polk,Morgan Stanley PWM,morganstanley.com,Financial Advisor,(212) 761-0867"
       <div class="card-title">People List</div>
       <div class="card-sub">Upload CSV or paste below. Required: first_name, last_name, company, domain. Optional: title, phone. Max 200 people per run.</div>
       <div class="upload-area" id="kl-drop-zone" onclick="document.getElementById('kl-csv-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleKlDrop(event)">
-        <input type="file" id="kl-csv-input" class="upload-input" accept=".csv,.xls,.xlsx" onchange="handleKlFile(event)" />
+        <input type="file" id="kl-csv-input" class="upload-input" accept=".csv,.xls,.xlsx,.xlsm,.xlsb,.ods,.tsv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.google-apps.spreadsheet" onchange="handleKlFile(event)" />
         <div class="upload-icon">👥</div>
-        <div class="upload-title">Drop CSV here or click to browse</div>
-        <div class="upload-sub">Columns: first_name, last_name, company, domain, title (optional), phone (optional)</div>
+        <div class="upload-title">Drop file or click to browse</div>
+        <div class="upload-sub">CSV, XLS, XLSX, ODS, TSV — Columns: first_name, last_name, company, domain, title (optional), phone (optional)</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
