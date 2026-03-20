@@ -571,7 +571,7 @@
 
     @media (max-width: 900px) {
       /* ── BODY ── */
-      body { padding-bottom: 70px; }
+      body { padding-bottom: 16px; }
 
       /* ── TOP NAV — hide on mobile ── */
       .tab-bar, .tab-nav, #tab-bar, [class*='tab-bar'], [id*='tab-bar'] { display: none !important; }
@@ -733,11 +733,34 @@
       #rb-daily-container { height: 280px !important; }
       #rb-daily-container iframe { height:360px !important; top:6px !important; }
 
+      /* ── MODE TABS — bigger tap targets ── */
+      .mode-tab { min-height: 40px !important; font-size: 12px !important; padding: 8px 12px !important; }
+
+      /* ── HEADER — tighter on mobile ── */
+      .header { padding-bottom: 12px !important; margin-bottom: 16px !important; }
+
+      /* ── CARDS — full width, better padding ── */
+      .card { padding: 14px !important; margin-bottom: 10px !important; }
+
       /* ── CALL QUEUE MOBILE ── */
-      #cq-main-layout { grid-template-columns: 1fr !important; height: auto !important; }
-      #cq-main-layout > div:first-child { height: 420px; }
+      #cq-main-layout { grid-template-columns: 1fr !important; height: auto !important; gap: 12px !important; }
+      #cq-main-layout > div:last-child { min-height: 500px !important; }
+      #cq-main-layout > div:first-child { height: 420px !important; }
+      .cq-info-card { min-width: 0 !important; width: 100% !important; }
+      .cq-stage-btn { font-size: 11px !important; padding: 6px 10px !important; }
+      #cq-main-layout textarea { font-size: 16px !important; }
+      #cq-list-picker { font-size: 15px !important; padding: 10px !important; }
       #cq-toggle-lists, #cq-toggle-all { font-size: 12px !important; padding: 8px !important; }
-      #cq-list-picker { font-size: 14px !important; }
+      #mode-callqueue > div:nth-child(2) { gap: 6px !important; }
+
+      /* ── PRE-CALL BRIEF ── */
+      #mode-precall .row-2 { grid-template-columns: 1fr !important; }
+
+      /* ── FEEDBACK FORM ── */
+      #mode-feedback input, #mode-feedback textarea, #mode-feedback select { font-size: 16px !important; }
+
+      /* ── MY LISTS TABLE ── */
+      #lists-main-content { overflow-x: auto !important; }
 
       /* ── FOOTER ── */
       .footer { flex-direction: column !important; gap: 6px !important; text-align: center !important; }
@@ -8019,7 +8042,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
 </script>
 
 <!-- MOBILE BOTTOM NAVIGATION -->
-<nav id="mobile-bottom-nav">
+<nav id="mobile-bottom-nav" style="display:none !important;">
   <button class="mobile-nav-item active" id="mob-nav-dashboard" onclick="setMode('dashboard'); setMobileNav('dashboard')">
     <span>Dashboard</span>
   </button>
@@ -8038,7 +8061,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
 </nav>
 
 <!-- MOBILE MORE MENU -->
-<div id="mobile-more-menu" style="display:none; position:fixed; bottom:64px; left:0; right:0; background:white; border-top:1px solid #e5e7eb; z-index:9998; padding:8px 0; box-shadow:0 -4px 20px rgba(0,0,0,0.1);">
+<div id="mobile-more-menu" style="display:none !important; position:fixed; bottom:64px; left:0; right:0; background:white; border-top:1px solid #e5e7eb; z-index:9998; padding:8px 0; box-shadow:0 -4px 20px rgba(0,0,0,0.1);">
   <button onclick="setMode('bulk'); closeMobileMore()" style="width:100%; text-align:left; padding:14px 20px; border:none; background:none; font-size:14px; color:#1a2f4e; cursor:pointer;">
     Bulk Upload
   </button>
