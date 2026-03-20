@@ -2315,9 +2315,9 @@
           <div class="field">
             <label>Depth Per Site</label>
             <select id="scraper-depth" style="width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;background:#fff;">
-              <option value="2">Fast — Home + 1 page</option>
-              <option value="4" selected>Standard — up to 4 pages</option>
-              <option value="6">Thorough — up to 6 pages</option>
+              <option value="5">Fast — 5 pages</option>
+              <option value="8">Standard — 8 pages</option>
+              <option value="13" selected>Deep — 13 pages</option>
             </select>
           </div>
         </div>
@@ -2330,8 +2330,8 @@ https://cornerstonegc.com/team
 turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
           <div style="font-size:11px;color:var(--text-dim);margin-top:5px;">Paste domains or full URLs. Team, About, Contact, and Leadership pages work best.</div>
         </div>
-        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#15803D;font-weight:600;">
-          ✅ Only contacts with Name + Title + Email will be saved. Contacts missing any of these are automatically filtered out.
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#15803D;font-weight:600;line-height:1.6;">
+          Smart scraper navigates up to 13 pages per site — homepage, team pages, sub-pages, and individual profiles. Requires name + title + email to save. Pattern-guessed emails are flagged. Results go to My Lists, Call Queue, Google Sheets, and Pipedrive automatically.
         </div>
         <button onclick="scraperRun()" id="btn-scraper-run" class="btn-primary">🕷 Start Scraping</button>
       </div>
@@ -7175,15 +7175,44 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
   });
 
   // ==================== SCRAPER ====================
+  async function scrapeOneDomain(domain, listTag, vertical, submitterName, submitterEmail, maxDepth) {
+    try {
+      const resp = await fetch(
+        'https://manageai2026.app.n8n.cloud/webhook/lb-smart-scrape',
+        {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            domain: domain,
+            list_tag: listTag,
+            list_name: listTag,
+            vertical: vertical || 'construction',
+            submitter_name: submitterName,
+            submitter_email: submitterEmail,
+            max_depth: maxDepth || 13
+          })
+        }
+      );
+      if (!resp.ok) {
+        return { success: false, domain: domain, contacts_found: 0, error: 'HTTP '+resp.status };
+      }
+      return await resp.json();
+    } catch(e) {
+      return { success: false, domain: domain, contacts_found: 0, error: e.message };
+    }
+  }
+
   async function scraperRun() {
     const urlsRaw = document.getElementById('scraper-urls').value.trim();
     const listName = document.getElementById('scraper-list-name').value.trim();
     const vertical = document.getElementById('scraper-vertical').value;
     const owner = document.getElementById('scraper-owner').value;
-    const depth = parseInt(document.getElementById('scraper-depth').value || '4');
+    const depth = parseInt(document.getElementById('scraper-depth').value || '13');
     const urls = urlsRaw.split('\n').map(u => u.trim()).filter(u => u);
     if (!urls.length) { alert('Please enter at least one URL.'); return; }
     if (!listName) { alert('Please name this list.'); return; }
+    const submitterName = window._currentUser?.name || 'Tony Hanak';
+    const submitterEmail = window._currentUser?.email || 'tony@manageai.io';
     const listTag = 'Scraper — ' + listName + ' — ' +
       new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const progressEl = document.getElementById('scraper-progress');
@@ -7195,208 +7224,98 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     progressList.innerHTML = '';
     btn.disabled = true;
     btn.textContent = '🕷 Scraping...';
-    const allContacts = [];
+    let totalContacts = 0;
+    let totalPagesScraped = 0;
+    let totalPatternGuess = 0;
+    let sitesWithData = 0;
+    let sitesNoData = 0;
+    const domainResults = [];
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i];
       const domain = url.replace(/^https?:\/\//,'')
-        .replace(/^www\./,'').split('/')[0].split('?')[0];
+        .replace(/^www\./,'').split('/')[0].split('?')[0].toLowerCase();
       const rowId = 'sp-row-' + i;
       progressList.innerHTML +=
         '<div id="'+rowId+'" style="padding:10px 0;'+
         'border-bottom:1px solid var(--border);font-size:13px;'+
         'display:flex;align-items:center;gap:10px;">' +
-          '<span>⏳</span>' +
+          '<span class="dash-loading-ring" style="width:16px;height:16px;border-width:2px;flex-shrink:0;"></span>' +
           '<span style="font-weight:600;color:var(--text);">'+domain+'</span>' +
-          '<span style="color:var(--text-dim);font-size:12px;">Fetching pages...</span>' +
+          '<span style="color:var(--text-dim);font-size:12px;">Scraping pages...</span>' +
         '</div>';
-      try {
-        const resp = await fetch('/api/scraper', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, domain, vertical, depth, list_tag: listTag })
-        });
-        const data = await resp.json();
-        const raw = data.contacts || [];
-        const qualified = raw.filter(c =>
-          c.name && c.name.trim().length > 1 &&
-          c.title && c.title.trim().length > 1 &&
-          c.email && c.email.includes('@')
-        );
-        const techStack = data.tech_stack || [];
-        qualified.forEach(c => {
-          allContacts.push({
-            ...c,
-            domain,
-            tech_stack: techStack.slice(0,5).join(', '),
-            list_tag: listTag,
-            vertical
-          });
-        });
-        const row = document.getElementById(rowId);
-        if (row) {
-          const filtered = raw.length - qualified.length;
-          row.innerHTML =
-            '<span style="color:var(--green);">✅</span>' +
-            '<span style="font-weight:600;color:var(--text);">'+domain+'</span>' +
-            '<span style="color:var(--text-dim);font-size:12px;">' +
-              qualified.length + ' qualified contacts' +
-              (filtered > 0 ? ' · '+filtered+' filtered (missing name/title/email)' : '') +
-              (techStack.length ? ' · '+techStack.slice(0,3).join(', ') : '') +
-            '</span>';
-        }
-      } catch(e) {
-        const row = document.getElementById(rowId);
+      const data = await scrapeOneDomain(domain, listTag, vertical, submitterName, submitterEmail, depth);
+      const row = document.getElementById(rowId);
+      if (data.error && !data.contacts_found) {
+        sitesNoData++;
         if (row) row.innerHTML =
-          '<span style="color:var(--red);">❌</span>' +
+          '<span style="color:var(--amber);font-size:16px;">⚠</span>' +
           '<span style="font-weight:600;color:var(--text);">'+domain+'</span>' +
-          '<span style="color:var(--red);font-size:12px;">Failed: '+e.message+'</span>';
+          '<span style="color:var(--amber);font-size:12px;">Could not reach site</span>';
+      } else if (data.contacts_found > 0) {
+        sitesWithData++;
+        totalContacts += data.contacts_found || 0;
+        totalPagesScraped += data.pages_scraped || 0;
+        totalPatternGuess += data.pattern_guess_count || 0;
+        domainResults.push(data);
+        if (row) row.innerHTML =
+          '<span style="color:var(--green);font-size:16px;">✅</span>' +
+          '<span style="font-weight:600;color:var(--text);">'+domain+'</span>' +
+          '<span style="color:var(--text-dim);font-size:12px;">' +
+            data.contacts_found + ' contacts found · ' +
+            data.pages_scraped + ' pages scraped' +
+            (data.pattern_guess_count > 0 ? ' · '+data.pattern_guess_count+' emails guessed' : '') +
+          '</span>';
+      } else {
+        sitesNoData++;
+        if (row) row.innerHTML =
+          '<span style="color:#94A3B8;font-size:16px;">—</span>' +
+          '<span style="font-weight:600;color:var(--text);">'+domain+'</span>' +
+          '<span style="color:var(--text-dim);font-size:12px;">No contacts found on public pages ('+(data.pages_scraped||0)+' pages checked)</span>';
       }
-      if (i < urls.length - 1)
-        await new Promise(r => setTimeout(r, 600));
     }
     btn.disabled = false;
     btn.textContent = '🕷 Start Scraping';
-    renderScraperResults(allContacts, listName, listTag, vertical, owner);
+    renderScraperSummary(totalContacts, sitesWithData, sitesNoData, totalPagesScraped, totalPatternGuess, listTag);
   }
 
-  function renderScraperResults(contacts, listName, listTag, vertical, owner) {
+  function renderScraperSummary(totalContacts, sitesWithData, sitesNoData, totalPages, totalPatternGuess, listTag) {
     const el = document.getElementById('scraper-results');
     el.style.display = 'block';
-    if (!contacts.length) {
+    if (totalContacts === 0) {
       el.innerHTML =
         '<div class="card" style="text-align:center;padding:40px;">' +
           '<div style="font-size:32px;margin-bottom:12px;">🔍</div>' +
-          '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">' +
-            'No qualified contacts found</div>' +
-          '<div style="font-size:13px;color:var(--text-dim);">' +
-            'Try adding /team or /about to your URLs, ' +
-            'or increase the scrape depth.</div>' +
+          '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">No qualified contacts found</div>' +
+          '<div style="font-size:13px;color:var(--text-dim);">Try adding /team or /about to your URLs, or increase the scrape depth.</div>' +
         '</div>';
       return;
     }
-    const emailCount = contacts.filter(c => c.email).length;
-    const domainCount = [...new Set(contacts.map(c => c.domain))].length;
     el.innerHTML =
-      '<div class="card" style="padding:0;overflow:hidden;">' +
-        '<div style="padding:16px 20px;display:flex;justify-content:' +
-          'space-between;align-items:center;border-bottom:1px solid var(--border);">' +
-          '<div>' +
-            '<div style="font-size:14px;font-weight:700;color:var(--text);">' +
-              contacts.length + ' qualified contacts · ' +
-              domainCount + ' sites · ' + emailCount + ' emails</div>' +
-            '<div style="font-size:12px;color:var(--green);margin-top:2px;">' +
-              '✅ All have Name + Title + Email</div>' +
-          '</div>' +
-          '<div style="display:flex;gap:10px;">' +
-            '<button onclick="scraperExportCSV()" ' +
-              'style="padding:8px 16px;border:1px solid var(--border);' +
-              'border-radius:6px;background:#fff;font-size:12px;' +
-              'font-weight:600;cursor:pointer;font-family:var(--font);">' +
-              '↓ Export CSV</button>' +
-            '<button onclick="scraperSaveToLists()" ' +
-              'style="padding:8px 16px;background:var(--accent);color:#fff;' +
-              'border:none;border-radius:6px;font-size:12px;font-weight:600;' +
-              'cursor:pointer;font-family:var(--font);">' +
-              'Save to My Lists</button>' +
+      '<div class="card" style="overflow:hidden;">' +
+        '<div style="text-align:center;padding:24px 20px 20px;">' +
+          '<div style="font-size:48px;font-weight:800;color:var(--green);font-family:var(--mono);">'+totalContacts+'</div>' +
+          '<div style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">Contacts Found</div>' +
+          '<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">'+
+            sitesWithData+' site'+(sitesWithData!==1?'s':'')+' with data · '+
+            sitesNoData+' with no data · '+
+            totalPages+' pages scraped'+
           '</div>' +
         '</div>' +
-        '<div style="overflow-x:auto;">' +
-        '<table style="width:100%;border-collapse:collapse;min-width:900px;">' +
-          '<thead><tr style="background:#1E3348;">' +
-            '<th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;white-space:nowrap;">Name</th>' +
-            '<th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;white-space:nowrap;">Title</th>' +
-            '<th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;white-space:nowrap;">Email</th>' +
-            '<th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;white-space:nowrap;">Phone</th>' +
-            '<th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;white-space:nowrap;">Company</th>' +
-            '<th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;white-space:nowrap;">Tech Stack</th>' +
-          '</tr></thead>' +
-          '<tbody>' +
-          contacts.map((c,i) => {
-            const rowBg = i%2===0?'#F0FDF4':'#F7FFF9';
-            return '<tr style="background:'+rowBg+';border-bottom:1px solid #E8F5E9;">' +
-              '<td style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--text);">'+(c.name||'—')+'</td>' +
-              '<td style="padding:9px 12px;font-size:12px;color:var(--text-mid);">'+(c.title||'—')+'</td>' +
-              '<td style="padding:9px 12px;font-size:12px;color:#1D4ED8;">'+(c.email||'—')+'</td>' +
-              '<td style="padding:9px 12px;font-size:12px;color:var(--text);">'+(c.phone||'<span style="color:#CBD5E1;">—</span>')+'</td>' +
-              '<td style="padding:9px 12px;font-size:12px;color:var(--text);">'+(c.company||c.domain||'—')+'</td>' +
-              '<td style="padding:9px 12px;font-size:11px;color:var(--text-dim);">'+(c.tech_stack||'—')+'</td>' +
-            '</tr>';
-          }).join('') +
-          '</tbody>' +
-        '</table></div>' +
+        '<div style="display:flex;gap:10px;justify-content:center;padding:0 20px 16px;">' +
+          '<button onclick="setMode(\'lists\')" style="padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">View in My Lists →</button>' +
+          '<button onclick="setMode(\'callqueue\')" style="padding:10px 20px;background:var(--nav);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">Open Call Queue →</button>' +
+        '</div>' +
+        (totalPatternGuess > 0 ?
+          '<div style="background:var(--amber-light);border-left:3px solid var(--amber);padding:10px 14px;border-radius:6px;font-size:12px;color:var(--amber);margin:0 20px 16px;">'+
+            '⚠ '+totalPatternGuess+' email'+(totalPatternGuess!==1?'s were':' was')+' pattern-guessed (firstname.lastname@domain.com) — not verified. Use with caution.'+
+          '</div>' : '') +
+        '<div style="padding:12px 20px 16px;border-top:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text-dim);">'+
+          '✅ All contacts saved to My Lists, Call Queue, Google Sheets, and Pipedrive automatically.'+
+        '</div>' +
       '</div>';
-    window._scraperContacts = contacts;
-    window._scraperListName = listName;
-    window._scraperListTag = listTag;
-    window._scraperVertical = vertical;
-    window._scraperOwner = owner;
   }
 
-  function scraperExportCSV() {
-    const contacts = window._scraperContacts || [];
-    if (!contacts.length) return;
-    const cols = ['name','title','email','phone','company','domain','tech_stack','source_page'];
-    const headers = ['Name','Title','Email','Phone','Company','Domain','Tech Stack','Source Page'];
-    const csv = [
-      headers.join(','),
-      ...contacts.map(c =>
-        cols.map(k => '"'+(c[k]||'').toString().replace(/"/g,'""')+'"').join(',')
-      )
-    ].join('\n');
-    const a = document.createElement('a');
-    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-    a.download = (window._scraperListName||'scraper').replace(/[^a-z0-9]/gi,'_')+'_contacts.csv';
-    a.click();
-  }
-
-  async function scraperSaveToLists() {
-    const contacts = window._scraperContacts || [];
-    if (!contacts.length) { alert('No contacts to save.'); return; }
-    const btn = event?.target;
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-    try {
-      await sbProxy('lb_lists', 'POST', '', {
-        list_name: window._scraperListName,
-        mode: 'scraper',
-        vertical: window._scraperVertical,
-        company_count: [...new Set(contacts.map(c=>c.domain))].length,
-        contacts_found: contacts.length,
-        contacts_with_email: contacts.filter(c=>c.email).length,
-        contacts_with_phone: contacts.filter(c=>c.phone).length,
-        submitter_name: window._currentUser?.name || 'Tony',
-        submitter_email: window._currentUser?.email || 'tony@manageai.io',
-        pipedrive_owner: window._scraperOwner || 'tony',
-        status: 'delivered',
-        list_tag: window._scraperListTag,
-        created_at: new Date().toISOString()
-      });
-      for (const c of contacts) {
-        try {
-          const nameParts = (c.name||'').trim().split(' ');
-          await sbProxy('lb_contacts', 'POST', '', {
-            first_name: nameParts[0] || '',
-            last_name: nameParts.slice(1).join(' ') || '',
-            title: c.title || '',
-            email: c.email || '',
-            phone: c.phone || '',
-            company_name: c.company || c.domain || '',
-            domain: c.domain || '',
-            vertical: window._scraperVertical,
-            email_source: 'website',
-            list_tag: window._scraperListTag,
-            submitter_name: window._currentUser?.name || 'Tony',
-            submitter_email: window._currentUser?.email || 'tony@manageai.io',
-            created_at: new Date().toISOString()
-          });
-        } catch(e) { console.warn('[Scraper] Contact save failed:', e.message); }
-      }
-      alert('✅ Saved ' + contacts.length + ' contacts to My Lists!');
-      if (btn) { btn.disabled = false; btn.textContent = 'Save to My Lists'; }
-    } catch(e) {
-      alert('Save failed: ' + e.message);
-      if (btn) { btn.disabled = false; btn.textContent = 'Save to My Lists'; }
-    }
-  }
+  // scraperExportCSV and scraperSaveToLists removed — n8n handles all storage
 
   // ==================== CALL QUEUE ====================
   const PD_SYNC_WEBHOOK = 'https://manageai2026.app.n8n.cloud/webhook/lb-pipedrive-sync';
