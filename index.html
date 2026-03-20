@@ -3096,6 +3096,15 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       <div class="card">
         <div class="card-title" style="margin-bottom:16px;">Comments</div>
         <div id="fb-comments-thread" style="max-height:400px;overflow-y:auto;margin-bottom:16px;padding-right:4px;"></div>
+        <div id="fb-ticket-attach-zone" style="margin-bottom:16px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Add Attachment to Ticket</div>
+          <div id="fb-ticket-drop" style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color 0.2s;" onclick="document.getElementById('fb-ticket-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFbTicketFileDrop(event,document.getElementById('fb-comment-input')?.getAttribute('data-ticket-id'))">
+            <div style="font-size:22px;margin-bottom:6px;">📎</div>
+            <div style="font-size:12px;color:var(--text-dim);">Click or drop file to attach to this ticket</div>
+            <div id="fb-ticket-file-label" style="font-size:12px;color:var(--accent);margin-top:6px;font-weight:600;display:none;"></div>
+          </div>
+          <input type="file" id="fb-ticket-file" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleFbTicketFileSelect(this,document.getElementById('fb-comment-input')?.getAttribute('data-ticket-id'))" />
+        </div>
         <div style="display:flex;gap:8px;">
           <input type="text" id="fb-comment-input"
             placeholder="Add a comment..."
@@ -5282,6 +5291,13 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
       const body = document.getElementById('fb-ticket-body');
       if (body) {
         body.innerHTML = '<div style="font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap;">'+(r.message||'')+'</div>';
+        if (r.attachment_base64 && r.attachment_name) {
+          const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(r.attachment_name);
+          const attachHtml = isImage
+            ? '<div style="margin-top:16px;"><div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Attachment</div><img src="' + r.attachment_base64 + '" style="max-width:100%;border-radius:8px;border:1px solid var(--border);" /></div>'
+            : '<div style="margin-top:16px;"><div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Attachment</div><a href="' + r.attachment_base64 + '" download="' + r.attachment_name + '" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;">📎 ' + r.attachment_name + '</a></div>';
+          body.innerHTML += attachHtml;
+        }
       }
       const commentInput = document.getElementById('fb-comment-input');
       if (commentInput) commentInput.setAttribute('data-ticket-id', id);
@@ -5341,7 +5357,7 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
         const isMe = c.author_email === (window._currentUser?.email||'');
         const cDate = c.created_at ? new Date(c.created_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
         return '<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+';margin-bottom:12px;">' +
-          '<div style="max-width:75%;background:'+(isMe?'#4A8FD6':'#F5F6F8')+';color:'+(isMe?'#fff':'var(--text)')+';padding:10px 14px;border-radius:'+(isMe?'12px 12px 2px 12px':'12px 12px 12px 2px')+';font-size:13px;line-height:1.5;">'+(c.message||'')+'</div>' +
+          '<div style="max-width:75%;background:'+(isMe?'#4A8FD6':'#F5F6F8')+';color:'+(isMe?'#fff':'var(--text)')+';padding:10px 14px;border-radius:'+(isMe?'12px 12px 2px 12px':'12px 12px 12px 2px')+';font-size:13px;line-height:1.5;">'+(c.message||'')+(c.attachment_base64&&c.attachment_name?((/\.(png|jpg|jpeg|gif|webp)$/i.test(c.attachment_name))?'<div style="margin-top:8px;"><img src="'+c.attachment_base64+'" style="max-width:220px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);display:block;" /></div>':'<div style="margin-top:8px;"><a href="'+c.attachment_base64+'" download="'+c.attachment_name+'" style="font-size:12px;color:inherit;opacity:0.85;text-decoration:underline;">📎 '+c.attachment_name+'</a></div>'):'')+'</div>' +
           '<div style="font-size:11px;color:var(--text-dim);margin-top:3px;">'+(c.author_name||c.author_email||'')+' \u00B7 '+cDate+'</div>' +
         '</div>';
       }).join('');
@@ -5351,23 +5367,68 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
     }
   }
 
+  // Per-ticket attachment state
+  window._fbTicketAttachments = {};
+
+  function handleFbTicketFileDrop(event, id) {
+    event.preventDefault();
+    var dz = document.getElementById('fb-ticket-drop');
+    if (dz) dz.style.borderColor = 'var(--border)';
+    var file = event.dataTransfer.files[0];
+    if (file && id) processFbTicketAttachment(file, id);
+  }
+
+  function handleFbTicketFileSelect(input, id) {
+    var file = input.files[0];
+    if (file && id) processFbTicketAttachment(file, id);
+  }
+
+  function processFbTicketAttachment(file, id) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File too large — max 5 MB.');
+      return;
+    }
+    var label = document.getElementById('fb-ticket-file-label');
+    if (label) {
+      label.textContent = '📎 ' + file.name;
+      label.style.display = 'block';
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      window._fbTicketAttachments[id] = {
+        base64: e.target.result,
+        name: file.name
+      };
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function addFbComment(feedbackId) {
     const input = document.getElementById('fb-comment-input');
     if (!input) return;
     const message = input.value.trim();
-    if (!message) return;
+    const attachment = window._fbTicketAttachments[feedbackId];
+    if (!message && !attachment) return;
     input.value = '';
     try {
       await sbProxy('lb_feedback_comments', 'POST', '', {
         feedback_id: feedbackId,
         author_name: window._currentUser?.name || 'Team',
         author_email: window._currentUser?.email || '',
-        message: message,
+        message: message || '[Attachment added]',
+        attachment_base64: attachment?.base64 || null,
+        attachment_name: attachment?.name || null,
         created_at: new Date().toISOString()
       });
+      // Clear attachment state
+      delete window._fbTicketAttachments[feedbackId];
+      var label = document.getElementById('fb-ticket-file-label');
+      if (label) { label.style.display = 'none'; label.textContent = ''; }
+      var fileInput = document.getElementById('fb-ticket-file');
+      if (fileInput) fileInput.value = '';
       loadFbComments(feedbackId);
     } catch(e) {
-      alert('Failed to post comment: ' + e.message);
+      alert('Failed to post: ' + e.message);
     }
   }
 
@@ -5414,7 +5475,9 @@ turnerconstruction.com" style="width:100%;padding:11px 14px;border:1.5px solid v
         rating: payload.rating,
         message: payload.message,
         reference: payload.reference,
-        submitted_at: payload.submitted_at
+        submitted_at: payload.submitted_at,
+        attachment_base64: fbAttachmentBase64 || null,
+        attachment_name: fbAttachmentName || null
       };
       try { await sbProxy('lb_feedback', 'POST', '', sbPayload); }
       catch(sbErr) { console.warn('[Feedback] Supabase insert failed:', sbErr.message); }
